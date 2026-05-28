@@ -10,9 +10,11 @@
     <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-lg md:p-6">
         <div class="mb-4 flex flex-wrap items-center justify-between gap-4">
             <h1 class="font-display text-2xl font-semibold text-zinc-950 md:text-3xl">Empresas</h1>
+            @if (auth()->user()?->puedeEditar())
             <a href="{{ route('empresas.create') }}" class="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-emerald-800">
                 Nueva empresa
             </a>
+            @endif
         </div>
 
         @if (session('success'))
@@ -40,7 +42,9 @@
                     <th class="px-3 py-3">Correos</th>
                     <th class="px-3 py-3">Límite</th>
                     <th class="px-3 py-3">Planilla</th>
+                    @if (auth()->user()?->puedeEditar())
                     <th class="px-3 py-3 w-44 text-end">Acciones</th>
+                    @endif
                 </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200">
@@ -81,6 +85,7 @@
                         </td>
                         <td class="px-3 py-2 whitespace-nowrap text-zinc-800">{{ $empresa->limite?->format('d/m/Y') ?? '—' }}</td>
                         <td class="px-3 py-2 text-zinc-800">{{ $empresa->planilla ?? '—' }}</td>
+                        @if (auth()->user()?->puedeEditar())
                         <td class="px-3 py-2 text-end" data-acciones>
                             <div class="flex flex-wrap items-center justify-end gap-2">
                                 <a href="{{ route('empresas.edit', $empresa) }}" class="text-sm font-medium text-emerald-800 underline hover:text-emerald-950" data-acciones>
@@ -95,9 +100,10 @@
                                 </form>
                             </div>
                         </td>
+                        @endif
                     </tr>
                     <tr class="empresa-detalle hidden bg-zinc-50/80" data-empresa-panel="{{ $empresa->id }}" hidden>
-                        <td colspan="8" class="px-4 py-3">
+                        <td colspan="{{ auth()->user()?->puedeEditar() ? 8 : 7 }}" class="px-4 py-3">
                             @php
                                 $totalContratistasEmpresa = $empresa->contratistasExternos->count() + $empresa->contratistasInternos->count();
                                 $categoriaContratistasId = 'empresa-'.$empresa->id.'-contratistas';
@@ -241,9 +247,11 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="px-3 py-8 text-center text-zinc-500">
+                        <td colspan="{{ auth()->user()?->puedeEditar() ? 8 : 7 }}" class="px-3 py-8 text-center text-zinc-500">
                             No hay empresas registradas.
+                            @if (auth()->user()?->puedeEditar())
                             <a href="{{ route('empresas.create') }}" class="font-medium text-emerald-700 underline hover:text-emerald-800">Crear una</a>
+                            @endif
                         </td>
                     </tr>
                 @endforelse

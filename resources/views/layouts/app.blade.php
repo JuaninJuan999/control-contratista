@@ -47,10 +47,19 @@
                     >
                         Vehículos
                     </a>
+                    @if (auth()->user()?->puedeAccederModuloUsuarios())
+                    <a
+                        href="{{ route('usuarios.index') }}"
+                        class="rounded-lg px-3 py-2 transition {{ request()->routeIs('usuarios.*') ? 'bg-emerald-700 text-white' : 'text-zinc-700 hover:bg-zinc-100' }}"
+                    >
+                        Usuarios
+                    </a>
+                    @endif
                 </nav>
             </div>
             <div class="flex flex-wrap items-center gap-3">
                 <span class="text-sm text-zinc-600">{{ auth()->user()->username ?? auth()->user()->name }}</span>
+                <span class="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700">{{ auth()->user()->etiquetaRol() }}</span>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
                     <button type="submit" class="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">

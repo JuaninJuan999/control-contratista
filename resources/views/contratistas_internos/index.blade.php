@@ -8,9 +8,11 @@
     <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-lg md:p-6">
         <div class="mb-4 flex flex-wrap items-center justify-between gap-4">
             <h1 class="font-display text-2xl font-semibold text-zinc-950 md:text-3xl">Contratistas internos</h1>
+            @if (auth()->user()?->puedeEditar())
             <a href="{{ route('contratistas-internos.create') }}" class="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-emerald-800">
                 Nuevo interno
             </a>
+            @endif
         </div>
 
         @if (session('success'))
@@ -34,10 +36,10 @@
                     @endfor
                 </select>
             </div>
-            <p class="text-xs text-zinc-600 md:text-sm">Clic en el nombre para ver el detalle. Clic en un mes para marcar <strong>OK</strong>.</p>
+            <p class="text-xs text-zinc-600 md:text-sm">Clic en el nombre para ver el detalle.@if (auth()->user()?->puedeEditar()) Clic en un mes para marcar <strong>OK</strong>.@endif</p>
         </form>
 
-        @php $totalColumnas = 5 + count(\App\Models\ContratistaInterno::MESES) + 2; @endphp
+        @php $totalColumnas = 5 + count(\App\Models\ContratistaInterno::MESES) + 1 + (auth()->user()?->puedeEditar() ? 1 : 0); @endphp
 
         <div class="overflow-x-auto rounded-lg border border-zinc-200">
             <table class="min-w-full text-left text-sm">
@@ -52,7 +54,9 @@
                             <th class="w-10 px-1 py-3 text-center">{{ $abrev }}</th>
                         @endforeach
                         <th class="px-3 py-3">Registro</th>
+                        @if (auth()->user()?->puedeEditar())
                         <th class="px-3 py-3">Acciones</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-200">
@@ -76,6 +80,7 @@
                             <td class="px-3 py-2 text-zinc-800">{{ $c->arl }}</td>
                             @foreach (\App\Models\ContratistaInterno::MESES as $mes => $abrev)
                                 <td class="px-1 py-2 text-center">
+                                    @if (auth()->user()?->puedeEditar())
                                     <form action="{{ route('contratistas-internos.toggle-mes', $c) }}" method="post" class="inline" onclick="event.stopPropagation()">
                                         @csrf
                                         @method('PATCH')
@@ -89,6 +94,11 @@
                                             {{ $c->mesRegistrado($anio, $mes) ? 'OK' : '·' }}
                                         </button>
                                     </form>
+                                    @else
+                                    <span class="inline-flex h-8 w-8 items-center justify-center rounded text-xs font-bold {{ $c->mesRegistrado($anio, $mes) ? 'bg-emerald-100 text-emerald-800' : 'text-zinc-300' }}">
+                                        {{ $c->mesRegistrado($anio, $mes) ? 'OK' : '·' }}
+                                    </span>
+                                    @endif
                                 </td>
                             @endforeach
                             <td class="px-3 py-2">
@@ -98,6 +108,7 @@
                                     <span class="rounded bg-zinc-200 px-2 py-0.5 text-[10px] font-bold uppercase text-zinc-700">Inactivo</span>
                                 @endif
                             </td>
+                            @if (auth()->user()?->puedeEditar())
                             <td class="px-3 py-2">
                                 @include('contratistas._acciones_contratista', [
                                     'contratista' => $c,
@@ -106,6 +117,7 @@
                                     'anio' => $anio,
                                 ])
                             </td>
+                            @endif
                         </tr>
                         <tr class="hidden bg-zinc-50/50" data-contratista-panel="interno-{{ $c->id }}" hidden>
                             <td colspan="{{ $totalColumnas }}" class="border-t border-zinc-100 px-4 py-4">
@@ -131,7 +143,9 @@
                         <tr>
                             <td colspan="{{ $totalColumnas }}" class="px-3 py-8 text-center text-zinc-500">
                                 No hay contratistas internos registrados.
+                                @if (auth()->user()?->puedeEditar())
                                 <a href="{{ route('contratistas-internos.create') }}" class="font-medium text-emerald-700 underline hover:text-emerald-800">Registrar el primero</a>
+                                @endif
                             </td>
                         </tr>
                     @endforelse

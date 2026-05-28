@@ -6,12 +6,14 @@
     <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-lg md:p-6">
         <div class="mb-4 flex flex-wrap items-center justify-between gap-4">
             <h1 class="font-display text-2xl font-semibold text-zinc-950 md:text-3xl">Vehículos</h1>
+            @if (auth()->user()?->puedeEditar())
             <a
                 href="{{ route('vehiculos.create') }}"
                 class="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-emerald-800"
             >
                 Nuevo vehículo
             </a>
+            @endif
         </div>
 
         @if (session('success'))
@@ -30,7 +32,9 @@
                         <th class="px-3 py-3">Estado SOAT</th>
                         <th class="px-3 py-3">Tecnomecánica (fin)</th>
                         <th class="px-3 py-3">Estado tecnomecánica</th>
+                        @if (auth()->user()?->puedeEditar())
                         <th class="px-3 py-3">Acciones</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-200">
@@ -54,6 +58,7 @@
                                     <span class="font-bold text-red-700">VENCIDA</span>
                                 @endif
                             </td>
+                            @if (auth()->user()?->puedeEditar())
                             <td class="px-3 py-2">
                                 <a
                                     href="{{ route('vehiculos.edit', $v) }}"
@@ -62,12 +67,15 @@
                                     Editar
                                 </a>
                             </td>
+                            @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-3 py-8 text-center text-zinc-500">
+                            <td colspan="{{ auth()->user()?->puedeEditar() ? 7 : 6 }}" class="px-3 py-8 text-center text-zinc-500">
                                 No hay vehículos registrados.
+                                @if (auth()->user()?->puedeEditar())
                                 <a href="{{ route('vehiculos.create') }}" class="font-medium text-emerald-700 underline hover:text-emerald-800">Registrar el primero</a>
+                                @endif
                             </td>
                         </tr>
                     @endforelse

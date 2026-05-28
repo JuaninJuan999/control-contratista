@@ -8,9 +8,11 @@
     <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-lg md:p-6">
         <div class="mb-4 flex flex-wrap items-center justify-between gap-4">
             <h1 class="font-display text-2xl font-semibold text-zinc-950 md:text-3xl">Contratistas externos</h1>
+            @if (auth()->user()?->puedeEditar())
             <a href="{{ route('contratistas-externos.create') }}" class="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-emerald-800">
                 Nuevo externo
             </a>
+            @endif
         </div>
 
         @if (session('success'))
@@ -35,7 +37,9 @@
                         <th class="px-3 py-3">Vencimiento</th>
                         <th class="px-3 py-3">Estado I/R</th>
                         <th class="px-3 py-3">Registro</th>
+                        @if (auth()->user()?->puedeEditar())
                         <th class="px-3 py-3">Acciones</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-200">
@@ -74,6 +78,7 @@
                                     <span class="rounded bg-zinc-200 px-2 py-0.5 text-[10px] font-bold uppercase text-zinc-700">Inactivo</span>
                                 @endif
                             </td>
+                            @if (auth()->user()?->puedeEditar())
                             <td class="px-3 py-2">
                                 @include('contratistas._acciones_contratista', [
                                     'contratista' => $c,
@@ -81,9 +86,10 @@
                                     'toggleActivoRoute' => route('contratistas-externos.toggle-activo', $c),
                                 ])
                             </td>
+                            @endif
                         </tr>
                         <tr class="hidden bg-zinc-50/50" data-contratista-panel="externo-{{ $c->id }}" hidden>
-                            <td colspan="11" class="border-t border-zinc-100 px-4 py-4">
+                            <td colspan="{{ auth()->user()?->puedeEditar() ? 11 : 10 }}" class="border-t border-zinc-100 px-4 py-4">
                                 <dl class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                     <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Nombres y apellidos</dt><dd class="mt-0.5 font-medium text-zinc-900">{{ $c->nombres_apellidos }}</dd></div>
                                     <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Documento</dt><dd class="mt-0.5 text-zinc-900">{{ $c->tipo_documento }} {{ $c->numero_documento }}</dd></div>
@@ -100,9 +106,11 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="11" class="px-3 py-8 text-center text-zinc-500">
+                            <td colspan="{{ auth()->user()?->puedeEditar() ? 11 : 10 }}" class="px-3 py-8 text-center text-zinc-500">
                                 No hay contratistas externos registrados.
+                                @if (auth()->user()?->puedeEditar())
                                 <a href="{{ route('contratistas-externos.create') }}" class="font-medium text-emerald-700 underline hover:text-emerald-800">Registrar el primero</a>
+                                @endif
                             </td>
                         </tr>
                     @endforelse

@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ContratistaExternoController;
 use App\Http\Controllers\ContratistaInternoController;
 use App\Http\Controllers\EmpresaController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehiculoController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,7 +21,7 @@ Route::middleware('guest')->group(function () {
         ->name('login.store');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'restrict.consulta'])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
@@ -34,5 +35,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('contratistas-internos/{contratistaInterno}/mes', [ContratistaInternoController::class, 'toggleMes'])
         ->name('contratistas-internos.toggle-mes');
     Route::resource('vehiculos', VehiculoController::class)->except(['show', 'destroy']);
+
+    Route::middleware('access.usuarios')->group(function () {
+        Route::resource('usuarios', UserController::class)->except(['show']);
+        Route::patch('usuarios/{usuario}/activo', [UserController::class, 'toggleActivo'])
+            ->name('usuarios.toggle-activo');
+    });
+
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 });

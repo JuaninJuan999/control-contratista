@@ -1,3 +1,4 @@
+@if (auth()->user()?->puedeEditar())
 <div class="flex flex-wrap items-center gap-2" data-acciones-contratista onclick="event.stopPropagation()">
     <a
         href="{{ $editRoute }}"
@@ -20,3 +21,4 @@
         </button>
     </form>
 </div>
+@endif

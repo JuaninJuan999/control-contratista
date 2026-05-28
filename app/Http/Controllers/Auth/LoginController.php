@@ -27,7 +27,7 @@ class LoginController extends Controller
             ->whereRaw('LOWER(username) = ?', [mb_strtolower($validated['username'], 'UTF-8')])
             ->first();
 
-        if ($user === null || ! Hash::check($validated['password'], $user->password)) {
+        if ($user === null || ! $user->activo || ! Hash::check($validated['password'], $user->password)) {
             throw ValidationException::withMessages([
                 'username' => __('auth.failed'),
             ]);
