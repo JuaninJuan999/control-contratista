@@ -32,6 +32,7 @@
                         <th class="px-3 py-3">Estado SOAT</th>
                         <th class="px-3 py-3">Tecnomecánica (fin)</th>
                         <th class="px-3 py-3">Estado tecnomecánica</th>
+                        <th class="px-3 py-3">Documentos</th>
                         @if (auth()->user()?->puedeEditar())
                         <th class="px-3 py-3">Acciones</th>
                         @endif
@@ -39,7 +40,10 @@
                 </thead>
                 <tbody class="divide-y divide-zinc-200">
                     @forelse ($vehiculos as $v)
-                        <tr class="bg-white hover:bg-zinc-50/80">
+                        <tr
+                            data-vehiculo-fila="vehiculo-{{ $v->id }}"
+                            class="bg-white hover:bg-zinc-50/80"
+                        >
                             <td class="px-3 py-2 font-medium text-zinc-900">{{ $v->placa }}</td>
                             <td class="px-3 py-2 text-zinc-800">{{ $v->empresa?->nombre ?? '—' }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-zinc-800">{{ $v->soat_fin->format('d/m/Y') }}</td>
@@ -58,6 +62,26 @@
                                     <span class="font-bold text-red-700">VENCIDA</span>
                                 @endif
                             </td>
+                            <td class="px-3 py-2">
+                                @php $tieneDocs = false; @endphp
+                                <div class="flex flex-col gap-0.5">
+                                    @foreach (\App\Models\Vehiculo::DOCUMENTOS as $campoDoc => $etiquetaDoc)
+                                        @if ($v->{$campoDoc})
+                                            @php $tieneDocs = true; @endphp
+                                            <a href="{{ \App\Services\VehiculoDocumentoStorage::urlPublica($v->{$campoDoc}) }}" target="_blank" rel="noopener noreferrer" class="text-xs font-medium text-emerald-700 underline hover:text-emerald-800">{{ $etiquetaDoc }}</a>
+                                        @endif
+                                    @endforeach
+                                    @unless ($tieneDocs)
+                                        <span class="text-zinc-400">—</span>
+                                    @endunless
+                                    @if ($v->inspeccion_sanitaria && $v->inspeccion_sanitaria_fin)
+                                        <span class="text-[11px] text-zinc-500">
+                                            Insp. sanitaria: {{ $v->inspeccion_sanitaria_fin->format('d/m/Y') }} —
+                                            <span class="font-bold {{ $v->inspeccion_sanitaria_estado === 'VIGENTE' ? 'text-emerald-700' : 'text-red-700' }}">{{ $v->inspeccion_sanitaria_estado }}</span>
+                                        </span>
+                                    @endif
+                                </div>
+                            </td>
                             @if (auth()->user()?->puedeEditar())
                             <td class="px-3 py-2">
                                 <a
@@ -71,7 +95,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ auth()->user()?->puedeEditar() ? 7 : 6 }}" class="px-3 py-8 text-center text-zinc-500">
+                            <td colspan="{{ auth()->user()?->puedeEditar() ? 8 : 7 }}" class="px-3 py-8 text-center text-zinc-500">
                                 No hay vehículos registrados.
                                 @if (auth()->user()?->puedeEditar())
                                 <a href="{{ route('vehiculos.create') }}" class="font-medium text-emerald-700 underline hover:text-emerald-800">Registrar el primero</a>
@@ -83,4 +107,27 @@
             </table>
         </div>
     </div>
+
+    <script>
+        (function () {
+            var params = new URLSearchParams(window.location.search);
+            var abrir = params.get('abrir');
+
+            if (!abrir || !abrir.startsWith('vehiculo-')) {
+                return;
+            }
+
+            setTimeout(function () {
+                var fila = document.querySelector('[data-vehiculo-fila="' + abrir + '"]');
+
+                if (!fila) {
+                    return;
+                }
+
+                if (window.resaltarFilaBusqueda) {
+                    window.resaltarFilaBusqueda(fila);
+                }
+            }, 120);
+        })();
+    </script>
 @endsection

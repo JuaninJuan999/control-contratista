@@ -17,6 +17,39 @@ class Empresa extends Model
         ];
     }
 
+    /**
+     * Días hasta la fecha límite (negativos si ya venció).
+     */
+    public function getDiasParaLimiteAttribute(): ?int
+    {
+        if ($this->limite === null) {
+            return null;
+        }
+
+        $hoy = now()->startOfDay();
+
+        return (int) $hoy->diffInDays($this->limite->copy()->startOfDay(), false);
+    }
+
+    public function getEstadoLimiteAttribute(): ?string
+    {
+        $dias = $this->dias_para_limite;
+
+        if ($dias === null) {
+            return null;
+        }
+
+        if ($dias < 0) {
+            return 'VENCIDA';
+        }
+
+        if ($dias <= 10) {
+            return 'PRÓXIMA A VENCER';
+        }
+
+        return 'VIGENTE';
+    }
+
     public function contratistasExternos(): HasMany
     {
         return $this->hasMany(ContratistaExterno::class);

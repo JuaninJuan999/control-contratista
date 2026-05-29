@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreVehiculoRequest extends FormRequest
 {
@@ -21,6 +20,12 @@ class StoreVehiculoRequest extends FormRequest
             'placa' => ['required', 'string', 'max:16', 'unique:vehiculos,placa'],
             'soat_fin' => ['required', 'date'],
             'tecnomecanica_fin' => ['required', 'date'],
+            'soat_archivo' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'tecnomecanica_archivo' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'tarjeta_propiedad_archivo' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'inspeccion_sanitaria' => ['required', 'boolean'],
+            'inspeccion_sanitaria_fin' => ['nullable', 'date', 'required_if:inspeccion_sanitaria,1'],
+            'inspeccion_sanitaria_archivo' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             'empresa_id' => ['required', 'integer', 'exists:empresas,id'],
         ];
     }
@@ -34,6 +39,12 @@ class StoreVehiculoRequest extends FormRequest
             'placa' => 'placa del vehículo',
             'soat_fin' => 'fecha fin del SOAT',
             'tecnomecanica_fin' => 'fecha fin de la tecnomecánica',
+            'soat_archivo' => 'documento del SOAT',
+            'tecnomecanica_archivo' => 'documento de la tecnomecánica',
+            'tarjeta_propiedad_archivo' => 'tarjeta de propiedad',
+            'inspeccion_sanitaria' => 'inspección sanitaria',
+            'inspeccion_sanitaria_fin' => 'fecha de vencimiento de la inspección sanitaria',
+            'inspeccion_sanitaria_archivo' => 'documento de la inspección sanitaria',
             'empresa_id' => 'empresa',
         ];
     }
@@ -45,6 +56,7 @@ class StoreVehiculoRequest extends FormRequest
         $this->merge([
             'placa' => is_string($placa) ? strtoupper(preg_replace('/\s+/', '', trim($placa))) : $placa,
             'empresa_id' => $this->filled('empresa_id') ? (int) $this->input('empresa_id') : null,
+            'inspeccion_sanitaria' => $this->boolean('inspeccion_sanitaria'),
         ]);
     }
 }

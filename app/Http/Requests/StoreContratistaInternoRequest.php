@@ -3,8 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\ValidatesContratistaCamposAdicionales;
-use Illuminate\Foundation\Http\FormRequest;
 use App\Support\TiposDocumento;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
@@ -35,6 +35,8 @@ class StoreContratistaInternoRequest extends FormRequest
             ],
             'empresa_id' => ['required', 'integer', 'exists:empresas,id'],
             'arl' => ['required', 'string', 'max:120'],
+            'fecha_ultima_ir' => ['required', 'date'],
+            'vigencia_dias' => ['required', 'integer', 'min:1', 'max:3650'],
         ], $this->camposAdicionalesRules());
     }
 
@@ -49,6 +51,8 @@ class StoreContratistaInternoRequest extends FormRequest
             'numero_documento' => 'documento',
             'empresa_id' => 'empresa',
             'arl' => 'ARL',
+            'fecha_ultima_ir' => 'fecha de última inducción/reinducción',
+            'vigencia_dias' => 'vigencia',
         ], $this->camposAdicionalesAttributes());
     }
 

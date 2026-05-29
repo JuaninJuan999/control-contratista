@@ -37,5 +37,26 @@
                 fila.classList.toggle('bg-emerald-50', !abierto);
             });
         });
+
+        (function abrirDesdeUrl() {
+            var params = new URLSearchParams(window.location.search);
+            var abrir = params.get('abrir');
+            if (!abrir) return;
+
+            setTimeout(function () {
+                var fila = document.querySelector('[data-contratista-toggle="' + abrir + '"]');
+                if (!fila) return;
+
+                if (fila.getAttribute('aria-expanded') !== 'true') {
+                    fila.click();
+                }
+
+                setTimeout(function () {
+                    if (window.resaltarFilaBusqueda) {
+                        window.resaltarFilaBusqueda(fila);
+                    }
+                }, 80);
+            }, 120);
+        })();
     })();
 </script>

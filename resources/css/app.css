@@ -10,3 +10,120 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
     --font-display: 'Playfair Display', ui-serif, Georgia, 'Times New Roman', serif;
 }
+
+.app-bg::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.38);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.app-bg > header {
+    position: relative;
+    z-index: 50;
+}
+
+.app-bg > main {
+    position: relative;
+    z-index: 1;
+}
+
+@layer components {
+    .busqueda-resaltado {
+        @apply bg-emerald-50 ring-2 ring-inset ring-emerald-400;
+    }
+
+    .dash-stat-card {
+        @apply rounded-xl border p-4 shadow-md transition-all duration-300 ease-out;
+        animation: dash-fade-in-up 0.55s ease-out both;
+    }
+
+    .dash-stat-card:hover {
+        @apply -translate-y-1 shadow-xl;
+    }
+
+    .dash-stat-card--empresas {
+        @apply border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-emerald-50/95 to-teal-100/70;
+    }
+
+    .dash-stat-card--externos {
+        @apply border-sky-200/90 bg-gradient-to-br from-sky-50 via-sky-50/95 to-cyan-100/70;
+    }
+
+    .dash-stat-card--internos {
+        @apply border-violet-200/90 bg-gradient-to-br from-violet-50 via-violet-50/95 to-purple-100/70;
+    }
+
+    .dash-stat-card--vehiculos {
+        @apply border-amber-200/90 bg-gradient-to-br from-amber-50 via-amber-50/95 to-orange-100/70;
+    }
+
+    .dash-alert-section {
+        @apply rounded-xl border p-4 shadow-md md:p-5;
+        animation: dash-fade-in-up 0.6s ease-out both;
+    }
+
+    .dash-alert-section--vencida {
+        @apply border-red-200/80 bg-gradient-to-br from-red-50/95 via-rose-50/90 to-red-100/60;
+    }
+
+    .dash-alert-section--proxima {
+        @apply border-amber-200/80 bg-gradient-to-br from-amber-50/95 via-orange-50/90 to-yellow-100/60;
+    }
+
+    .dash-alert-card {
+        @apply flex flex-col items-center justify-center gap-1 rounded-lg border px-2 py-3 text-center transition-all duration-300 ease-out;
+        animation: dash-fade-in-up 0.5s ease-out both;
+    }
+
+    .dash-alert-card:not(:disabled):hover {
+        @apply -translate-y-0.5 shadow-md;
+    }
+
+    .dash-alert-card--vencida {
+        @apply border-red-200/70 bg-red-50/80;
+    }
+
+    .dash-alert-card--vencida:not(:disabled):hover {
+        @apply border-red-300 bg-red-100/90;
+    }
+
+    .dash-alert-card--proxima {
+        @apply border-amber-200/70 bg-amber-50/80;
+    }
+
+    .dash-alert-card--proxima:not(:disabled):hover {
+        @apply border-amber-300 bg-amber-100/90;
+    }
+
+    .dash-alert-card--inactiva {
+        @apply border-zinc-200/70 bg-zinc-100/50 opacity-60;
+    }
+}
+
+@keyframes dash-fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dash-stat-card,
+    .dash-alert-section,
+    .dash-alert-card {
+        animation: none;
+    }
+
+    .dash-stat-card:hover,
+    .dash-alert-card:not(:disabled):hover {
+        transform: none;
+    }
+}

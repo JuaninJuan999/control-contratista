@@ -27,6 +27,8 @@ class UpdateEmpresaRequest extends EmpresaRequest
                 'max:32',
                 Rule::unique('empresas', 'nit')->ignore($empresa instanceof Empresa ? $empresa->id : $empresa),
             ],
+            'personas_vigentes' => ['nullable', 'array'],
+            'personas_vigentes.*' => ['string', 'max:32'],
         ], $this->empresaFieldRules());
     }
 

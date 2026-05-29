@@ -29,6 +29,66 @@
             </div>
         @endif
 
+        <div id="filtros-empresas" class="mb-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+            <p class="mb-3 text-xs text-zinc-600">Filtre la tabla sin recargar la página. Pulse <strong>Filtrar</strong> o <strong>Enter</strong>.</p>
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
+                <div class="sm:col-span-2 lg:col-span-1 xl:col-span-2">
+                    <label for="filtro-nombre" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Nombre</label>
+                    <input
+                        type="text"
+                        id="filtro-nombre"
+                        placeholder="Ej. TRANSCARNES"
+                        autocomplete="off"
+                        class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                    >
+                </div>
+                <div>
+                    <label for="filtro-nit" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">NIT</label>
+                    <input
+                        type="text"
+                        id="filtro-nit"
+                        placeholder="NIT…"
+                        autocomplete="off"
+                        class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                    >
+                </div>
+                <div>
+                    <label for="filtro-estado" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Estado</label>
+                    <select
+                        id="filtro-estado"
+                        class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                    >
+                        <option value="">Todos</option>
+                        <option value="VIGENTE">Vigente</option>
+                        <option value="PRÓXIMA A VENCER">Próxima a vencer</option>
+                        <option value="VENCIDA">Vencida</option>
+                        <option value="SIN FECHA">Sin fecha límite</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="filtro-planilla" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Planilla</label>
+                    <select
+                        id="filtro-planilla"
+                        class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                    >
+                        <option value="">Todas</option>
+                        @foreach ($planillas as $planilla)
+                            <option value="{{ $planilla }}">{{ $planilla }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="flex items-end gap-2 sm:col-span-2 lg:col-span-1">
+                    <button type="button" id="btn-filtrar-empresas" class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-800">
+                        Filtrar
+                    </button>
+                    <button type="button" id="btn-limpiar-empresas" class="hidden rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                        Limpiar
+                    </button>
+                </div>
+            </div>
+            <p id="filtro-empresas-resumen" class="mt-3 hidden text-xs font-medium text-emerald-800"></p>
+        </div>
+
         <p class="mb-4 text-xs text-zinc-600 md:text-sm">Haz clic en una empresa para ver <strong>Contratistas</strong> y <strong>Vehículos</strong>. Luego expande cada sección y el registro que quieras consultar.</p>
 
         <div class="overflow-x-auto rounded-lg border border-zinc-200">
@@ -41,6 +101,7 @@
                     <th class="px-3 py-3">Teléfono</th>
                     <th class="px-3 py-3">Correos</th>
                     <th class="px-3 py-3">Límite</th>
+                    <th class="px-3 py-3">Estado</th>
                     <th class="px-3 py-3">Planilla</th>
                     @if (auth()->user()?->puedeEditar())
                     <th class="px-3 py-3 w-44 text-end">Acciones</th>
@@ -52,6 +113,10 @@
                     <tr
                         class="empresa-fila cursor-pointer bg-white hover:bg-emerald-50/60"
                         data-empresa-toggle="{{ $empresa->id }}"
+                        data-filtro-nombre="{{ mb_strtolower($empresa->nombre, 'UTF-8') }}"
+                        data-filtro-nit="{{ mb_strtolower($empresa->nit ?? '', 'UTF-8') }}"
+                        data-filtro-estado="{{ $empresa->estado_limite ?? 'SIN FECHA' }}"
+                        data-filtro-planilla="{{ mb_strtolower($empresa->planilla ?? '', 'UTF-8') }}"
                         aria-expanded="false"
                     >
                         <td class="px-2 py-2 text-zinc-500">
@@ -84,6 +149,19 @@
                             @endif
                         </td>
                         <td class="px-3 py-2 whitespace-nowrap text-zinc-800">{{ $empresa->limite?->format('d/m/Y') ?? '—' }}</td>
+                        <td class="px-3 py-2 whitespace-nowrap">
+                            @php $estadoLimite = $empresa->estado_limite; @endphp
+                            @if ($estadoLimite === null)
+                                <span class="text-zinc-400">—</span>
+                            @elseif ($estadoLimite === 'VIGENTE')
+                                <span class="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-800">Vigente</span>
+                            @elseif ($estadoLimite === 'PRÓXIMA A VENCER')
+                                <span class="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800">Próxima a vencer</span>
+                            @else
+                                @php $diasVencida = abs($empresa->dias_para_limite); @endphp
+                                <span class="rounded bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-800">Vencida ({{ $diasVencida }} día{{ $diasVencida === 1 ? '' : 's' }})</span>
+                            @endif
+                        </td>
                         <td class="px-3 py-2 text-zinc-800">{{ $empresa->planilla ?? '—' }}</td>
                         @if (auth()->user()?->puedeEditar())
                         <td class="px-3 py-2 text-end" data-acciones>
@@ -103,7 +181,7 @@
                         @endif
                     </tr>
                     <tr class="empresa-detalle hidden bg-zinc-50/80" data-empresa-panel="{{ $empresa->id }}" hidden>
-                        <td colspan="{{ auth()->user()?->puedeEditar() ? 8 : 7 }}" class="px-4 py-3">
+                        <td colspan="{{ auth()->user()?->puedeEditar() ? 9 : 8 }}" class="px-4 py-3">
                             @php
                                 $totalContratistasEmpresa = $empresa->contratistasExternos->count() + $empresa->contratistasInternos->count();
                                 $categoriaContratistasId = 'empresa-'.$empresa->id.'-contratistas';
@@ -133,66 +211,10 @@
                                             @else
                                                 <div class="divide-y divide-zinc-200 border-t border-zinc-100 bg-white">
                                                     @foreach ($empresa->contratistasExternos as $contratista)
-                                                        <div class="item-grupo" data-item-grupo="externo-{{ $contratista->id }}">
-                                                            <button type="button" class="item-toggle flex w-full items-center gap-2 px-4 py-2.5 text-left hover:bg-zinc-50" data-item-toggle="externo-{{ $contratista->id }}" aria-expanded="false">
-                                                                <svg class="item-chevron size-4 shrink-0 text-zinc-500 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                                                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd" />
-                                                                </svg>
-                                                                <span class="font-medium text-zinc-900">{{ $contratista->nombres_apellidos }}</span>
-                                                                <span class="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-zinc-600">Externo</span>
-                                                                <span class="text-xs text-zinc-500">{{ $contratista->tipo_documento }} {{ $contratista->numero_documento }}</span>
-                                                                @if ($contratista->estado === 'VIGENTE')
-                                                                    <span class="ml-auto rounded px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700">Vigente</span>
-                                                                @else
-                                                                    <span class="ml-auto rounded px-2 py-0.5 text-[10px] font-bold uppercase text-red-700">Vencida</span>
-                                                                @endif
-                                                            </button>
-                                                            <div class="item-detalle hidden border-t border-zinc-100 bg-zinc-50/50 px-4 py-3" data-item-panel="externo-{{ $contratista->id }}" hidden>
-                                                                <dl class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                                                    <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Nombres y apellidos</dt><dd class="mt-0.5 font-medium text-zinc-900">{{ $contratista->nombres_apellidos }}</dd></div>
-                                                                    <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Tipo</dt><dd class="mt-0.5 text-zinc-900">Externo</dd></div>
-                                                                    <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Documento</dt><dd class="mt-0.5 text-zinc-900">{{ $contratista->tipo_documento }} {{ $contratista->numero_documento }}</dd></div>
-                                                                    <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Empresa</dt><dd class="mt-0.5 text-zinc-900">{{ $empresa->nombre }}</dd></div>
-                                                                    <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Fecha última I/R</dt><dd class="mt-0.5 text-zinc-900">{{ $contratista->fecha_ultima_ir->format('d/m/Y') }}</dd></div>
-                                                                    <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Vigencia</dt><dd class="mt-0.5 font-semibold text-zinc-900">{{ $contratista->vigencia_dias }} días</dd></div>
-                                                                    <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Vencimiento</dt><dd class="mt-0.5 text-zinc-900">{{ $contratista->fecha_vencimiento->format('d/m/Y') }}</dd></div>
-                                                                    <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Días faltantes</dt><dd class="mt-0.5 font-bold tabular-nums text-zinc-900">{{ $contratista->dias_faltantes }}</dd></div>
-                                                                    <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Estado</dt><dd class="mt-0.5"><span class="font-bold {{ $contratista->estado === 'VIGENTE' ? 'text-emerald-700' : 'text-red-700' }}">{{ $contratista->estado }}</span></dd></div>
-                                                                </dl>
-                                                                @include('contratistas._detalle_campos_adicionales', ['contratista' => $contratista])
-                                                            </div>
-                                                        </div>
+                                                        @include('empresas._contratista_item', ['contratista' => $contratista, 'tipo' => 'externo', 'empresa' => $empresa, 'anioActual' => $anioActual])
                                                     @endforeach
                                                     @foreach ($empresa->contratistasInternos as $contratista)
-                                                        <div class="item-grupo" data-item-grupo="interno-{{ $contratista->id }}">
-                                                            <button type="button" class="item-toggle flex w-full items-center gap-2 px-4 py-2.5 text-left hover:bg-zinc-50" data-item-toggle="interno-{{ $contratista->id }}" aria-expanded="false">
-                                                                <svg class="item-chevron size-4 shrink-0 text-zinc-500 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                                                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd" />
-                                                                </svg>
-                                                                <span class="font-medium text-zinc-900">{{ $contratista->nombres_apellidos }}</span>
-                                                                <span class="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-zinc-600">Interno</span>
-                                                                <span class="text-xs text-zinc-500">{{ $contratista->tipo_documento }} {{ $contratista->numero_documento }}</span>
-                                                                <span class="ml-auto text-xs font-medium text-zinc-600">ARL: {{ $contratista->arl }}</span>
-                                                            </button>
-                                                            <div class="item-detalle hidden border-t border-zinc-100 bg-zinc-50/50 px-4 py-3" data-item-panel="interno-{{ $contratista->id }}" hidden>
-                                                                <dl class="mb-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                                                    <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Nombres y apellidos</dt><dd class="mt-0.5 font-medium text-zinc-900">{{ $contratista->nombres_apellidos }}</dd></div>
-                                                                    <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Tipo</dt><dd class="mt-0.5 text-zinc-900">Interno</dd></div>
-                                                                    <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Documento</dt><dd class="mt-0.5 text-zinc-900">{{ $contratista->tipo_documento }} {{ $contratista->numero_documento }}</dd></div>
-                                                                    <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Empresa</dt><dd class="mt-0.5 text-zinc-900">{{ $empresa->nombre }}</dd></div>
-                                                                    <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">ARL</dt><dd class="mt-0.5 text-zinc-900">{{ $contratista->arl }}</dd></div>
-                                                                </dl>
-                                                                @include('contratistas._detalle_campos_adicionales', ['contratista' => $contratista])
-                                                                <p class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Control mensual {{ $anioActual }}</p>
-                                                                <div class="flex flex-wrap gap-1">
-                                                                    @foreach (\App\Models\ContratistaInterno::MESES as $mes => $abrev)
-                                                                        <span class="inline-flex h-7 min-w-7 items-center justify-center rounded text-[10px] font-bold {{ $contratista->mesRegistrado($anioActual, $mes) ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-100 text-zinc-400' }}" title="{{ $abrev }}">
-                                                                            {{ $contratista->mesRegistrado($anioActual, $mes) ? 'OK' : $abrev }}
-                                                                        </span>
-                                                                    @endforeach
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                        @include('empresas._contratista_item', ['contratista' => $contratista, 'tipo' => 'interno', 'empresa' => $empresa, 'anioActual' => $anioActual])
                                                     @endforeach
                                                 </div>
                                             @endif
@@ -233,6 +255,24 @@
                                                                     <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Empresa</dt><dd class="mt-0.5 text-zinc-900">{{ $empresa->nombre }}</dd></div>
                                                                     <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">SOAT (fin)</dt><dd class="mt-0.5 text-zinc-900">{{ $vehiculo->soat_fin->format('d/m/Y') }} — <span class="font-bold {{ $vehiculo->soat_estado === 'VIGENTE' ? 'text-emerald-700' : 'text-red-700' }}">{{ $vehiculo->soat_estado }}</span></dd></div>
                                                                     <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Tecnomecánica (fin)</dt><dd class="mt-0.5 text-zinc-900">{{ $vehiculo->tecnomecanica_fin->format('d/m/Y') }} — <span class="font-bold {{ $vehiculo->tecnomecanica_estado === 'VIGENTE' ? 'text-emerald-700' : 'text-red-700' }}">{{ $vehiculo->tecnomecanica_estado }}</span></dd></div>
+                                                                    @foreach (\App\Models\Vehiculo::DOCUMENTOS as $campoDoc => $etiquetaDoc)
+                                                                        <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">{{ $etiquetaDoc }}</dt><dd class="mt-0.5 text-zinc-900">@if ($vehiculo->{$campoDoc})<a href="{{ \App\Services\VehiculoDocumentoStorage::urlPublica($vehiculo->{$campoDoc}) }}" target="_blank" rel="noopener noreferrer" class="font-medium text-emerald-700 underline hover:text-emerald-800">Ver</a>@else—@endif</dd></div>
+                                                                    @endforeach
+                                                                    <div>
+                                                                        <dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Inspección sanitaria</dt>
+                                                                        <dd class="mt-0.5 text-zinc-900">
+                                                                            @if ($vehiculo->inspeccion_sanitaria)
+                                                                                @if ($vehiculo->inspeccion_sanitaria_fin)
+                                                                                    {{ $vehiculo->inspeccion_sanitaria_fin->format('d/m/Y') }} —
+                                                                                    <span class="font-bold {{ $vehiculo->inspeccion_sanitaria_estado === 'VIGENTE' ? 'text-emerald-700' : 'text-red-700' }}">{{ $vehiculo->inspeccion_sanitaria_estado }}</span>
+                                                                                @else
+                                                                                    Sí
+                                                                                @endif
+                                                                            @else
+                                                                                No
+                                                                            @endif
+                                                                        </dd>
+                                                                    </div>
                                                                 </dl>
                                                             </div>
                                                         </div>
@@ -246,8 +286,8 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="{{ auth()->user()?->puedeEditar() ? 8 : 7 }}" class="px-3 py-8 text-center text-zinc-500">
+                    <tr id="tabla-empresas-vacia">
+                        <td colspan="{{ auth()->user()?->puedeEditar() ? 9 : 8 }}" class="px-3 py-8 text-center text-zinc-500">
                             No hay empresas registradas.
                             @if (auth()->user()?->puedeEditar())
                             <a href="{{ route('empresas.create') }}" class="font-medium text-emerald-700 underline hover:text-emerald-800">Crear una</a>
@@ -255,6 +295,11 @@
                         </td>
                     </tr>
                 @endforelse
+                <tr id="filtro-empresas-sin-resultados" class="hidden">
+                    <td colspan="{{ auth()->user()?->puedeEditar() ? 9 : 8 }}" class="px-3 py-8 text-center text-zinc-500">
+                        No hay empresas que coincidan con los filtros.
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -268,6 +313,125 @@
 
     <script>
         (function () {
+            function normalizar(texto) {
+                return (texto || '').toLowerCase().trim();
+            }
+
+            function hayFiltrosActivos() {
+                return normalizar(document.getElementById('filtro-nombre')?.value)
+                    || normalizar(document.getElementById('filtro-nit')?.value)
+                    || (document.getElementById('filtro-estado')?.value || '')
+                    || normalizar(document.getElementById('filtro-planilla')?.value);
+            }
+
+            function aplicarFiltrosEmpresas() {
+                var nombre = normalizar(document.getElementById('filtro-nombre')?.value);
+                var nit = normalizar(document.getElementById('filtro-nit')?.value);
+                var estado = document.getElementById('filtro-estado')?.value || '';
+                var planilla = normalizar(document.getElementById('filtro-planilla')?.value);
+                var visibles = 0;
+                var total = 0;
+
+                document.querySelectorAll('tr.empresa-fila').forEach(function (fila) {
+                    total++;
+                    var coincide = true;
+
+                    if (nombre && fila.getAttribute('data-filtro-nombre').indexOf(nombre) === -1) {
+                        coincide = false;
+                    }
+                    if (nit && fila.getAttribute('data-filtro-nit').indexOf(nit) === -1) {
+                        coincide = false;
+                    }
+                    if (estado && fila.getAttribute('data-filtro-estado') !== estado) {
+                        coincide = false;
+                    }
+                    if (planilla && fila.getAttribute('data-filtro-planilla') !== planilla) {
+                        coincide = false;
+                    }
+
+                    var id = fila.getAttribute('data-empresa-toggle');
+                    var detalle = document.querySelector('[data-empresa-panel="' + id + '"]');
+
+                    if (coincide) {
+                        fila.classList.remove('hidden');
+                        visibles++;
+                    } else {
+                        fila.classList.add('hidden');
+                        fila.classList.remove('bg-emerald-50');
+                        fila.setAttribute('aria-expanded', 'false');
+                        if (detalle) {
+                            detalle.classList.add('hidden');
+                            detalle.hidden = true;
+                        }
+                    }
+                });
+
+                var sinResultados = document.getElementById('filtro-empresas-sin-resultados');
+                var resumen = document.getElementById('filtro-empresas-resumen');
+                var btnLimpiar = document.getElementById('btn-limpiar-empresas');
+                var hayFiltros = hayFiltrosActivos();
+
+                if (sinResultados) {
+                    sinResultados.classList.toggle('hidden', visibles > 0 || !hayFiltros);
+                }
+
+                if (resumen) {
+                    if (hayFiltros) {
+                        resumen.textContent = 'Mostrando ' + visibles + ' de ' + total + ' empresa' + (total === 1 ? '' : 's') + ' en esta página.';
+                        resumen.classList.remove('hidden');
+                    } else {
+                        resumen.classList.add('hidden');
+                        resumen.textContent = '';
+                    }
+                }
+
+                if (btnLimpiar) {
+                    btnLimpiar.classList.toggle('hidden', !hayFiltros);
+                }
+            }
+
+            function limpiarFiltrosEmpresas() {
+                var nombre = document.getElementById('filtro-nombre');
+                var nit = document.getElementById('filtro-nit');
+                var estado = document.getElementById('filtro-estado');
+                var planilla = document.getElementById('filtro-planilla');
+
+                if (nombre) nombre.value = '';
+                if (nit) nit.value = '';
+                if (estado) estado.value = '';
+                if (planilla) planilla.value = '';
+
+                aplicarFiltrosEmpresas();
+            }
+
+            var btnFiltrar = document.getElementById('btn-filtrar-empresas');
+            var btnLimpiar = document.getElementById('btn-limpiar-empresas');
+
+            if (btnFiltrar) {
+                btnFiltrar.addEventListener('click', aplicarFiltrosEmpresas);
+            }
+
+            if (btnLimpiar) {
+                btnLimpiar.addEventListener('click', limpiarFiltrosEmpresas);
+            }
+
+            ['filtro-nombre', 'filtro-nit'].forEach(function (id) {
+                var campo = document.getElementById(id);
+                if (!campo) return;
+                campo.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        aplicarFiltrosEmpresas();
+                    }
+                });
+            });
+
+            ['filtro-estado', 'filtro-planilla'].forEach(function (id) {
+                var campo = document.getElementById(id);
+                if (!campo) return;
+                campo.addEventListener('change', aplicarFiltrosEmpresas);
+            });
+
             function togglePanel(panel, trigger, chevron, expanded) {
                 if (!panel || !trigger) return;
                 panel.hidden = !expanded;
@@ -356,6 +520,73 @@
                     togglePanel(panel, boton, chevron, !abierto);
                 });
             });
+
+            (function abrirDesdeUrl() {
+                var params = new URLSearchParams(window.location.search);
+                var abrir = params.get('abrir');
+                if (!abrir || !abrir.startsWith('empresa-')) return;
+
+                var empId = abrir.replace('empresa-', '');
+                var categoria = params.get('categoria');
+                var item = params.get('item');
+
+                function expandEmpresa() {
+                    var fila = document.querySelector('[data-empresa-toggle="' + empId + '"]');
+                    if (fila && fila.getAttribute('aria-expanded') !== 'true') fila.click();
+                    return fila;
+                }
+
+                function expandCategoria(catId) {
+                    var btn = document.querySelector('[data-categoria-toggle="' + catId + '"]');
+                    if (btn && btn.getAttribute('aria-expanded') !== 'true') btn.click();
+                }
+
+                function expandItem(itemId) {
+                    var btn = document.querySelector('[data-item-toggle="' + itemId + '"]');
+                    if (btn && btn.getAttribute('aria-expanded') !== 'true') btn.click();
+                    return btn;
+                }
+
+                function resaltarDestino(fila, itemId) {
+                    var destino = fila;
+
+                    if (itemId) {
+                        var grupo = document.querySelector('[data-item-grupo="' + itemId + '"]');
+                        if (grupo) {
+                            destino = grupo;
+                        }
+                    }
+
+                    if (window.resaltarFilaBusqueda) {
+                        window.resaltarFilaBusqueda(destino);
+                    } else if (destino) {
+                        destino.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+
+                setTimeout(function () {
+                    var fila = expandEmpresa();
+                    if (categoria === 'contratistas' && item) {
+                        setTimeout(function () {
+                            expandCategoria('empresa-' + empId + '-contratistas');
+                            setTimeout(function () {
+                                expandItem(item);
+                                resaltarDestino(fila, item);
+                            }, 80);
+                        }, 80);
+                    } else if (categoria === 'vehiculos' && item) {
+                        setTimeout(function () {
+                            expandCategoria('empresa-' + empId + '-vehiculos');
+                            setTimeout(function () {
+                                expandItem(item);
+                                resaltarDestino(fila, item);
+                            }, 80);
+                        }, 80);
+                    } else {
+                        resaltarDestino(fila);
+                    }
+                }, 150);
+            })();
         })();
     </script>
 @endsection

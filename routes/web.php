@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\BusquedaGlobalController;
 use App\Http\Controllers\ContratistaExternoController;
 use App\Http\Controllers\ContratistaInternoController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehiculoController;
@@ -22,13 +24,15 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware(['auth', 'restrict.consulta'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/buscar', [BusquedaGlobalController::class, 'index'])->name('busqueda.global');
+    Route::get('/buscar/sugerencias', [BusquedaGlobalController::class, 'sugerencias'])->name('busqueda.sugerencias');
     Route::resource('empresas', EmpresaController::class)->except(['show']);
     Route::resource('contratistas-externos', ContratistaExternoController::class)->except(['show', 'destroy']);
     Route::patch('contratistas-externos/{contratistas_externo}/activo', [ContratistaExternoController::class, 'toggleActivo'])
         ->name('contratistas-externos.toggle-activo');
+    Route::patch('contratistas-externos/{contratistaExterno}/mes', [ContratistaExternoController::class, 'toggleMes'])
+        ->name('contratistas-externos.toggle-mes');
     Route::resource('contratistas-internos', ContratistaInternoController::class)->except(['show', 'destroy']);
     Route::patch('contratistas-internos/{contratistas_interno}/activo', [ContratistaInternoController::class, 'toggleActivo'])
         ->name('contratistas-internos.toggle-activo');

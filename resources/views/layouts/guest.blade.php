@@ -9,7 +9,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body
-    class="min-h-screen bg-zinc-900 bg-fixed bg-contain bg-center bg-no-repeat text-zinc-900 antialiased"
+    class="app-bg min-h-screen bg-zinc-900 bg-fixed bg-contain bg-center bg-no-repeat text-zinc-900 antialiased"
     style="background-image: url('{{ asset('image/fond.jpg') }}');"
 >
     @yield('content')

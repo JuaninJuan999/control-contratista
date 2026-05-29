@@ -80,22 +80,9 @@
             if (!bloque) return;
             var campo = bloque.querySelector('.persona-tipo-campo');
             var etiqueta = bloque.querySelector('.persona-tipo-etiqueta');
-            var esInterno = valor === 'interno';
             if (campo) campo.value = valor;
             if (etiqueta) etiqueta.textContent = etiquetaTipo(valor);
             bloque.setAttribute('data-persona-tipo', valor);
-            bloque.querySelectorAll('.persona-campos-externo').forEach(function (el) {
-                el.classList.toggle('hidden', esInterno);
-            });
-            bloque.querySelectorAll('.persona-campos-interno').forEach(function (el) {
-                el.classList.toggle('hidden', !esInterno);
-            });
-            bloque.querySelectorAll('.persona-campo-externo').forEach(function (el) {
-                el.disabled = esInterno;
-            });
-            bloque.querySelectorAll('.persona-campo-interno').forEach(function (el) {
-                el.disabled = !esInterno;
-            });
         }
 
         function tipoSeleccionado() {

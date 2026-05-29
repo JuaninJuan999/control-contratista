@@ -39,6 +39,12 @@ class StoreEmpresaRequest extends EmpresaRequest
             'vehiculos.*.placa' => ['required', 'string', 'max:16'],
             'vehiculos.*.soat_fin' => ['required', 'date'],
             'vehiculos.*.tecnomecanica_fin' => ['required', 'date'],
+            'vehiculos.*.soat_archivo' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'vehiculos.*.tecnomecanica_archivo' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'vehiculos.*.tarjeta_propiedad_archivo' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'vehiculos.*.inspeccion_sanitaria' => ['nullable', 'boolean'],
+            'vehiculos.*.inspeccion_sanitaria_fin' => ['nullable', 'date'],
+            'vehiculos.*.inspeccion_sanitaria_archivo' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ], $this->camposAdicionalesRules('personas.*'), $this->empresaFieldRules());
     }
 
@@ -78,6 +84,12 @@ class StoreEmpresaRequest extends EmpresaRequest
                 $attrs["vehiculos.{$index}.placa"] = "vehículo {$num} — placa";
                 $attrs["vehiculos.{$index}.soat_fin"] = "vehículo {$num} — fecha fin del SOAT";
                 $attrs["vehiculos.{$index}.tecnomecanica_fin"] = "vehículo {$num} — fecha fin de la tecnomecánica";
+                $attrs["vehiculos.{$index}.soat_archivo"] = "vehículo {$num} — documento del SOAT";
+                $attrs["vehiculos.{$index}.tecnomecanica_archivo"] = "vehículo {$num} — documento de la tecnomecánica";
+                $attrs["vehiculos.{$index}.tarjeta_propiedad_archivo"] = "vehículo {$num} — tarjeta de propiedad";
+                $attrs["vehiculos.{$index}.inspeccion_sanitaria"] = "vehículo {$num} — inspección sanitaria";
+                $attrs["vehiculos.{$index}.inspeccion_sanitaria_fin"] = "vehículo {$num} — fecha de vencimiento de la inspección sanitaria";
+                $attrs["vehiculos.{$index}.inspeccion_sanitaria_archivo"] = "vehículo {$num} — documento de la inspección sanitaria";
             }
         }
 
@@ -93,20 +105,54 @@ class StoreEmpresaRequest extends EmpresaRequest
                 $vistosInternos = [];
 
                 foreach ($personas as $index => $persona) {
-                if (! is_array($persona)) {
-                    continue;
-                }
+                    if (! is_array($persona)) {
+                        continue;
+                    }
 
-                $tipoContratista = ($persona['tipo_contratista'] ?? 'externo') === 'interno' ? 'interno' : 'externo';
-                $tipo = $persona['tipo_documento'] ?? '';
-                $numero = $persona['numero_documento'] ?? '';
+                    $tipoContratista = ($persona['tipo_contratista'] ?? 'externo') === 'interno' ? 'interno' : 'externo';
+                    $tipo = $persona['tipo_documento'] ?? '';
+                    $numero = $persona['numero_documento'] ?? '';
 
-                if ($tipoContratista === 'externo') {
                     if (empty($persona['fecha_ultima_ir'])) {
                         $validator->errors()->add(
                             "personas.{$index}.fecha_ultima_ir",
-                            'La fecha de última I/R es obligatoria para contratistas externos.'
+                            'La fecha de última I/R es obligatoria.'
                         );
+                    }
+
+                    $arlPersona = is_string($persona['arl'] ?? null) ? trim($persona['arl']) : '';
+                    if ($arlPersona === '') {
+                        $validator->errors()->add(
+                            "personas.{$index}.arl",
+                            'La ARL es obligatoria.'
+                        );
+                    }
+
+                    if ($tipoContratista === 'externo') {
+                        $this->validarCamposAdicionalesEnValidator($validator, "personas.{$index}");
+
+                        if ($tipo === '' || $numero === '') {
+                            continue;
+                        }
+
+                        $clave = 'externo|'.$tipo.'|'.$numero;
+                        if (isset($vistosExternos[$clave])) {
+                            $validator->errors()->add(
+                                "personas.{$index}.numero_documento",
+                                'Este documento está repetido en la lista de personas.'
+                            );
+                        } else {
+                            $vistosExternos[$clave] = true;
+                        }
+
+                        if (ContratistaExterno::query()->where('tipo_documento', $tipo)->where('numero_documento', $numero)->exists()) {
+                            $validator->errors()->add(
+                                "personas.{$index}.numero_documento",
+                                'Ya existe un contratista externo con este tipo y número de documento.'
+                            );
+                        }
+
+                        continue;
                     }
 
                     $this->validarCamposAdicionalesEnValidator($validator, "personas.{$index}");
@@ -115,56 +161,22 @@ class StoreEmpresaRequest extends EmpresaRequest
                         continue;
                     }
 
-                    $clave = 'externo|'.$tipo.'|'.$numero;
-                    if (isset($vistosExternos[$clave])) {
+                    $clave = 'interno|'.$tipo.'|'.$numero;
+                    if (isset($vistosInternos[$clave])) {
                         $validator->errors()->add(
                             "personas.{$index}.numero_documento",
                             'Este documento está repetido en la lista de personas.'
                         );
                     } else {
-                        $vistosExternos[$clave] = true;
+                        $vistosInternos[$clave] = true;
                     }
 
-                    if (ContratistaExterno::query()->where('tipo_documento', $tipo)->where('numero_documento', $numero)->exists()) {
+                    if (ContratistaInterno::query()->where('tipo_documento', $tipo)->where('numero_documento', $numero)->exists()) {
                         $validator->errors()->add(
                             "personas.{$index}.numero_documento",
-                            'Ya existe un contratista externo con este tipo y número de documento.'
+                            'Ya existe un contratista interno con este tipo y número de documento.'
                         );
                     }
-
-                    continue;
-                }
-
-                $arl = is_string($persona['arl'] ?? null) ? trim($persona['arl']) : '';
-                if ($arl === '') {
-                    $validator->errors()->add(
-                        "personas.{$index}.arl",
-                        'La ARL es obligatoria para contratistas internos.'
-                    );
-                }
-
-                $this->validarCamposAdicionalesEnValidator($validator, "personas.{$index}");
-
-                if ($tipo === '' || $numero === '') {
-                    continue;
-                }
-
-                $clave = 'interno|'.$tipo.'|'.$numero;
-                if (isset($vistosInternos[$clave])) {
-                    $validator->errors()->add(
-                        "personas.{$index}.numero_documento",
-                        'Este documento está repetido en la lista de personas.'
-                    );
-                } else {
-                    $vistosInternos[$clave] = true;
-                }
-
-                if (ContratistaInterno::query()->where('tipo_documento', $tipo)->where('numero_documento', $numero)->exists()) {
-                    $validator->errors()->add(
-                        "personas.{$index}.numero_documento",
-                        'Ya existe un contratista interno con este tipo y número de documento.'
-                    );
-                }
                 }
             }
 
@@ -173,33 +185,33 @@ class StoreEmpresaRequest extends EmpresaRequest
                 $placasVistas = [];
 
                 foreach ($vehiculos as $index => $vehiculo) {
-                if (! is_array($vehiculo)) {
-                    continue;
-                }
+                    if (! is_array($vehiculo)) {
+                        continue;
+                    }
 
-                $placa = is_string($vehiculo['placa'] ?? null)
-                    ? strtoupper(preg_replace('/\s+/', '', trim($vehiculo['placa'])))
-                    : '';
+                    $placa = is_string($vehiculo['placa'] ?? null)
+                        ? strtoupper(preg_replace('/\s+/', '', trim($vehiculo['placa'])))
+                        : '';
 
-                if ($placa === '') {
-                    continue;
-                }
+                    if ($placa === '') {
+                        continue;
+                    }
 
-                if (isset($placasVistas[$placa])) {
-                    $validator->errors()->add(
-                        "vehiculos.{$index}.placa",
-                        'Esta placa está repetida en la lista de vehículos.'
-                    );
-                } else {
-                    $placasVistas[$placa] = true;
-                }
+                    if (isset($placasVistas[$placa])) {
+                        $validator->errors()->add(
+                            "vehiculos.{$index}.placa",
+                            'Esta placa está repetida en la lista de vehículos.'
+                        );
+                    } else {
+                        $placasVistas[$placa] = true;
+                    }
 
-                if (Vehiculo::query()->where('placa', $placa)->exists()) {
-                    $validator->errors()->add(
-                        "vehiculos.{$index}.placa",
-                        'Ya existe un vehículo registrado con esta placa.'
-                    );
-                }
+                    if (Vehiculo::query()->where('placa', $placa)->exists()) {
+                        $validator->errors()->add(
+                            "vehiculos.{$index}.placa",
+                            'Ya existe un vehículo registrado con esta placa.'
+                        );
+                    }
                 }
             }
         });
@@ -251,14 +263,10 @@ class StoreEmpresaRequest extends EmpresaRequest
                 'nombres_apellidos' => $nombres,
                 'tipo_documento' => $tipo !== '' ? $tipo : 'CC',
                 'numero_documento' => $numero,
+                'arl' => $arl,
+                'fecha_ultima_ir' => $fecha !== '' ? $fecha : null,
+                'vigencia_dias' => is_numeric($vigencia) ? (int) $vigencia : 365,
             ];
-
-            if ($tipoContratista === 'interno') {
-                $datos['arl'] = $arl;
-            } else {
-                $datos['fecha_ultima_ir'] = $fecha !== '' ? $fecha : null;
-                $datos['vigencia_dias'] = is_numeric($vigencia) ? (int) $vigencia : 365;
-            }
 
             foreach (['fecha_nacimiento', 'cargo', 'manipulador_vigencia', 'licencia_categoria', 'licencia_vencimiento'] as $campo) {
                 if (array_key_exists($campo, $persona)) {
@@ -304,10 +312,15 @@ class StoreEmpresaRequest extends EmpresaRequest
                 return null;
             }
 
+            $inspeccion = filter_var($vehiculo['inspeccion_sanitaria'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $inspeccionFin = $vehiculo['inspeccion_sanitaria_fin'] ?? '';
+
             return [
                 'placa' => $placa,
                 'soat_fin' => $soat !== '' ? $soat : null,
                 'tecnomecanica_fin' => $tecno !== '' ? $tecno : null,
+                'inspeccion_sanitaria' => $inspeccion,
+                'inspeccion_sanitaria_fin' => ($inspeccion && $inspeccionFin !== '') ? $inspeccionFin : null,
             ];
         }, $vehiculos)));
 

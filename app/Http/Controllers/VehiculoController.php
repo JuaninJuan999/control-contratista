@@ -6,8 +6,10 @@ use App\Http\Requests\StoreVehiculoRequest;
 use App\Http\Requests\UpdateVehiculoRequest;
 use App\Models\Empresa;
 use App\Models\Vehiculo;
+use App\Services\VehiculoDocumentoStorage;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class VehiculoController extends Controller
 {
@@ -30,7 +32,22 @@ class VehiculoController extends Controller
 
     public function store(StoreVehiculoRequest $request): RedirectResponse
     {
-        Vehiculo::query()->create($request->validated());
+        $campos = array_keys(Vehiculo::DOCUMENTOS);
+        $datos = collect($request->validated())->except($campos)->all();
+
+        if (! ($datos['inspeccion_sanitaria'] ?? false)) {
+            $datos['inspeccion_sanitaria_fin'] = null;
+        }
+
+        $vehiculo = Vehiculo::query()->create($datos);
+
+        $rutas = $this->guardarDocumentos($request, $vehiculo);
+        if (! $vehiculo->inspeccion_sanitaria) {
+            unset($rutas['inspeccion_sanitaria_archivo']);
+        }
+        if ($rutas !== []) {
+            $vehiculo->update($rutas);
+        }
 
         return redirect()
             ->route('vehiculos.index')
@@ -46,10 +63,38 @@ class VehiculoController extends Controller
 
     public function update(UpdateVehiculoRequest $request, Vehiculo $vehiculo): RedirectResponse
     {
-        $vehiculo->update($request->validated());
+        $campos = array_keys(Vehiculo::DOCUMENTOS);
+        $datos = collect($request->validated())->except($campos)->all();
+
+        $datos = array_merge($datos, $this->guardarDocumentos($request, $vehiculo));
+
+        if (! ($datos['inspeccion_sanitaria'] ?? false)) {
+            $datos['inspeccion_sanitaria_fin'] = null;
+            $datos['inspeccion_sanitaria_archivo'] = null;
+        }
+
+        $vehiculo->update($datos);
 
         return redirect()
             ->route('vehiculos.index')
             ->with('success', 'Vehículo actualizado correctamente.');
+    }
+
+    /**
+     * Guarda los archivos enviados y devuelve el mapa campo => ruta.
+     *
+     * @return array<string, string>
+     */
+    private function guardarDocumentos(Request $request, Vehiculo $vehiculo): array
+    {
+        $rutas = [];
+
+        foreach (array_keys(Vehiculo::DOCUMENTOS) as $campo) {
+            if ($request->hasFile($campo)) {
+                $rutas[$campo] = VehiculoDocumentoStorage::guardar($vehiculo->id, $request->file($campo));
+            }
+        }
+
+        return $rutas;
     }
 }

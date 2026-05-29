@@ -20,12 +20,13 @@ trait ValidatesContratistaCamposAdicionales
             "{$p}cargo" => ['nullable', 'string', 'max:255'],
             "{$p}manipulador_alimentos" => ['required', 'boolean'],
             "{$p}manipulador_vigencia" => ['nullable', 'date'],
+            "{$p}manipulador_archivo" => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             "{$p}licencia_conduccion" => ['required', 'boolean'],
             "{$p}licencia_archivo" => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            "{$p}licencia_categoria" => ['nullable', 'string', Rule::in(array_keys(LicenciaConduccionCategorias::OPCIONES))],
+            "{$p}licencia_categoria" => ['nullable', 'array'],
+            "{$p}licencia_categoria.*" => ['string', Rule::in(array_keys(LicenciaConduccionCategorias::OPCIONES))],
             "{$p}licencia_vencimiento" => ['nullable', 'date'],
-            "{$p}licencia_vencimiento_archivo" => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            "{$p}tarjeta_propiedad_archivo" => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            "{$p}cedula_archivo" => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ];
     }
 
@@ -42,12 +43,13 @@ trait ValidatesContratistaCamposAdicionales
             "{$p}cargo" => $pref.'cargo',
             "{$p}manipulador_alimentos" => $pref.'manipulador de alimentos',
             "{$p}manipulador_vigencia" => $pref.'vigencia del manipulador de alimentos',
+            "{$p}manipulador_archivo" => $pref.'documento del manipulador de alimentos',
             "{$p}licencia_conduccion" => $pref.'licencia de conducción',
             "{$p}licencia_archivo" => $pref.'archivo de licencia de conducción',
             "{$p}licencia_categoria" => $pref.'categoría de licencia',
+            "{$p}licencia_categoria.*" => $pref.'categoría de licencia',
             "{$p}licencia_vencimiento" => $pref.'fecha de vencimiento de licencia',
-            "{$p}licencia_vencimiento_archivo" => $pref.'archivo de vencimiento de licencia',
-            "{$p}tarjeta_propiedad_archivo" => $pref.'tarjeta de propiedad',
+            "{$p}cedula_archivo" => $pref.'cédula de la persona',
         ];
     }
 
@@ -66,6 +68,15 @@ trait ValidatesContratistaCamposAdicionales
             $datos['cargo'] = trim($datos['cargo']) === '' ? null : trim($datos['cargo']);
         }
 
+        if (array_key_exists('licencia_categoria', $datos)) {
+            $categorias = $datos['licencia_categoria'];
+            if (! is_array($categorias)) {
+                $categorias = ($categorias === '' || $categorias === null) ? [] : [$categorias];
+            }
+            $categorias = array_values(array_unique(array_filter($categorias, fn ($v) => is_string($v) && $v !== '')));
+            $datos['licencia_categoria'] = $categorias === [] ? null : $categorias;
+        }
+
         if (($datos['manipulador_alimentos'] ?? false) === false) {
             $datos['manipulador_vigencia'] = null;
         }
@@ -82,10 +93,21 @@ trait ValidatesContratistaCamposAdicionales
             $manipulador = (bool) $this->input($prefix === '' ? 'manipulador_alimentos' : "{$prefix}.manipulador_alimentos");
             $licencia = (bool) $this->input($prefix === '' ? 'licencia_conduccion' : "{$prefix}.licencia_conduccion");
 
-            if ($manipulador && ! $this->filled($prefix === '' ? 'manipulador_vigencia' : "{$prefix}.manipulador_vigencia")) {
+            $campoManipulador = fn (string $name) => $prefix === '' ? $name : "{$prefix}.{$name}";
+
+            if ($manipulador && ! $this->filled($campoManipulador('manipulador_vigencia'))) {
                 $validator->errors()->add(
-                    $prefix === '' ? 'manipulador_vigencia' : "{$prefix}.manipulador_vigencia",
+                    $campoManipulador('manipulador_vigencia'),
                     'La vigencia del manipulador de alimentos es obligatoria cuando responde Sí.'
+                );
+            }
+
+            if ($manipulador
+                && ! $this->hasFile($campoManipulador('manipulador_archivo'))
+                && empty($contratistaExistente?->manipulador_archivo)) {
+                $validator->errors()->add(
+                    $campoManipulador('manipulador_archivo'),
+                    'Debe adjuntar el documento del manipulador de alimentos cuando responde Sí.'
                 );
             }
 
@@ -107,8 +129,8 @@ trait ValidatesContratistaCamposAdicionales
                 $validator->errors()->add($campo('licencia_archivo'), 'Debe adjuntar el documento de la licencia de conducción.');
             }
 
-            if (! $this->hasFile($campo('licencia_vencimiento_archivo')) && empty($contratistaExistente?->licencia_vencimiento_archivo)) {
-                $validator->errors()->add($campo('licencia_vencimiento_archivo'), 'Debe adjuntar el documento de vencimiento de la licencia.');
+            if (! $this->hasFile($campo('cedula_archivo')) && empty($contratistaExistente?->cedula_archivo)) {
+                $validator->errors()->add($campo('cedula_archivo'), 'Debe adjuntar la cédula de la persona.');
             }
         });
     }
@@ -135,9 +157,9 @@ trait ValidatesContratistaCamposAdicionales
     protected function archivosAdicionalesMap(): array
     {
         return [
+            'manipulador_archivo' => 'manipulador_archivo',
             'licencia_archivo' => 'licencia_archivo',
-            'licencia_vencimiento_archivo' => 'licencia_vencimiento_archivo',
-            'tarjeta_propiedad_archivo' => 'tarjeta_propiedad_archivo',
+            'cedula_archivo' => 'cedula_archivo',
         ];
     }
 }

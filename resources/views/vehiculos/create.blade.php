@@ -29,7 +29,7 @@
             </div>
         @endif
 
-        <form action="{{ route('vehiculos.store') }}" method="post" class="flex flex-col gap-3">
+        <form action="{{ route('vehiculos.store') }}" method="post" enctype="multipart/form-data" class="flex flex-col gap-3">
             @csrf
 
             <div class="grid grid-cols-1 gap-3 md:grid-cols-12 md:gap-x-3 md:gap-y-3">
@@ -82,7 +82,63 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="md:col-span-12 mt-1 border-t border-zinc-200 pt-3">
+                    <p class="text-xs font-bold uppercase tracking-wide text-emerald-800">Documentos del vehículo</p>
+                    <p class="mt-0.5 text-[11px] leading-tight text-zinc-500">Opcionales. PDF o imagen (máx. 5 MB cada uno).</p>
+                </div>
+                @foreach (\App\Models\Vehiculo::DOCUMENTOS as $campo => $etiqueta)
+                    @continue($campo === 'inspeccion_sanitaria_archivo')
+                    <div class="md:col-span-6">
+                        <label for="{{ $campo }}" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Adjuntar {{ $etiqueta }}</label>
+                        <input
+                            type="file"
+                            name="{{ $campo }}"
+                            id="{{ $campo }}"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            class="mt-0.5 w-full rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 file:mr-2 file:rounded file:border-0 file:bg-emerald-50 file:px-2 file:py-1 file:text-xs file:font-semibold file:text-emerald-900"
+                        >
+                    </div>
+                @endforeach
+
+                @php $inspeccionSi = (bool) old('inspeccion_sanitaria'); @endphp
+                <div class="md:col-span-12" data-inspeccion-root>
+                    <div class="grid grid-cols-1 gap-3 md:grid-cols-12 md:gap-x-3 md:gap-y-3">
+                        <div class="md:col-span-4">
+                            <label for="inspeccion_sanitaria" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Inspección Sanitaria</label>
+                            <select
+                                name="inspeccion_sanitaria"
+                                id="inspeccion_sanitaria"
+                                class="js-inspeccion-select mt-0.5 w-full rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                            >
+                                <option value="0" @selected(! $inspeccionSi)>No</option>
+                                <option value="1" @selected($inspeccionSi)>Sí</option>
+                            </select>
+                        </div>
+                        <div class="js-inspeccion-campos md:col-span-4 {{ $inspeccionSi ? '' : 'hidden' }}">
+                            <label for="inspeccion_sanitaria_fin" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Fecha de vencimiento</label>
+                            <input
+                                type="date"
+                                name="inspeccion_sanitaria_fin"
+                                id="inspeccion_sanitaria_fin"
+                                value="{{ old('inspeccion_sanitaria_fin') }}"
+                                class="mt-0.5 w-full rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                            >
+                        </div>
+                        <div class="js-inspeccion-campos md:col-span-4 {{ $inspeccionSi ? '' : 'hidden' }}">
+                            <label for="inspeccion_sanitaria_archivo" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Adjuntar Inspección sanitaria</label>
+                            <input
+                                type="file"
+                                name="inspeccion_sanitaria_archivo"
+                                id="inspeccion_sanitaria_archivo"
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                class="mt-0.5 w-full rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 file:mr-2 file:rounded file:border-0 file:bg-emerald-50 file:px-2 file:py-1 file:text-xs file:font-semibold file:text-emerald-900"
+                            >
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            @include('vehiculos._inspeccion_toggle_script')
 
             <button
                 type="submit"

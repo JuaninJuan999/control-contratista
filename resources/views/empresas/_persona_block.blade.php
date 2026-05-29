@@ -70,29 +70,7 @@
             <p class="mt-0.5 text-[11px] leading-tight text-zinc-500">Se asigna automáticamente a la empresa que estás creando.</p>
         </div>
 
-        <div class="persona-campos-externo md:col-span-4 {{ $esInterno ? 'hidden' : '' }}">
-            <label class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Fecha de última I/R</label>
-            <input
-                type="date"
-                name="personas[{{ $index }}][fecha_ultima_ir]"
-                value="{{ old("personas.{$index}.fecha_ultima_ir", $persona['fecha_ultima_ir'] ?? '') }}"
-                class="{{ $inputClass }} persona-campo-externo"
-            >
-        </div>
-        <div class="persona-campos-externo md:col-span-4 {{ $esInterno ? 'hidden' : '' }}">
-            <label class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Vigencia (días)</label>
-            <input
-                type="number"
-                name="personas[{{ $index }}][vigencia_dias]"
-                value="{{ old("personas.{$index}.vigencia_dias", $persona['vigencia_dias'] ?? 365) }}"
-                min="1"
-                max="3650"
-                class="{{ $inputClass }} persona-campo-externo"
-            >
-            <p class="mt-0.5 text-[11px] leading-tight text-zinc-500">Predeterminado: 365 días.</p>
-        </div>
-
-        <div class="persona-campos-interno md:col-span-8 {{ $esInterno ? '' : 'hidden' }}">
+        <div class="md:col-span-4">
             <label class="block text-xs font-semibold text-zinc-950 md:text-[13px]">ARL</label>
             <input
                 type="text"
@@ -100,9 +78,29 @@
                 value="{{ old("personas.{$index}.arl", $persona['arl'] ?? '') }}"
                 maxlength="120"
                 placeholder="Ej. SURA, Positiva, Colmena…"
-                class="{{ $inputClass }} persona-campo-interno"
+                class="{{ $inputClass }}"
             >
-            <p class="mt-0.5 text-[11px] leading-tight text-zinc-500">El control mensual (EN–DI) se marca en Contratistas internos.</p>
+        </div>
+        <div class="md:col-span-4">
+            <label class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Fecha de última I/R</label>
+            <input
+                type="date"
+                name="personas[{{ $index }}][fecha_ultima_ir]"
+                value="{{ old("personas.{$index}.fecha_ultima_ir", $persona['fecha_ultima_ir'] ?? '') }}"
+                class="{{ $inputClass }}"
+            >
+        </div>
+        <div class="md:col-span-4">
+            <label class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Vigencia (días)</label>
+            <input
+                type="number"
+                name="personas[{{ $index }}][vigencia_dias]"
+                value="{{ old("personas.{$index}.vigencia_dias", $persona['vigencia_dias'] ?? 365) }}"
+                min="1"
+                max="3650"
+                class="{{ $inputClass }}"
+            >
+            <p class="mt-0.5 text-[11px] leading-tight text-zinc-500">Predeterminado: 365 días. El control mensual (EN–DI) se marca en el listado.</p>
         </div>
 
         @include('contratistas._campos_adicionales', [

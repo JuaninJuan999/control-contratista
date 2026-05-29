@@ -44,6 +44,8 @@
     ])
 </template>
 
+@include('vehiculos._inspeccion_toggle_script')
+
 <script>
     (function () {
         var lista = document.getElementById('vehiculos-lista');

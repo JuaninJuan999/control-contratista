@@ -4,8 +4,8 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\ValidatesContratistaCamposAdicionales;
 use App\Models\ContratistaExterno;
-use Illuminate\Foundation\Http\FormRequest;
 use App\Support\TiposDocumento;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
@@ -38,6 +38,7 @@ class UpdateContratistaExternoRequest extends FormRequest
                     ->ignore($contratista->id),
             ],
             'empresa_id' => ['required', 'integer', 'exists:empresas,id'],
+            'arl' => ['required', 'string', 'max:120'],
             'fecha_ultima_ir' => ['required', 'date'],
             'vigencia_dias' => ['required', 'integer', 'min:1', 'max:3650'],
         ], $this->camposAdicionalesRules());
@@ -53,6 +54,7 @@ class UpdateContratistaExternoRequest extends FormRequest
             'tipo_documento' => 'tipo de documento',
             'numero_documento' => 'documento',
             'empresa_id' => 'empresa',
+            'arl' => 'ARL',
             'fecha_ultima_ir' => 'fecha de última inducción/reinducción',
             'vigencia_dias' => 'vigencia',
         ], $this->camposAdicionalesAttributes());
@@ -69,10 +71,12 @@ class UpdateContratistaExternoRequest extends FormRequest
     {
         $numero = $this->input('numero_documento');
         $nombres = $this->input('nombres_apellidos');
+        $arl = $this->input('arl');
 
         $datos = [
             'numero_documento' => is_string($numero) ? preg_replace('/\s+/', '', trim($numero)) : $numero,
             'nombres_apellidos' => is_string($nombres) ? trim($nombres) : $nombres,
+            'arl' => is_string($arl) ? trim($arl) : $arl,
             'empresa_id' => $this->filled('empresa_id') ? (int) $this->input('empresa_id') : null,
             'manipulador_alimentos' => $this->boolean('manipulador_alimentos'),
             'licencia_conduccion' => $this->boolean('licencia_conduccion'),
