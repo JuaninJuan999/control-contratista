@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Model;
     'licencia_conduccion',
     'licencia_archivo',
     'licencia_categoria',
-    'licencia_vencimiento',
+    'licencia_vencimientos',
     'cedula_archivo',
     'empresa_id',
     'arl',

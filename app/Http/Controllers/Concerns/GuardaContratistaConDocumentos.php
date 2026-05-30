@@ -39,23 +39,48 @@ trait GuardaContratistaConDocumentos
         $fileKeys = array_keys($this->archivosContratistaMap());
         $datos = collect($datos)->except($fileKeys)->all();
 
-        if (($datos['licencia_conduccion'] ?? false) === false) {
+        $manipuladorActivo = $this->valorBooleanoContratista(
+            $datos,
+            $request,
+            $filePrefix,
+            'manipulador_alimentos',
+            (bool) $contratista->manipulador_alimentos
+        );
+        $datos['manipulador_alimentos'] = $manipuladorActivo;
+
+        $licenciaActiva = $this->valorBooleanoContratista(
+            $datos,
+            $request,
+            $filePrefix,
+            'licencia_conduccion',
+            (bool) $contratista->licencia_conduccion
+        );
+        $datos['licencia_conduccion'] = $licenciaActiva;
+
+        if (! $manipuladorActivo) {
+            $datos['manipulador_vigencia'] = null;
+            ContratistaDocumentoStorage::eliminar($contratista->manipulador_archivo);
+            $datos['manipulador_archivo'] = null;
+        }
+
+        if (! $licenciaActiva) {
+            $datos['licencia_categoria'] = null;
+            $datos['licencia_vencimientos'] = null;
+            ContratistaDocumentoStorage::eliminar($contratista->licencia_archivo);
+            ContratistaDocumentoStorage::eliminar($contratista->cedula_archivo);
             $datos['licencia_archivo'] = null;
             $datos['cedula_archivo'] = null;
         }
 
-        if (($datos['manipulador_alimentos'] ?? false) === false) {
-            $datos['manipulador_archivo'] = null;
-        }
-
-        $contratista->update($datos);
-
         $archivos = $this->recogerArchivosContratista($request, $filePrefix);
-        $rutas = ContratistaDocumentoStorage::guardarPara($tipoStorage, (int) $contratista->getKey(), $archivos);
+        $rutas = ContratistaDocumentoStorage::reemplazarPara(
+            $tipoStorage,
+            (int) $contratista->getKey(),
+            $archivos,
+            $contratista
+        );
 
-        if ($rutas !== []) {
-            $contratista->update($rutas);
-        }
+        $contratista->update(array_merge($datos, $rutas));
 
         return $contratista->fresh();
     }
@@ -88,5 +113,24 @@ trait GuardaContratistaConDocumentos
             'licencia_archivo' => 'licencia_archivo',
             'cedula_archivo' => 'cedula_archivo',
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $datos
+     */
+    private function valorBooleanoContratista(
+        array $datos,
+        Request $request,
+        string $filePrefix,
+        string $campo,
+        bool $valorExistente
+    ): bool {
+        $clave = $filePrefix === '' ? $campo : "{$filePrefix}.{$campo}";
+
+        if (! $request->has($clave)) {
+            return $valorExistente;
+        }
+
+        return filter_var($datos[$campo] ?? $request->input($clave), FILTER_VALIDATE_BOOLEAN);
     }
 }

@@ -74,6 +74,8 @@ class StoreContratistaExternoRequest extends FormRequest
             'empresa_id' => $this->filled('empresa_id') ? (int) $this->input('empresa_id') : null,
             'manipulador_alimentos' => $this->boolean('manipulador_alimentos'),
             'licencia_conduccion' => $this->boolean('licencia_conduccion'),
+            'licencia_categoria' => $this->input('licencia_categoria'),
+            'licencia_vencimientos' => $this->input('licencia_vencimientos'),
         ];
 
         $this->prepararCamposAdicionales($datos);

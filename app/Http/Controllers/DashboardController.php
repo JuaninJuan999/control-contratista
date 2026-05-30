@@ -172,13 +172,23 @@ class DashboardController extends Controller
         $modelClass::query()
             ->where('activo', true)
             ->where(function ($query): void {
-                $query->whereNotNull('licencia_vencimiento')
+                $query->whereNotNull('licencia_vencimientos')
                     ->orWhereNotNull('manipulador_vigencia');
             })
             ->get()
             ->each(function ($c) use ($items, $url, $sufijo, $rutaEdit): void {
-                if ($c->licencia_conduccion && $c->licencia_vencimiento) {
-                    $items->push($this->item('licencia', $c->nombres_apellidos, 'Licencia de conducción'.$sufijo, $c->licencia_vencimiento, $url, route($rutaEdit, $c)));
+                if ($c->licencia_conduccion) {
+                    foreach ($c->licenciaVencimientosFormateados() as $categoria => $fechaTexto) {
+                        $fecha = Carbon::parse($fechaTexto);
+                        $items->push($this->item(
+                            'licencia',
+                            $c->nombres_apellidos,
+                            'Licencia '.$categoria.$sufijo,
+                            $fecha,
+                            $url,
+                            route($rutaEdit, $c),
+                        ));
+                    }
                 }
 
                 if ($c->manipulador_alimentos && $c->manipulador_vigencia) {

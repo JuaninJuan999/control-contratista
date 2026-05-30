@@ -57,27 +57,31 @@
             <dd class="mt-0.5 text-zinc-900">{{ $contratista->licencia_conduccion ? 'Sí' : 'No' }}</dd>
         </div>
         @if ($contratista->licencia_conduccion)
-            <div>
-                <dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Categoría licencia</dt>
-                <dd class="mt-0.5 text-zinc-900">
-                    @php
-                        $cats = $contratista->licencia_categoria;
-                        $cats = is_array($cats) ? $cats : (($cats === null || $cats === '') ? [] : [$cats]);
-                    @endphp
-                    @if ($cats === [])
-                        —
+            <div class="col-span-full">
+                <dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Categorías y vencimientos</dt>
+                <dd class="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 text-zinc-900">
+                    @php $vencimientos = $contratista->licenciaVencimientosFormateados(); @endphp
+                    @if ($vencimientos === [])
+                        <span class="text-zinc-900">—</span>
                     @else
-                        <div class="grid grid-cols-2 gap-x-3 gap-y-0.5">
-                            @foreach ($cats as $c)
-                                <span>{{ LicenciaConduccionCategorias::OPCIONES[$c] ?? $c }}</span>
-                            @endforeach
-                        </div>
+                        @foreach ($vencimientos as $categoria => $fechaTexto)
+                            @php
+                                $estado = LicenciaConduccionCategorias::etiquetaEstado($fechaTexto);
+                                $fechaMostrar = \Illuminate\Support\Carbon::parse($fechaTexto)->format('d/m/Y');
+                            @endphp
+                            <div class="rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-sm">
+                                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                    <span class="font-semibold">{{ $categoria }}</span>
+                                    <span class="text-zinc-600">{{ $fechaMostrar }}</span>
+                                    @if ($estado)
+                                        <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase {{ $estado === 'VIGENTE' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800' }}">{{ $estado }}</span>
+                                    @endif
+                                </div>
+                                <p class="mt-0.5 text-xs leading-tight text-zinc-500">{{ LicenciaConduccionCategorias::OPCIONES[$categoria] ?? $categoria }}</p>
+                            </div>
+                        @endforeach
                     @endif
                 </dd>
-            </div>
-            <div>
-                <dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Vencimiento licencia</dt>
-                <dd class="mt-0.5 text-zinc-900">{{ $contratista->licencia_vencimiento?->format('d/m/Y') ?? '—' }}{!! $badgeEstado($contratista->licencia_vencimiento) !!}</dd>
             </div>
             <div>
                 <dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Documento licencia</dt>

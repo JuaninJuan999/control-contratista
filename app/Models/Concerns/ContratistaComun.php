@@ -5,6 +5,7 @@ namespace App\Models\Concerns;
 use App\Models\Empresa;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * Lógica compartida por contratistas externos e internos.
@@ -52,7 +53,7 @@ trait ContratistaComun
             'manipulador_vigencia' => 'date',
             'licencia_conduccion' => 'boolean',
             'licencia_categoria' => 'array',
-            'licencia_vencimiento' => 'date',
+            'licencia_vencimientos' => 'array',
             'fecha_ultima_ir' => 'date',
             'fecha_vencimiento' => 'date',
             'vigencia_dias' => 'integer',
@@ -85,6 +86,36 @@ trait ContratistaComun
         }
 
         return $this->dias_faltantes >= 0 ? 'VIGENTE' : 'VENCIDA';
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function licenciaVencimientosFormateados(): array
+    {
+        $vencimientos = $this->licencia_vencimientos ?? [];
+
+        if (! is_array($vencimientos)) {
+            return [];
+        }
+
+        $formateados = [];
+
+        foreach ($vencimientos as $categoria => $fecha) {
+            if (! is_string($categoria) || ! is_string($fecha) || trim($fecha) === '') {
+                continue;
+            }
+
+            try {
+                $formateados[$categoria] = Carbon::parse($fecha)->format('Y-m-d');
+            } catch (\Throwable) {
+                continue;
+            }
+        }
+
+        ksort($formateados);
+
+        return $formateados;
     }
 
     public function empresa(): BelongsTo

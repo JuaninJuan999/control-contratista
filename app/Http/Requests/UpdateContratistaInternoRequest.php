@@ -69,6 +69,9 @@ class UpdateContratistaInternoRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        /** @var ContratistaInterno $contratista */
+        $contratista = $this->route('contratistas_interno');
+
         $numero = $this->input('numero_documento');
         $nombres = $this->input('nombres_apellidos');
         $arl = $this->input('arl');
@@ -78,8 +81,14 @@ class UpdateContratistaInternoRequest extends FormRequest
             'nombres_apellidos' => is_string($nombres) ? trim($nombres) : $nombres,
             'arl' => is_string($arl) ? trim($arl) : $arl,
             'empresa_id' => $this->filled('empresa_id') ? (int) $this->input('empresa_id') : null,
-            'manipulador_alimentos' => $this->boolean('manipulador_alimentos'),
-            'licencia_conduccion' => $this->boolean('licencia_conduccion'),
+            'manipulador_alimentos' => $this->has('manipulador_alimentos')
+                ? $this->boolean('manipulador_alimentos')
+                : (bool) $contratista->manipulador_alimentos,
+            'licencia_conduccion' => $this->has('licencia_conduccion')
+                ? $this->boolean('licencia_conduccion')
+                : (bool) $contratista->licencia_conduccion,
+            'licencia_categoria' => $this->input('licencia_categoria'),
+            'licencia_vencimientos' => $this->input('licencia_vencimientos'),
         ];
 
         $this->prepararCamposAdicionales($datos);

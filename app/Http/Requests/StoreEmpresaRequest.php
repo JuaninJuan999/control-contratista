@@ -268,7 +268,11 @@ class StoreEmpresaRequest extends EmpresaRequest
                 'vigencia_dias' => is_numeric($vigencia) ? (int) $vigencia : 365,
             ];
 
-            foreach (['fecha_nacimiento', 'cargo', 'manipulador_vigencia', 'licencia_categoria', 'licencia_vencimiento'] as $campo) {
+            if (array_key_exists('licencia_vencimientos', $persona) && is_array($persona['licencia_vencimientos'])) {
+                $datos['licencia_vencimientos'] = $persona['licencia_vencimientos'];
+            }
+
+            foreach (['fecha_nacimiento', 'cargo', 'manipulador_vigencia', 'licencia_categoria'] as $campo) {
                 if (array_key_exists($campo, $persona)) {
                     $valor = $persona[$campo];
                     $datos[$campo] = is_string($valor) && trim($valor) === '' ? null : $valor;

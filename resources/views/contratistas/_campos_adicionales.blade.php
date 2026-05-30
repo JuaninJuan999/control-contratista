@@ -44,6 +44,11 @@
     if (! is_array($categoriasSeleccionadas)) {
         $categoriasSeleccionadas = ($categoriasSeleccionadas === '' || $categoriasSeleccionadas === null) ? [] : [$categoriasSeleccionadas];
     }
+
+    $vencimientosPorCategoria = $oldValue('licencia_vencimientos', null);
+    if (! is_array($vencimientosPorCategoria)) {
+        $vencimientosPorCategoria = $contratista?->licenciaVencimientosFormateados() ?? [];
+    }
 @endphp
 
 <div class="campos-adicionales-contratista col-span-full mt-1 border-t border-zinc-200 pt-3" data-campos-adicionales="{{ $idSuffix }}">
@@ -95,13 +100,19 @@
                 <p class="mt-0.5 text-[11px] leading-tight text-zinc-500">Puede seleccionar varias.</p>
                 <div class="mt-1 grid grid-cols-2 gap-x-3 gap-y-1 rounded-md border border-zinc-300 bg-white px-2.5 py-2">
                     @foreach (LicenciaConduccionCategorias::OPCIONES as $val => $label)
+                        @php
+                            $fechaCategoria = $vencimientosPorCategoria[$val] ?? '';
+                            $seleccionada = in_array($val, $categoriasSeleccionadas, true) || $fechaCategoria !== '';
+                        @endphp
                         <label class="flex items-center gap-1.5 text-xs text-zinc-800">
                             <input
                                 type="checkbox"
                                 name="{{ $fieldName('licencia_categoria') }}[]"
                                 value="{{ $val }}"
-                                @checked(in_array($val, $categoriasSeleccionadas, true))
-                                class="rounded border-zinc-300 text-emerald-700 focus:ring-emerald-600"
+                                @checked($seleccionada)
+                                class="js-licencia-cat-check rounded border-zinc-300 text-emerald-700 focus:ring-emerald-600"
+                                data-categoria="{{ $val }}"
+                                data-suffix="{{ $idSuffix }}"
                             >
                             <span>{{ $val }}</span>
                         </label>
@@ -110,7 +121,36 @@
             </div>
             <div class="md:col-span-4">
                 <label class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Fecha vencimiento licencia</label>
-                <input type="date" name="{{ $fieldName('licencia_vencimiento') }}" value="{{ $oldValue('licencia_vencimiento') }}" class="{{ $inputClass }}">
+                <p class="mt-0.5 text-[11px] leading-tight text-zinc-500">Por cada categoría seleccionada.</p>
+                <div class="js-licencia-vencimientos-panel mt-1 space-y-1.5" data-suffix="{{ $idSuffix }}">
+                    @php $hayVencimientosVisibles = false; @endphp
+                    @foreach (LicenciaConduccionCategorias::OPCIONES as $val => $label)
+                        @php
+                            $fechaCategoria = $vencimientosPorCategoria[$val] ?? '';
+                            $seleccionada = in_array($val, $categoriasSeleccionadas, true) || $fechaCategoria !== '';
+                            $estadoCategoria = LicenciaConduccionCategorias::etiquetaEstado($fechaCategoria);
+                            $hayVencimientosVisibles = $hayVencimientosVisibles || $seleccionada;
+                        @endphp
+                        <div
+                            class="js-licencia-vencimiento-item flex items-center gap-2 {{ $seleccionada ? '' : 'hidden' }}"
+                            data-categoria="{{ $val }}"
+                        >
+                            <span class="w-7 shrink-0 text-xs font-bold text-zinc-700">{{ $val }}</span>
+                            <input
+                                type="date"
+                                name="{{ $fieldName('licencia_vencimientos') }}[{{ $val }}]"
+                                value="{{ $fechaCategoria }}"
+                                class="js-licencia-cat-fecha {{ $inputClass }} min-w-0 flex-1"
+                            >
+                            <span
+                                class="js-licencia-cat-estado shrink-0 inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase {{ $estadoCategoria === 'VIGENTE' ? 'bg-emerald-100 text-emerald-800' : ($estadoCategoria === 'VENCIDA' ? 'bg-red-100 text-red-800' : 'hidden') }}"
+                            >{{ $estadoCategoria ?? '' }}</span>
+                        </div>
+                    @endforeach
+                    <p class="js-licencia-vencimientos-vacio text-xs text-zinc-400 {{ $hayVencimientosVisibles ? 'hidden' : '' }}">
+                        Seleccione una categoría.
+                    </p>
+                </div>
             </div>
             <div class="md:col-span-6">
                 <label class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Adjuntar cédula</label>
