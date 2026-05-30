@@ -2,6 +2,8 @@
 
 @section('title', 'Empresas — '.config('app.name'))
 
+@section('containerClass', 'max-w-none w-full')
+
 @section('content')
     @php
         $anioActual = now()->year;
@@ -91,8 +93,8 @@
 
         <p class="mb-4 text-xs text-zinc-600 md:text-sm">Haz clic en una empresa para ver <strong>Contratistas</strong> y <strong>Vehículos</strong>. Luego expande cada sección y el registro que quieras consultar.</p>
 
-        <div class="overflow-x-auto rounded-lg border border-zinc-200">
-        <table class="min-w-full text-left text-sm">
+        <div class="rounded-lg border border-zinc-200">
+        <table class="w-full table-auto text-left text-sm">
             <thead>
                 <tr class="bg-emerald-700 text-xs font-bold uppercase tracking-wide text-white">
                     <th class="w-8 px-2 py-3"></th>
@@ -104,7 +106,7 @@
                     <th class="px-3 py-3">Estado</th>
                     <th class="px-3 py-3">Planilla</th>
                     @if (auth()->user()?->puedeEditar())
-                    <th class="px-3 py-3 w-44 text-end">Acciones</th>
+                    <th class="w-20 px-2 py-3 text-center">Acciones</th>
                     @endif
                 </tr>
             </thead>
@@ -125,23 +127,25 @@
                             </svg>
                         </td>
                         <td class="px-3 py-2 font-medium text-zinc-900">
-                            {{ $empresa->nombre }}
-                            <span class="ml-1.5 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-900">
-                                {{ $empresa->contratistas_externos_count + $empresa->contratistas_internos_count }} contratista{{ ($empresa->contratistas_externos_count + $empresa->contratistas_internos_count) === 1 ? '' : 's' }}
-                            </span>
-                            @if ($empresa->vehiculos_count > 0)
-                                <span class="ml-1 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-zinc-700">
-                                    {{ $empresa->vehiculos_count }} vehículo{{ $empresa->vehiculos_count === 1 ? '' : 's' }}
+                            <div>{{ $empresa->nombre }}</div>
+                            <div class="mt-1 flex flex-wrap gap-1">
+                                <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-900">
+                                    {{ $empresa->contratistas_externos_count + $empresa->contratistas_internos_count }} contratista{{ ($empresa->contratistas_externos_count + $empresa->contratistas_internos_count) === 1 ? '' : 's' }}
                                 </span>
-                            @endif
+                                @if ($empresa->vehiculos_count > 0)
+                                    <span class="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-zinc-700">
+                                        {{ $empresa->vehiculos_count }} vehículo{{ $empresa->vehiculos_count === 1 ? '' : 's' }}
+                                    </span>
+                                @endif
+                            </div>
                         </td>
                         <td class="px-3 py-2 text-zinc-800">{{ $empresa->nit ?? '—' }}</td>
                         <td class="px-3 py-2 whitespace-nowrap text-zinc-800">{{ $empresa->telefono ?? '—' }}</td>
                         <td class="px-3 py-2 text-zinc-800">
                             @if (is_array($empresa->correos) && count($empresa->correos) > 0)
-                                <div class="flex max-w-[14rem] flex-col gap-0.5">
+                                <div class="flex flex-col gap-0.5 break-all">
                                     @foreach ($empresa->correos as $correo)
-                                        <span class="truncate text-xs md:text-sm" title="{{ $correo }}">{{ $correo }}</span>
+                                        <span class="text-xs md:text-sm" title="{{ $correo }}">{{ $correo }}</span>
                                     @endforeach
                                 </div>
                             @else
@@ -164,17 +168,24 @@
                         </td>
                         <td class="px-3 py-2 text-zinc-800">{{ $empresa->planilla ?? '—' }}</td>
                         @if (auth()->user()?->puedeEditar())
-                        <td class="px-3 py-2 text-end" data-acciones>
-                            <div class="flex flex-wrap items-center justify-end gap-2">
-                                <a href="{{ route('empresas.edit', $empresa) }}" class="text-sm font-medium text-emerald-800 underline hover:text-emerald-950" data-acciones>
-                                    Editar
-                                </a>
+                        <td class="px-2 py-2 text-center" data-acciones>
+                            <div class="inline-flex items-center justify-center gap-1" data-acciones onclick="event.stopPropagation()">
+                                <a
+                                    href="{{ route('empresas.edit', $empresa) }}"
+                                    title="Editar"
+                                    aria-label="Editar"
+                                    class="inline-flex h-8 w-8 items-center justify-center rounded-md text-base transition hover:bg-emerald-50"
+                                    data-acciones
+                                >✏️</a>
                                 <form action="{{ route('empresas.destroy', $empresa) }}" method="post" class="inline" onsubmit="return confirm('¿Eliminar esta empresa? Esta acción no se puede deshacer.');" data-acciones>
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-sm font-medium text-red-700 underline hover:text-red-900">
-                                        Eliminar
-                                    </button>
+                                    <button
+                                        type="submit"
+                                        title="Eliminar"
+                                        aria-label="Eliminar"
+                                        class="inline-flex h-8 w-8 items-center justify-center rounded-md text-base transition hover:bg-red-50"
+                                    >🗑️</button>
                                 </form>
                             </div>
                         </td>

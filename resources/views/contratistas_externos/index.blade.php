@@ -2,7 +2,7 @@
 
 @section('title', 'Contratistas externos — '.config('app.name'))
 
-@section('containerClass', 'max-w-[min(1920px,calc(100vw-3rem))]')
+@section('containerClass', 'max-w-none w-full')
 
 @section('content')
     <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-lg md:p-6">

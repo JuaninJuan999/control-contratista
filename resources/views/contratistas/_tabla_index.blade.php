@@ -5,25 +5,25 @@
     $totalColumnas = 9 + count(\App\Models\ContratistaInterno::MESES) + 1 + ($puedeEditar ? 1 : 0);
 @endphp
 
-<div class="overflow-x-auto rounded-lg border border-zinc-200">
-    <table class="min-w-full text-left text-sm">
+<div class="rounded-lg border border-zinc-200">
+    <table class="w-full table-auto text-left text-sm">
         <thead>
             <tr class="bg-emerald-700 text-xs font-bold uppercase tracking-wide text-white">
-                <th class="min-w-[12rem] px-3 py-3">Nombres y apellidos</th>
+                <th class="min-w-[10rem] px-3 py-3">Nombres y apellidos</th>
                 <th class="px-3 py-3">Tipo doc.</th>
                 <th class="px-3 py-3">Documento</th>
-                <th class="min-w-[10rem] px-3 py-3">Empresa</th>
+                <th class="min-w-[8rem] px-3 py-3">Empresa</th>
                 <th class="px-3 py-3">ARL</th>
                 <th class="px-3 py-3">Última I/R</th>
                 <th class="px-3 py-3">Días falt.</th>
                 <th class="px-3 py-3">Vencimiento</th>
                 <th class="px-3 py-3">Estado I/R</th>
                 @foreach (\App\Models\ContratistaInterno::MESES as $mes => $abrev)
-                    <th class="w-10 px-1 py-3 text-center">{{ $abrev }}</th>
+                    <th class="w-9 px-0.5 py-3 text-center text-[10px]">{{ $abrev }}</th>
                 @endforeach
                 <th class="px-3 py-3">Registro</th>
                 @if ($puedeEditar)
-                <th class="px-3 py-3">Acciones</th>
+                <th class="w-24 px-2 py-3 text-center">Acciones</th>
                 @endif
             </tr>
         </thead>
@@ -58,7 +58,7 @@
                     </td>
                     <td class="px-3 py-2 text-zinc-800">{{ $c->tipo_documento }}</td>
                     <td class="px-3 py-2 text-zinc-800">{{ $c->numero_documento }}</td>
-                    <td class="px-3 py-2 text-zinc-800">{{ $c->empresa?->nombre ?? '—' }}</td>
+                    <td class="px-3 py-2 break-words text-zinc-800">{{ $c->empresa?->nombre ?? '—' }}</td>
                     <td class="px-3 py-2 text-zinc-800">{{ $c->arl ?? '—' }}</td>
                     <td class="px-3 py-2 text-zinc-800">{{ $c->fecha_ultima_ir?->format('d/m/Y') ?? '—' }}</td>
                     <td class="px-3 py-2 font-semibold tabular-nums text-zinc-900">{{ $c->dias_faltantes ?? '—' }}</td>
@@ -74,7 +74,7 @@
                     </td>
                     @foreach (\App\Models\ContratistaInterno::MESES as $mes => $abrev)
                         @php $estadoMes = $c->estadoMes($anio, $mes); @endphp
-                        <td class="px-1 py-2 text-center">
+                        <td class="px-0.5 py-2 text-center">
                             @if ($puedeEditar)
                             <form action="{{ route($rutaBase.'.toggle-mes', $c) }}" method="post" class="inline" onclick="event.stopPropagation()">
                                 @csrf
@@ -84,13 +84,13 @@
                                 <button
                                     type="submit"
                                     title="{{ $abrev }} — clic para cambiar estado (vacío → OK → no vigente)"
-                                    class="inline-flex h-8 w-8 items-center justify-center rounded text-xs font-bold transition {{ $estadoMes === 'ok' ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : ($estadoMes === 'rechazado' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'text-zinc-300 hover:bg-zinc-100 hover:text-zinc-500') }}"
+                                    class="inline-flex h-7 w-7 items-center justify-center rounded text-[10px] font-bold transition {{ $estadoMes === 'ok' ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : ($estadoMes === 'rechazado' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'text-zinc-300 hover:bg-zinc-100 hover:text-zinc-500') }}"
                                 >
                                     {{ $estadoMes === 'ok' ? 'OK' : ($estadoMes === 'rechazado' ? '✕' : '·') }}
                                 </button>
                             </form>
                             @else
-                            <span class="inline-flex h-8 w-8 items-center justify-center rounded text-xs font-bold {{ $estadoMes === 'ok' ? 'bg-emerald-100 text-emerald-800' : ($estadoMes === 'rechazado' ? 'bg-red-100 text-red-700' : 'text-zinc-300') }}">
+                            <span class="inline-flex h-7 w-7 items-center justify-center rounded text-[10px] font-bold {{ $estadoMes === 'ok' ? 'bg-emerald-100 text-emerald-800' : ($estadoMes === 'rechazado' ? 'bg-red-100 text-red-700' : 'text-zinc-300') }}">
                                 {{ $estadoMes === 'ok' ? 'OK' : ($estadoMes === 'rechazado' ? '✕' : '·') }}
                             </span>
                             @endif
