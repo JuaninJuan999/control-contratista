@@ -29,10 +29,24 @@
         </thead>
         <tbody class="divide-y divide-zinc-200">
             @forelse ($contratistas as $c)
+                @php
+                    $estadoFiltro = match ($c->estado) {
+                        'VIGENTE', 'VENCIDA' => $c->estado,
+                        default => 'SIN_REGISTRO',
+                    };
+                @endphp
                 <tr
-                    class="cursor-pointer bg-white hover:bg-zinc-50/80 {{ ! $c->activo ? 'opacity-60' : '' }}"
+                    class="contratista-fila cursor-pointer bg-white hover:bg-zinc-50/80 {{ ! $c->activo ? 'opacity-60' : '' }}"
                     data-contratista-toggle="{{ $tipo }}-{{ $c->id }}"
                     aria-expanded="false"
+                    @if ($habilitarFiltrosCliente ?? false)
+                        data-filtro-modulo="{{ $tipo }}s"
+                        data-filtro-nombre="{{ mb_strtolower($c->nombres_apellidos, 'UTF-8') }}"
+                        data-filtro-tipo-documento="{{ $c->tipo_documento }}"
+                        data-filtro-documento="{{ mb_strtolower(preg_replace('/\s+/', '', $c->numero_documento), 'UTF-8') }}"
+                        data-filtro-arl="{{ mb_strtolower($c->arl ?? '', 'UTF-8') }}"
+                        data-filtro-estado="{{ $estadoFiltro }}"
+                    @endif
                 >
                     <td class="px-3 py-2 font-medium text-zinc-900">
                         <span class="inline-flex items-center gap-2">
@@ -135,6 +149,13 @@
                     </td>
                 </tr>
             @endforelse
+            @if (($habilitarFiltrosCliente ?? false) && $contratistas->isNotEmpty())
+                <tr id="filtro-{{ $tipo }}s-sin-resultados" class="hidden">
+                    <td colspan="{{ $totalColumnas }}" class="px-3 py-8 text-center text-zinc-500">
+                        No hay contratistas {{ $tipo }}s que coincidan con los filtros.
+                    </td>
+                </tr>
+            @endif
         </tbody>
     </table>
 </div>

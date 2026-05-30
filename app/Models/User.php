@@ -35,6 +35,19 @@ class User extends Authenticatable
         return $this->rol === UserRol::SUPERADMIN;
     }
 
+    public function puedeAccederModuloUsabilidad(): bool
+    {
+        return $this->esSuperadmin();
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<UserUsabilidadSesion, $this>
+     */
+    public function usabilidadSesiones(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(UserUsabilidadSesion::class);
+    }
+
     public function soloConsulta(): bool
     {
         return $this->rol === UserRol::CONSULTA;

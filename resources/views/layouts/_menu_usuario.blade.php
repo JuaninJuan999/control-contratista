@@ -2,6 +2,7 @@
     $usuario = auth()->user();
     $nombreUsuario = $usuario->username ?? $usuario->name;
     $puedeUsuarios = $usuario?->puedeAccederModuloUsuarios();
+    $puedeUsabilidad = $usuario?->puedeAccederModuloUsabilidad();
 @endphp
 
 <div class="relative shrink-0" id="menu-usuario">
@@ -36,6 +37,16 @@
                 class="flex w-full px-3 py-2 text-left text-sm text-zinc-700 transition hover:bg-emerald-50 hover:text-emerald-900 {{ request()->routeIs('usuarios.*') ? 'bg-emerald-50 font-semibold text-emerald-900' : '' }}"
             >
                 Usuarios
+            </a>
+        @endif
+
+        @if ($puedeUsabilidad)
+            <a
+                href="{{ route('usabilidad.index') }}"
+                role="menuitem"
+                class="flex w-full px-3 py-2 text-left text-sm text-zinc-700 transition hover:bg-emerald-50 hover:text-emerald-900 {{ request()->routeIs('usabilidad.*') ? 'bg-emerald-50 font-semibold text-emerald-900' : '' }}"
+            >
+                Usabilidad
             </a>
         @endif
 

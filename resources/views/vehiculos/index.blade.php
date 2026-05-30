@@ -22,6 +22,77 @@
             </div>
         @endif
 
+        <div id="filtros-vehiculos" class="mb-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+            <p class="mb-3 text-xs text-zinc-600">Filtre la tabla sin recargar la página. Pulse <strong>Filtrar</strong> o <strong>Enter</strong>.</p>
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                <div class="flex min-w-0 flex-col">
+                    <label for="filtro-vehiculo-placa" class="mb-1 block min-h-10 text-xs font-semibold uppercase leading-tight tracking-wide text-zinc-600">Placa</label>
+                    <input
+                        type="text"
+                        id="filtro-vehiculo-placa"
+                        placeholder="Ej. ABC123"
+                        autocomplete="off"
+                        class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                    >
+                </div>
+                <div class="flex min-w-0 flex-col">
+                    <label for="filtro-vehiculo-empresa" class="mb-1 block min-h-10 text-xs font-semibold uppercase leading-tight tracking-wide text-zinc-600">Empresa</label>
+                    <select
+                        id="filtro-vehiculo-empresa"
+                        class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                    >
+                        <option value="">Todas</option>
+                        @foreach ($empresas as $empresa)
+                            <option value="{{ $empresa->id }}">{{ $empresa->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="flex min-w-0 flex-col">
+                    <label for="filtro-vehiculo-soat" class="mb-1 block min-h-10 text-xs font-semibold uppercase leading-tight tracking-wide text-zinc-600">Estado SOAT</label>
+                    <select
+                        id="filtro-vehiculo-soat"
+                        class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                    >
+                        <option value="">Todos</option>
+                        <option value="VIGENTE">Vigente</option>
+                        <option value="VENCIDA">Vencida</option>
+                    </select>
+                </div>
+                <div class="flex min-w-0 flex-col">
+                    <label for="filtro-vehiculo-tecnomecanica" class="mb-1 block min-h-10 text-xs font-semibold uppercase leading-tight tracking-wide text-zinc-600">Estado tecnomecánica</label>
+                    <select
+                        id="filtro-vehiculo-tecnomecanica"
+                        class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                    >
+                        <option value="">Todos</option>
+                        <option value="VIGENTE">Vigente</option>
+                        <option value="VENCIDA">Vencida</option>
+                    </select>
+                </div>
+                <div class="flex min-w-0 flex-col sm:col-span-2 lg:col-span-1">
+                    <label for="filtro-vehiculo-inspeccion" class="mb-1 block min-h-10 text-xs font-semibold uppercase leading-tight tracking-wide text-zinc-600">Insp. sanitaria</label>
+                    <select
+                        id="filtro-vehiculo-inspeccion"
+                        class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                    >
+                        <option value="">Todos</option>
+                        <option value="VIGENTE">Vigente</option>
+                        <option value="VENCIDA">Vencida</option>
+                        <option value="NO_APLICA">No aplica</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+                <button type="button" id="btn-filtrar-vehiculos" class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-800">
+                    Filtrar
+                </button>
+                <button type="button" id="btn-limpiar-vehiculos" class="hidden rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                    Limpiar
+                </button>
+            </div>
+            <p id="filtro-vehiculos-resumen" class="mt-3 hidden text-xs font-medium text-emerald-800"></p>
+        </div>
+
         <div class="overflow-x-auto rounded-lg border border-zinc-200">
             <table class="min-w-full text-left text-sm">
                 <thead>
@@ -40,9 +111,17 @@
                 </thead>
                 <tbody class="divide-y divide-zinc-200">
                     @forelse ($vehiculos as $v)
+                        @php
+                            $estadoInspeccion = $v->inspeccion_sanitaria ? $v->inspeccion_sanitaria_estado : 'NO_APLICA';
+                        @endphp
                         <tr
                             data-vehiculo-fila="vehiculo-{{ $v->id }}"
-                            class="bg-white hover:bg-zinc-50/80"
+                            class="vehiculo-fila bg-white hover:bg-zinc-50/80"
+                            data-filtro-placa="{{ mb_strtolower(preg_replace('/\s+/', '', $v->placa), 'UTF-8') }}"
+                            data-filtro-empresa="{{ $v->empresa_id ?? '' }}"
+                            data-filtro-soat="{{ $v->soat_estado }}"
+                            data-filtro-tecnomecanica="{{ $v->tecnomecanica_estado }}"
+                            data-filtro-inspeccion="{{ $estadoInspeccion }}"
                         >
                             <td class="px-3 py-2 font-medium text-zinc-900">{{ $v->placa }}</td>
                             <td class="px-3 py-2 text-zinc-800">{{ $v->empresa?->nombre ?? '—' }}</td>
@@ -103,10 +182,19 @@
                             </td>
                         </tr>
                     @endforelse
+                    @if ($vehiculos->isNotEmpty())
+                        <tr id="filtro-vehiculos-sin-resultados" class="hidden">
+                            <td colspan="{{ auth()->user()?->puedeEditar() ? 8 : 7 }}" class="px-3 py-8 text-center text-zinc-500">
+                                No hay vehículos que coincidan con los filtros.
+                            </td>
+                        </tr>
+                    @endif
                 </tbody>
             </table>
         </div>
     </div>
+
+    @include('vehiculos._filtros_script')
 
     <script>
         (function () {

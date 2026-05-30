@@ -3,23 +3,29 @@
 @section('title', 'Iniciar sesión — '.config('app.name'))
 
 @section('content')
-<div class="min-h-screen flex flex-col justify-center px-4 py-12">
-    <div class="mx-auto w-full max-w-md">
-        <h1 class="text-center font-display text-3xl font-semibold leading-snug tracking-tight text-zinc-950 drop-shadow-[0_1px_12px_rgba(255,255,255,0.95)] sm:text-4xl md:text-[2.35rem] md:leading-tight md:tracking-normal">
-            {{ config('app.name') }}
-        </h1>
-        <p class="mx-auto mt-4 max-w-md text-center font-sans text-[0.95rem] font-medium leading-relaxed tracking-wide text-zinc-800 drop-shadow-[0_1px_8px_rgba(255,255,255,0.92)] md:text-base">
-            Control de Contratistas Internos y Externos
-        </p>
+<div class="mx-auto w-full max-w-md">
+    <div class="mb-4 flex justify-center">
+        <img
+            src="{{ asset('image/colbeef.png') }}"
+            alt="Logo institucional"
+            class="h-14 w-auto drop-shadow-[0_2px_12px_rgba(255,255,255,0.85)] sm:h-16"
+        >
+    </div>
+    <h1 class="text-center font-display text-2xl font-semibold leading-snug tracking-tight text-zinc-950 drop-shadow-[0_1px_12px_rgba(255,255,255,0.95)] sm:text-3xl md:text-4xl">
+        {{ config('app.name') }}
+    </h1>
+    <p class="mx-auto mt-2 max-w-md text-center font-sans text-sm font-medium leading-relaxed tracking-wide text-zinc-800 drop-shadow-[0_1px_8px_rgba(255,255,255,0.92)] sm:mt-3 sm:text-[0.95rem]">
+        Control de Contratistas Internos y Externos
+    </p>
 
-        <div class="mt-8 rounded-xl border border-white/40 bg-transparent p-6 shadow-xl ring-1 ring-white/20">
+    <div class="mt-5 rounded-xl border border-white/40 bg-transparent p-5 shadow-xl ring-1 ring-white/20 sm:mt-6 sm:p-6">
             @if ($errors->any())
                 <div class="mb-4 rounded-lg border border-red-400/50 bg-red-500/25 px-3 py-2 text-sm text-red-950 backdrop-blur-sm">
                     {{ $errors->first() }}
                 </div>
             @endif
 
-            <form action="{{ route('login.store') }}" method="post" class="flex flex-col gap-5">
+            <form action="{{ route('login.store') }}" method="post" class="flex flex-col gap-4">
                 @csrf
 
                 <div>
@@ -79,7 +85,6 @@
                 </button>
             </form>
         </div>
-    </div>
 </div>
 
 <script>

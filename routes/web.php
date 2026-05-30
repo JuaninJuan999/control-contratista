@@ -7,6 +7,7 @@ use App\Http\Controllers\ContratistaInternoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UsabilidadController;
 use App\Http\Controllers\VehiculoController;
 use Illuminate\Support\Facades\Route;
 
@@ -44,6 +45,10 @@ Route::middleware(['auth', 'restrict.consulta'])->group(function () {
         Route::resource('usuarios', UserController::class)->except(['show']);
         Route::patch('usuarios/{usuario}/activo', [UserController::class, 'toggleActivo'])
             ->name('usuarios.toggle-activo');
+    });
+
+    Route::middleware('access.superadmin')->group(function () {
+        Route::get('usabilidad', [UsabilidadController::class, 'index'])->name('usabilidad.index');
     });
 
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');

@@ -20,7 +20,12 @@ class VehiculoController extends Controller
             ->orderBy('placa')
             ->get();
 
-        return view('vehiculos.index', compact('vehiculos'));
+        $empresas = Empresa::query()
+            ->whereHas('vehiculos')
+            ->orderBy('nombre')
+            ->get(['id', 'nombre']);
+
+        return view('vehiculos.index', compact('vehiculos', 'empresas'));
     }
 
     public function create(): View

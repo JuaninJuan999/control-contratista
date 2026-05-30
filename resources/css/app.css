@@ -34,6 +34,11 @@
     z-index: 1;
 }
 
+.app-bg > footer {
+    position: relative;
+    z-index: 10;
+}
+
 @layer components {
     .busqueda-resaltado {
         @apply bg-emerald-50 ring-2 ring-inset ring-emerald-400;

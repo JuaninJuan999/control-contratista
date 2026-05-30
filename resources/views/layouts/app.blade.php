@@ -63,6 +63,8 @@
         @yield('content')
     </main>
 
+    @include('layouts._footer')
+
     @include('layouts._busqueda_global_panel')
     @include('layouts._busqueda_resaltar_util')
     @include('layouts._busqueda_global_script')

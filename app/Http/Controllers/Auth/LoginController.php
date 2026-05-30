@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\UserUsabilidadTracker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -11,6 +12,10 @@ use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
+    public function __construct(
+        private readonly UserUsabilidadTracker $usabilidadTracker
+    ) {}
+
     public function create()
     {
         return view('auth.login');
@@ -37,11 +42,17 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+        $this->usabilidadTracker->iniciarSesion($user);
+
         return redirect()->intended(route('dashboard'));
     }
 
     public function destroy(Request $request)
     {
+        if ($request->user() !== null) {
+            $this->usabilidadTracker->cerrarSesionActual($request->user());
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();
