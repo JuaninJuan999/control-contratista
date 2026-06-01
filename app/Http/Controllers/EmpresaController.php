@@ -109,6 +109,9 @@ class EmpresaController extends Controller
                 }
             }
 
+            $empresa->load(['contratistasExternos', 'contratistasInternos']);
+            $this->sincronizarControlMensual($empresa, $this->clavesTodosContratistas($empresa));
+
             return $empresa;
         });
 
@@ -184,6 +187,22 @@ class EmpresaController extends Controller
             $contratista->marcarMes($anio, $mes, $estado);
             $contratista->save();
         }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function clavesTodosContratistas(Empresa $empresa): array
+    {
+        $empresa->loadMissing(['contratistasExternos', 'contratistasInternos']);
+
+        return $empresa->contratistasExternos
+            ->map(fn (ContratistaExterno $contratista) => 'externo-'.$contratista->id)
+            ->merge(
+                $empresa->contratistasInternos->map(fn (ContratistaInterno $contratista) => 'interno-'.$contratista->id)
+            )
+            ->values()
+            ->all();
     }
 
     public function destroy(Empresa $empresa): RedirectResponse

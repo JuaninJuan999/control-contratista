@@ -6,6 +6,7 @@ use App\Http\Controllers\ContratistaExternoController;
 use App\Http\Controllers\ContratistaInternoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmpresaController;
+use App\Http\Controllers\PlanillaContratistaController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UsabilidadController;
 use App\Http\Controllers\VehiculoController;
@@ -28,7 +29,23 @@ Route::middleware(['auth', 'restrict.consulta'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/buscar', [BusquedaGlobalController::class, 'index'])->name('busqueda.global');
     Route::get('/buscar/sugerencias', [BusquedaGlobalController::class, 'sugerencias'])->name('busqueda.sugerencias');
+
+    Route::middleware('access.usuarios')->group(function () {
+        Route::get('empresas/planilla/plantilla', [PlanillaContratistaController::class, 'plantilla'])
+            ->name('empresas.planilla.plantilla');
+    });
+
     Route::resource('empresas', EmpresaController::class)->except(['show']);
+
+    Route::middleware('access.usuarios')->group(function () {
+        Route::get('empresas/{empresa}/planilla/importar', [PlanillaContratistaController::class, 'create'])
+            ->name('empresas.planilla.create');
+        Route::post('empresas/{empresa}/planilla/vista-previa', [PlanillaContratistaController::class, 'preview'])
+            ->name('empresas.planilla.preview');
+        Route::post('empresas/{empresa}/planilla/importar', [PlanillaContratistaController::class, 'importar'])
+            ->name('empresas.planilla.importar');
+    });
+
     Route::resource('contratistas-externos', ContratistaExternoController::class)->except(['show', 'destroy']);
     Route::patch('contratistas-externos/{contratistas_externo}/activo', [ContratistaExternoController::class, 'toggleActivo'])
         ->name('contratistas-externos.toggle-activo');

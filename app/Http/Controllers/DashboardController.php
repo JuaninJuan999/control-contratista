@@ -50,7 +50,53 @@ class DashboardController extends Controller
             'vehiculos' => Vehiculo::query()->count(),
         ];
 
-        return view('dashboard', compact('vencidas', 'proximas', 'tipos', 'estadisticas', 'totales'));
+        $pendientesInduccion = $this->contratistasPendientesInduccion();
+
+        return view('dashboard', compact('vencidas', 'proximas', 'tipos', 'estadisticas', 'totales', 'pendientesInduccion'));
+    }
+
+    /**
+     * Contratistas activos sin fecha de última inducción/reinducción.
+     *
+     * @return Collection<int, array<string, string|null>>
+     */
+    private function contratistasPendientesInduccion(): Collection
+    {
+        $items = collect();
+
+        ContratistaExterno::query()
+            ->where('activo', true)
+            ->whereNull('fecha_ultima_ir')
+            ->with('empresa:id,nombre')
+            ->orderBy('nombres_apellidos')
+            ->get()
+            ->each(function (ContratistaExterno $c) use ($items): void {
+                $items->push([
+                    'nombre' => $c->nombres_apellidos,
+                    'documento' => $c->tipo_documento.' '.$c->numero_documento,
+                    'empresa' => $c->empresa?->nombre,
+                    'tipo_label' => 'Externo',
+                    'editar_url' => route('contratistas-externos.edit', $c),
+                ]);
+            });
+
+        ContratistaInterno::query()
+            ->where('activo', true)
+            ->whereNull('fecha_ultima_ir')
+            ->with('empresa:id,nombre')
+            ->orderBy('nombres_apellidos')
+            ->get()
+            ->each(function (ContratistaInterno $c) use ($items): void {
+                $items->push([
+                    'nombre' => $c->nombres_apellidos,
+                    'documento' => $c->tipo_documento.' '.$c->numero_documento,
+                    'empresa' => $c->empresa?->nombre,
+                    'tipo_label' => 'Interno',
+                    'editar_url' => route('contratistas-internos.edit', $c),
+                ]);
+            });
+
+        return $items->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE)->values();
     }
 
     /**

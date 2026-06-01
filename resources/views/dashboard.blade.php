@@ -36,6 +36,8 @@
     </div>
 
     <div class="flex flex-col gap-5">
+        @include('dashboard._pendientes_induccion', ['pendientesInduccion' => $pendientesInduccion])
+
         @include('dashboard._seccion_alertas', [
             'titulo' => 'Vencidas',
             'prefijo' => 'vencida',

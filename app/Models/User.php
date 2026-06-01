@@ -63,6 +63,11 @@ class User extends Authenticatable
         return in_array($this->rol, [UserRol::SUPERADMIN, UserRol::ADMIN], true);
     }
 
+    public function puedeImportarPlanilla(): bool
+    {
+        return $this->puedeAccederModuloUsuarios();
+    }
+
     public function puedeEliminarUsuarios(): bool
     {
         return $this->rol === UserRol::SUPERADMIN;
