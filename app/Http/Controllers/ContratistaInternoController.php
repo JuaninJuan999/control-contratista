@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateContratistaInternoRequest;
 use App\Models\ContratistaInterno;
 use App\Models\Empresa;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -105,5 +106,24 @@ class ContratistaInternoController extends Controller
         return redirect()
             ->route('contratistas-internos.index', ['anio' => $anio])
             ->with('success', 'Registro mensual actualizado.');
+    }
+
+    public function destroy(Request $request, ContratistaInterno $contratistasInterno): RedirectResponse
+    {
+        $anio = (int) $request->input('anio', $request->query('anio', now()->year));
+
+        if (! Auth::user()?->puedeEliminarContratistas()) {
+            return redirect()
+                ->route('contratistas-internos.index', ['anio' => $anio])
+                ->with('error', 'No tiene permiso para eliminar contratistas.');
+        }
+
+        $nombre = $contratistasInterno->nombres_apellidos;
+
+        $this->eliminarContratistaConDocumentos($contratistasInterno, 'internos');
+
+        return redirect()
+            ->route('contratistas-internos.index', ['anio' => $anio])
+            ->with('success', "Contratista interno «{$nombre}» eliminado correctamente.");
     }
 }

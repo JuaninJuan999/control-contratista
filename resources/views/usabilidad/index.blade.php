@@ -64,7 +64,7 @@
                     </a>
                 </div>
             </div>
-            <p class="mt-2 text-xs text-zinc-500">Se considera inactividad tras {{ (int) config('usabilidad.inactividad_segundos', 900) / 60 }} minutos sin uso.</p>
+            <p class="mt-2 text-xs text-zinc-500">Se considera inactividad tras {{ (int) config('usabilidad.inactividad_segundos', 900) / 60 }} minutos sin uso.@if (config('usabilidad.cerrar_sesion_por_inactividad')) La sesión del sistema se cierra automáticamente al superar ese tiempo.@endif</p>
         </form>
 
         @if ($sesionesActivas->isNotEmpty())

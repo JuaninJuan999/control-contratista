@@ -20,6 +20,28 @@ class UserUsabilidadTracker
         return $this->crearSesion($user, now());
     }
 
+    public function expiradaPorInactividad(User $user): bool
+    {
+        $sesion = $this->sesionAbierta($user);
+
+        if ($sesion === null) {
+            return false;
+        }
+
+        return (int) $sesion->ultima_actividad_at->diffInSeconds(now()) > $this->inactividadSegundos();
+    }
+
+    public function cerrarSesionPorInactividad(User $user): void
+    {
+        $sesion = $this->sesionAbierta($user);
+
+        if ($sesion === null) {
+            return;
+        }
+
+        $this->finalizarSesion($sesion, $sesion->ultima_actividad_at);
+    }
+
     public function registrarActividad(User $user): void
     {
         $sesion = $this->sesionAbierta($user);
@@ -34,9 +56,6 @@ class UserUsabilidadTracker
         $gap = (int) $sesion->ultima_actividad_at->diffInSeconds($ahora);
 
         if ($gap > $this->inactividadSegundos()) {
-            $this->finalizarSesion($sesion, $sesion->ultima_actividad_at);
-            $this->crearSesion($user, $ahora);
-
             return;
         }
 

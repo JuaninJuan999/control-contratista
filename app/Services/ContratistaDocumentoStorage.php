@@ -60,4 +60,9 @@ class ContratistaDocumentoStorage
 
         return '/storage/'.ltrim(str_replace('\\', '/', $ruta), '/');
     }
+
+    public static function eliminarDirectorio(string $tipo, int $contratistaId): void
+    {
+        Storage::disk('public')->deleteDirectory("contratistas/{$tipo}/{$contratistaId}");
+    }
 }

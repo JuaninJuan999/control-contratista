@@ -133,4 +133,15 @@ trait GuardaContratistaConDocumentos
 
         return filter_var($datos[$campo] ?? $request->input($clave), FILTER_VALIDATE_BOOLEAN);
     }
+
+    protected function eliminarContratistaConDocumentos(Model $contratista, string $tipoStorage): void
+    {
+        foreach (array_keys($this->archivosContratistaMap()) as $campo) {
+            ContratistaDocumentoStorage::eliminar($contratista->{$campo} ?? null);
+        }
+
+        ContratistaDocumentoStorage::eliminarDirectorio($tipoStorage, (int) $contratista->getKey());
+
+        $contratista->delete();
+    }
 }

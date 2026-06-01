@@ -1,11 +1,11 @@
 @if (auth()->user()?->puedeEditar())
-<div class="flex flex-wrap items-center gap-2" data-acciones-contratista onclick="event.stopPropagation()">
+<div class="inline-flex items-center gap-1" data-acciones-contratista onclick="event.stopPropagation()">
     <a
         href="{{ $editRoute }}"
-        class="rounded-md border border-emerald-700 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-900 hover:bg-emerald-100"
-    >
-        Editar
-    </a>
+        title="Editar"
+        aria-label="Editar"
+        class="inline-flex h-8 w-8 items-center justify-center rounded-md text-base transition hover:bg-emerald-50"
+    >✏️</a>
     <form action="{{ $toggleActivoRoute }}" method="post" class="inline">
         @csrf
         @method('PATCH')
@@ -14,11 +14,26 @@
         @endif
         <button
             type="submit"
-            class="rounded-md border px-2.5 py-1 text-xs font-semibold {{ $contratista->activo ? 'border-red-300 bg-red-50 text-red-800 hover:bg-red-100' : 'border-zinc-300 bg-zinc-50 text-zinc-800 hover:bg-zinc-100' }}"
+            title="{{ $contratista->activo ? 'Inactivar' : 'Reactivar' }}"
+            aria-label="{{ $contratista->activo ? 'Inactivar' : 'Reactivar' }}"
+            class="inline-flex h-8 w-8 items-center justify-center rounded-md text-base transition {{ $contratista->activo ? 'hover:bg-amber-50' : 'hover:bg-zinc-100' }}"
             onclick="return confirm('{{ $contratista->activo ? '¿Inactivar este contratista?' : '¿Reactivar este contratista?' }}')"
-        >
-            {{ $contratista->activo ? 'Inactivar' : 'Reactivar' }}
-        </button>
+        >{{ $contratista->activo ? '⏸️' : '▶️' }}</button>
     </form>
+    @if (auth()->user()?->puedeEliminarContratistas())
+    <form action="{{ $destroyRoute }}" method="post" class="inline" onsubmit="return confirm('¿Eliminar este contratista? Esta acción no se puede deshacer.');">
+        @csrf
+        @method('DELETE')
+        @if (isset($anio))
+            <input type="hidden" name="anio" value="{{ $anio }}">
+        @endif
+        <button
+            type="submit"
+            title="Eliminar"
+            aria-label="Eliminar"
+            class="inline-flex h-8 w-8 items-center justify-center rounded-md text-base transition hover:bg-red-50"
+        >🗑️</button>
+    </form>
+    @endif
 </div>
 @endif

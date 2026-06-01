@@ -2,6 +2,12 @@
 
 @section('title', 'Iniciar sesión — '.config('app.name'))
 
+@section('header')
+    <div class="absolute left-4 top-4 z-20 sm:left-6 sm:top-5">
+        @include('layouts._workbeef_link', ['variant' => 'login'])
+    </div>
+@endsection
+
 @section('content')
 <div class="mx-auto w-full max-w-md">
     <div class="mb-4 flex justify-center">
@@ -19,6 +25,12 @@
     </p>
 
     <div class="mt-5 rounded-xl border border-white/40 bg-transparent p-5 shadow-xl ring-1 ring-white/20 sm:mt-6 sm:p-6">
+            @if (session('status'))
+                <div class="mb-4 rounded-lg border border-amber-400/50 bg-amber-500/25 px-3 py-2 text-sm text-amber-950 backdrop-blur-sm">
+                    {{ session('status') }}
+                </div>
+            @endif
+
             @if ($errors->any())
                 <div class="mb-4 rounded-lg border border-red-400/50 bg-red-500/25 px-3 py-2 text-sm text-red-950 backdrop-blur-sm">
                     {{ $errors->first() }}

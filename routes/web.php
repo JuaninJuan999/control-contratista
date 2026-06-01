@@ -46,12 +46,12 @@ Route::middleware(['auth', 'restrict.consulta'])->group(function () {
             ->name('empresas.planilla.importar');
     });
 
-    Route::resource('contratistas-externos', ContratistaExternoController::class)->except(['show', 'destroy']);
+    Route::resource('contratistas-externos', ContratistaExternoController::class)->except(['show']);
     Route::patch('contratistas-externos/{contratistas_externo}/activo', [ContratistaExternoController::class, 'toggleActivo'])
         ->name('contratistas-externos.toggle-activo');
     Route::patch('contratistas-externos/{contratistaExterno}/mes', [ContratistaExternoController::class, 'toggleMes'])
         ->name('contratistas-externos.toggle-mes');
-    Route::resource('contratistas-internos', ContratistaInternoController::class)->except(['show', 'destroy']);
+    Route::resource('contratistas-internos', ContratistaInternoController::class)->except(['show']);
     Route::patch('contratistas-internos/{contratistas_interno}/activo', [ContratistaInternoController::class, 'toggleActivo'])
         ->name('contratistas-internos.toggle-activo');
     Route::patch('contratistas-internos/{contratistaInterno}/mes', [ContratistaInternoController::class, 'toggleMes'])

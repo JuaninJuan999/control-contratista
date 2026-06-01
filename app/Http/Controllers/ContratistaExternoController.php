@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateContratistaExternoRequest;
 use App\Models\ContratistaExterno;
 use App\Models\Empresa;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -106,5 +107,24 @@ class ContratistaExternoController extends Controller
         return redirect()
             ->route('contratistas-externos.index', ['anio' => $anio])
             ->with('success', 'Registro mensual actualizado.');
+    }
+
+    public function destroy(Request $request, ContratistaExterno $contratistasExterno): RedirectResponse
+    {
+        $anio = (int) $request->input('anio', $request->query('anio', now()->year));
+
+        if (! Auth::user()?->puedeEliminarContratistas()) {
+            return redirect()
+                ->route('contratistas-externos.index', ['anio' => $anio])
+                ->with('error', 'No tiene permiso para eliminar contratistas.');
+        }
+
+        $nombre = $contratistasExterno->nombres_apellidos;
+
+        $this->eliminarContratistaConDocumentos($contratistasExterno, 'externos');
+
+        return redirect()
+            ->route('contratistas-externos.index', ['anio' => $anio])
+            ->with('success', "Contratista externo «{$nombre}» eliminado correctamente.");
     }
 }

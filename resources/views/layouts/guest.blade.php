@@ -9,9 +9,11 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body
-    class="app-bg app-bg--sin-oscurecer flex h-dvh flex-col overflow-hidden bg-zinc-900 bg-fixed bg-contain bg-center bg-no-repeat text-zinc-900 antialiased"
+    class="app-bg app-bg--sin-oscurecer relative flex h-dvh flex-col overflow-hidden bg-zinc-900 bg-fixed bg-contain bg-center bg-no-repeat text-zinc-900 antialiased"
     style="background-image: url('{{ asset('image/fond.jpg') }}');"
 >
+    @yield('header')
+
     <main class="flex min-h-0 flex-1 flex-col items-center justify-center px-4 py-3">
         @yield('content')
     </main>

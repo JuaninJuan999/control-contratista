@@ -73,6 +73,11 @@ class User extends Authenticatable
         return $this->rol === UserRol::SUPERADMIN;
     }
 
+    public function puedeEliminarContratistas(): bool
+    {
+        return in_array($this->rol, [UserRol::SUPERADMIN, UserRol::ADMIN], true);
+    }
+
     public function puedeSerGestionadoPor(?self $actor): bool
     {
         if ($actor === null) {

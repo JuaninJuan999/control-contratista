@@ -23,7 +23,7 @@
                 @endforeach
                 <th class="px-3 py-3">Registro</th>
                 @if ($puedeEditar)
-                <th class="w-24 px-2 py-3 text-center">Acciones</th>
+                <th class="w-28 px-2 py-3 text-center">Acciones</th>
                 @endif
             </tr>
         </thead>
@@ -104,11 +104,12 @@
                         @endif
                     </td>
                     @if ($puedeEditar)
-                    <td class="px-3 py-2">
+                    <td class="px-2 py-2 text-center">
                         @include('contratistas._acciones_contratista', [
                             'contratista' => $c,
                             'editRoute' => route($rutaBase.'.edit', $c),
                             'toggleActivoRoute' => route($rutaBase.'.toggle-activo', $c),
+                            'destroyRoute' => route($rutaBase.'.destroy', $c),
                             'anio' => $anio,
                         ])
                     </td>

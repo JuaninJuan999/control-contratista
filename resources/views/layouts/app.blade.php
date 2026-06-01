@@ -50,6 +50,7 @@
                 >
                     Vehículos
                 </a>
+                @include('layouts._workbeef_link')
             </nav>
 
             <div class="flex shrink-0 items-center gap-2">
@@ -69,5 +70,11 @@
     @include('layouts._busqueda_resaltar_util')
     @include('layouts._busqueda_global_script')
     @include('layouts._menu_usuario_script')
+
+    @auth
+        @if (config('usabilidad.cerrar_sesion_por_inactividad'))
+            @include('layouts._sesion_inactividad_script')
+        @endif
+    @endauth
 </body>
 </html>

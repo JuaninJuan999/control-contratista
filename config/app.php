@@ -54,6 +54,8 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    'workbeef_url' => env('WORKBEEF_URL', 'http://192.168.20.205:8000/site.html'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
