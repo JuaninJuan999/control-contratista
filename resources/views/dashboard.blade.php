@@ -4,8 +4,8 @@
 
 @section('content')
     <div class="mb-5">
-        <h1 class="font-display text-2xl font-semibold text-zinc-950 md:text-3xl">Dashboard</h1>
-        <p class="mt-1 text-sm text-zinc-600">Resumen del sistema y alertas de vencimientos.</p>
+        <h1 class="login-text-glow font-display text-2xl font-semibold text-zinc-950 md:text-3xl">Dashboard</h1>
+        <p class="login-text-glow mt-1 text-sm font-medium text-zinc-900">Resumen del sistema y alertas de vencimientos.</p>
     </div>
 
     <div class="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:gap-4">

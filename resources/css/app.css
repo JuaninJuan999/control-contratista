@@ -136,3 +136,11 @@
         transform: none;
     }
 }
+
+.login-text-glow {
+    text-shadow:
+        0 0 8px rgb(255 255 255 / 1),
+        0 0 16px rgb(255 255 255 / 0.98),
+        0 0 24px rgb(255 255 255 / 0.92),
+        0 1px 2px rgb(255 255 255 / 1);
+}

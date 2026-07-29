@@ -20,7 +20,7 @@
     <h1 class="text-center font-display text-2xl font-semibold leading-snug tracking-tight text-zinc-950 drop-shadow-[0_1px_12px_rgba(255,255,255,0.95)] sm:text-3xl md:text-4xl">
         {{ config('app.name') }}
     </h1>
-    <p class="mx-auto mt-2 max-w-md text-center font-sans text-sm font-medium leading-relaxed tracking-wide text-zinc-800 drop-shadow-[0_1px_8px_rgba(255,255,255,0.92)] sm:mt-3 sm:text-[0.95rem]">
+    <p class="login-text-glow mx-auto mt-2 max-w-md text-center font-sans text-sm font-semibold leading-relaxed tracking-wide text-zinc-900 sm:mt-3 sm:text-[0.95rem]">
         Control de Contratistas Internos y Externos
     </p>
 
@@ -41,7 +41,7 @@
                 @csrf
 
                 <div>
-                    <label for="username" class="block text-sm font-semibold text-zinc-950">Usuario</label>
+                    <label for="username" class="login-text-glow block text-sm font-semibold text-zinc-950">Usuario</label>
                     <input
                         id="username"
                         name="username"
@@ -55,7 +55,7 @@
                 </div>
 
                 <div>
-                    <label for="password" class="block text-sm font-semibold text-zinc-950">Contraseña</label>
+                    <label for="password" class="login-text-glow block text-sm font-semibold text-zinc-950">Contraseña</label>
                     <div class="relative mt-1">
                         <input
                             id="password"
@@ -87,7 +87,7 @@
                     </div>
                 </div>
 
-                <label class="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-zinc-950">
+                <label class="login-text-glow inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-zinc-950">
                     <input type="checkbox" name="remember" value="1" class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900" {{ old('remember') ? 'checked' : '' }}>
                     Recordarme en este equipo
                 </label>
