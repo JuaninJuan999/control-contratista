@@ -2,7 +2,9 @@
     /** @var string $tipo  'externo' | 'interno' */
     $rutaBase = 'contratistas-'.$tipo.'s';
     $puedeEditar = auth()->user()?->puedeEditar();
-    $totalColumnas = 9 + count(\App\Models\ContratistaInterno::MESES) + 1 + ($puedeEditar ? 1 : 0);
+    $mostrarControlMensual = $mostrarControlMensual ?? ($tipo === 'interno');
+    $columnasMeses = $mostrarControlMensual ? count(\App\Models\ContratistaInterno::MESES) : 0;
+    $totalColumnas = 9 + $columnasMeses + 1 + ($puedeEditar ? 1 : 0);
 @endphp
 
 <div class="rounded-lg border border-zinc-200">
@@ -18,9 +20,11 @@
                 <th class="px-3 py-3">Días falt.</th>
                 <th class="px-3 py-3">Vencimiento</th>
                 <th class="px-3 py-3">Estado I/R</th>
+                @if ($mostrarControlMensual)
                 @foreach (\App\Models\ContratistaInterno::MESES as $mes => $abrev)
                     <th class="w-9 px-0.5 py-3 text-center text-[10px]">{{ $abrev }}</th>
                 @endforeach
+                @endif
                 <th class="px-3 py-3">Registro</th>
                 @if ($puedeEditar)
                 <th class="w-28 px-2 py-3 text-center">Acciones</th>
@@ -72,6 +76,7 @@
                             <span class="font-semibold text-zinc-400">—</span>
                         @endif
                     </td>
+                    @if ($mostrarControlMensual)
                     @foreach (\App\Models\ContratistaInterno::MESES as $mes => $abrev)
                         @php $estadoMes = $c->estadoMes($anio, $mes); @endphp
                         <td class="px-0.5 py-2 text-center">
@@ -96,6 +101,7 @@
                             @endif
                         </td>
                     @endforeach
+                    @endif
                     <td class="px-3 py-2">
                         @if ($c->activo)
                             <span class="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-800">Activo</span>
@@ -105,13 +111,12 @@
                     </td>
                     @if ($puedeEditar)
                     <td class="px-2 py-2 text-center">
-                        @include('contratistas._acciones_contratista', [
+                        @include('contratistas._acciones_contratista', array_merge([
                             'contratista' => $c,
                             'editRoute' => route($rutaBase.'.edit', $c),
                             'toggleActivoRoute' => route($rutaBase.'.toggle-activo', $c),
                             'destroyRoute' => route($rutaBase.'.destroy', $c),
-                            'anio' => $anio,
-                        ])
+                        ], $mostrarControlMensual ? ['anio' => $anio] : []))
                     </td>
                     @endif
                 </tr>
@@ -129,6 +134,7 @@
                             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Registro</dt><dd class="mt-0.5 text-zinc-900">{{ $c->activo ? 'Activo' : 'Inactivo' }}</dd></div>
                         </dl>
                         @include('contratistas._detalle_campos_adicionales', ['contratista' => $c])
+                        @if ($mostrarControlMensual)
                         <p class="mb-2 mt-3 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Control mensual {{ $anio }}</p>
                         <div class="flex flex-wrap gap-1">
                             @foreach (\App\Models\ContratistaInterno::MESES as $mes => $abrev)
@@ -138,6 +144,7 @@
                                 </span>
                             @endforeach
                         </div>
+                        @endif
                     </td>
                 </tr>
             @empty

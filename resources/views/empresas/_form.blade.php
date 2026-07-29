@@ -97,14 +97,22 @@
     </div>
     <div>
         <label for="planilla" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Planilla</label>
-        <input
-            type="text"
+        @php
+            $planillaSeleccionada = old('planilla', $empresa?->planilla ?? '');
+        @endphp
+        <select
             name="planilla"
             id="planilla"
-            value="{{ old('planilla', $empresa?->planilla ?? '') }}"
-            maxlength="255"
             class="{{ $inputClass }}"
         >
+            <option value="">Seleccionar…</option>
+            @if ($planillaSeleccionada && ! array_key_exists($planillaSeleccionada, \App\Support\PlanillaTipo::OPCIONES))
+                <option value="{{ $planillaSeleccionada }}" selected>{{ $planillaSeleccionada }}</option>
+            @endif
+            @foreach (\App\Support\PlanillaTipo::OPCIONES as $valor => $etiqueta)
+                <option value="{{ $valor }}" @selected($planillaSeleccionada === $valor)>{{ $etiqueta }}</option>
+            @endforeach
+        </select>
     </div>
 </div>
 

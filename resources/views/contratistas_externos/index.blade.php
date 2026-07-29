@@ -27,23 +27,12 @@
             </div>
         @endif
 
-        <form method="get" action="{{ route('contratistas-externos.index') }}" class="mb-3 flex flex-wrap items-end gap-3">
-            <div>
-                <label for="anio" class="block text-xs font-semibold text-zinc-950">Año de control</label>
-                <select name="anio" id="anio" class="mt-0.5 rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600" onchange="this.form.submit()">
-                    @for ($y = now()->year + 1; $y >= now()->year - 5; $y--)
-                        <option value="{{ $y }}" @selected($anio === $y)>{{ $y }}</option>
-                    @endfor
-                </select>
-            </div>
-        </form>
-
         @include('contratistas._filtros_contratistas_panel', ['filtrosTipo' => 'externo'])
 
         @include('contratistas._tabla_index', [
             'contratistas' => $contratistasExternos,
             'tipo' => 'externo',
-            'anio' => $anio,
+            'mostrarControlMensual' => false,
             'habilitarFiltrosCliente' => true,
         ])
     </div>

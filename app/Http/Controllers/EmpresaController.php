@@ -196,8 +196,10 @@ class EmpresaController extends Controller
     {
         $empresa->loadMissing(['contratistasExternos', 'contratistasInternos']);
 
-        return $empresa->contratistasExternos
-            ->map(fn (ContratistaExterno $contratista) => 'externo-'.$contratista->id)
+        return collect()
+            ->merge(
+                $empresa->contratistasExternos->map(fn (ContratistaExterno $contratista) => 'externo-'.$contratista->id)
+            )
             ->merge(
                 $empresa->contratistasInternos->map(fn (ContratistaInterno $contratista) => 'interno-'.$contratista->id)
             )

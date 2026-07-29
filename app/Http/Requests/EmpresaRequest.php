@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Empresa;
+use App\Support\PlanillaTipo;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 abstract class EmpresaRequest extends FormRequest
 {
@@ -16,7 +19,7 @@ abstract class EmpresaRequest extends FormRequest
             'correos' => ['nullable', 'array'],
             'correos.*' => ['required', 'email', 'max:255'],
             'limite' => ['nullable', 'date'],
-            'planilla' => ['nullable', 'string', 'max:255'],
+            'planilla' => ['nullable', 'string', Rule::in($this->planillasPermitidas())],
         ];
     }
 
@@ -57,7 +60,20 @@ abstract class EmpresaRequest extends FormRequest
             'telefono' => is_string($telefono) ? (trim($telefono) === '' ? null : trim($telefono)) : $telefono,
             'correos' => $correos === [] ? null : $correos,
             'limite' => $this->filled('limite') ? $this->input('limite') : null,
-            'planilla' => is_string($planilla) ? (trim($planilla) === '' ? null : trim($planilla)) : $planilla,
+            'planilla' => is_string($planilla) ? (trim($planilla) === '' ? null : strtoupper(trim($planilla))) : $planilla,
         ]);
+    }
+
+    /** @return list<string> */
+    protected function planillasPermitidas(): array
+    {
+        $valores = PlanillaTipo::valores();
+
+        $empresa = $this->route('empresa');
+        if ($empresa instanceof Empresa && is_string($empresa->planilla) && $empresa->planilla !== '') {
+            $valores[] = strtoupper($empresa->planilla);
+        }
+
+        return array_values(array_unique($valores));
     }
 }
