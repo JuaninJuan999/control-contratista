@@ -6,6 +6,7 @@ use App\Http\Controllers\ContratistaExternoController;
 use App\Http\Controllers\ContratistaInternoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmpresaController;
+use App\Http\Controllers\PlanillaController;
 use App\Http\Controllers\PlanillaContratistaController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UsabilidadController;
@@ -37,6 +38,10 @@ Route::middleware(['auth', 'restrict.consulta'])->group(function () {
 
     Route::resource('empresas', EmpresaController::class)->except(['show']);
 
+    Route::get('planillas', [PlanillaController::class, 'index'])->name('planillas.index');
+    Route::get('planillas/archivo/{archivo}/descargar', [PlanillaController::class, 'descargar'])
+        ->name('planillas.archivo.descargar');
+
     Route::middleware('access.usuarios')->group(function () {
         Route::get('empresas/{empresa}/planilla/importar', [PlanillaContratistaController::class, 'create'])
             ->name('empresas.planilla.create');
@@ -45,6 +50,13 @@ Route::middleware(['auth', 'restrict.consulta'])->group(function () {
         Route::post('empresas/{empresa}/planilla/importar', [PlanillaContratistaController::class, 'importar'])
             ->name('empresas.planilla.importar');
     });
+
+    Route::post('planillas/{empresa}/archivo', [PlanillaController::class, 'storeArchivo'])
+        ->name('planillas.archivo.store');
+    Route::patch('planillas/{empresa}/tipo', [PlanillaController::class, 'updateTipo'])
+        ->name('planillas.tipo.update');
+    Route::delete('planillas/archivo/{archivo}', [PlanillaController::class, 'destroyArchivo'])
+        ->name('planillas.archivo.destroy');
 
     Route::resource('contratistas-externos', ContratistaExternoController::class)->except(['show']);
     Route::patch('contratistas-externos/{contratistas_externo}/activo', [ContratistaExternoController::class, 'toggleActivo'])

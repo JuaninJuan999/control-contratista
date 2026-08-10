@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use App\Support\PeriodoPlanilla;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['nombre', 'nit', 'telefono', 'correos', 'limite', 'planilla'])]
+#[Fillable(['nombre', 'nit', 'telefono', 'correos', 'limite', 'planilla', 'tipo_empresa'])]
 class Empresa extends Model
 {
     protected function casts(): array
@@ -63,5 +64,42 @@ class Empresa extends Model
     public function vehiculos(): HasMany
     {
         return $this->hasMany(Vehiculo::class);
+    }
+
+    public function planillaArchivos(): HasMany
+    {
+        return $this->hasMany(EmpresaPlanillaArchivo::class)
+            ->orderByDesc('periodo_anio')
+            ->orderByDesc('periodo_mes');
+    }
+
+    /** @return array{anio: int, mes: int}|null */
+    public function periodoVigenciaActual(): ?array
+    {
+        if ($this->limite === null) {
+            return null;
+        }
+
+        return [
+            'anio' => (int) $this->limite->year,
+            'mes' => (int) $this->limite->month,
+        ];
+    }
+
+    public function archivoPlanillaPeriodo(int $anio, int $mes): ?EmpresaPlanillaArchivo
+    {
+        return $this->planillaArchivos
+            ->first(fn (EmpresaPlanillaArchivo $archivo) => $archivo->periodo_anio === $anio && $archivo->periodo_mes === $mes);
+    }
+
+    public function periodoVigenciaEtiqueta(): string
+    {
+        $periodo = $this->periodoVigenciaActual();
+
+        if ($periodo === null) {
+            return 'Sin fecha límite';
+        }
+
+        return PeriodoPlanilla::etiqueta($periodo['anio'], $periodo['mes']);
     }
 }

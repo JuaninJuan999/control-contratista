@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Empresa;
+use App\Support\EmpresaTipo;
 use App\Support\PlanillaTipo;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -20,6 +21,7 @@ abstract class EmpresaRequest extends FormRequest
             'correos.*' => ['required', 'email', 'max:255'],
             'limite' => ['nullable', 'date'],
             'planilla' => ['nullable', 'string', Rule::in($this->planillasPermitidas())],
+            'tipo_empresa' => ['nullable', 'string', Rule::in(EmpresaTipo::valores())],
         ];
     }
 
@@ -34,6 +36,7 @@ abstract class EmpresaRequest extends FormRequest
             'correos.*' => 'correo',
             'limite' => 'límite',
             'planilla' => 'planilla',
+            'tipo_empresa' => 'tipo de empresa',
         ];
     }
 
@@ -53,6 +56,7 @@ abstract class EmpresaRequest extends FormRequest
 
         $telefono = $this->input('telefono');
         $planilla = $this->input('planilla');
+        $tipoEmpresa = $this->input('tipo_empresa');
 
         $this->merge([
             'nombre' => is_string($this->input('nombre')) ? trim($this->input('nombre')) : $this->input('nombre'),
@@ -61,6 +65,7 @@ abstract class EmpresaRequest extends FormRequest
             'correos' => $correos === [] ? null : $correos,
             'limite' => $this->filled('limite') ? $this->input('limite') : null,
             'planilla' => is_string($planilla) ? (trim($planilla) === '' ? null : strtoupper(trim($planilla))) : $planilla,
+            'tipo_empresa' => is_string($tipoEmpresa) ? (trim($tipoEmpresa) === '' ? null : strtoupper(trim($tipoEmpresa))) : $tipoEmpresa,
         ]);
     }
 

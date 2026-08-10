@@ -84,7 +84,7 @@
     <p class="mt-1 text-[11px] leading-tight text-zinc-500">Puedes registrar varios correos de contacto.</p>
 </div>
 
-<div class="grid gap-3 sm:grid-cols-2">
+<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
     <div>
         <label for="limite" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Límite</label>
         <input
@@ -113,6 +113,23 @@
                 <option value="{{ $valor }}" @selected($planillaSeleccionada === $valor)>{{ $etiqueta }}</option>
             @endforeach
         </select>
+    </div>
+    <div>
+        <label for="tipo_empresa" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Clasificación empresa</label>
+        @php
+            $tipoEmpresaSeleccionado = old('tipo_empresa', $empresa?->tipo_empresa ?? '');
+        @endphp
+        <select
+            name="tipo_empresa"
+            id="tipo_empresa"
+            class="{{ $inputClass }}"
+        >
+            <option value="">Sin clasificar</option>
+            @foreach (\App\Support\EmpresaTipo::OPCIONES as $valor => $etiqueta)
+                <option value="{{ $valor }}" @selected($tipoEmpresaSeleccionado === $valor)>{{ $etiqueta }}</option>
+            @endforeach
+        </select>
+        <p class="mt-0.5 text-[11px] leading-tight text-zinc-500">Interna o externa según el tipo de relación con Colbeef.</p>
     </div>
 </div>
 

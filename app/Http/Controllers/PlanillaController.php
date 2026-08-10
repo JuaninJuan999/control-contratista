@@ -1,0 +1,149 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\StorePlanillaArchivoRequest;
+use App\Http\Requests\UpdateEmpresaTipoRequest;
+use App\Models\Empresa;
+use App\Models\EmpresaPlanillaArchivo;
+use App\Services\PlanillaEmpresaStorage;
+use App\Support\EmpresaTipo;
+use App\Support\PeriodoPlanilla;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
+class PlanillaController extends Controller
+{
+    public function index(Request $request): View
+    {
+        $tipoFiltro = $request->query('tipo_empresa');
+        if ($tipoFiltro !== null && $tipoFiltro !== 'SIN_CLASIFICAR' && ! in_array($tipoFiltro, EmpresaTipo::valores(), true)) {
+            $tipoFiltro = null;
+        }
+
+        $busqueda = trim((string) $request->query('q', ''));
+        $anioFiltro = (int) $request->query('anio', now()->year);
+        if ($anioFiltro < 2000 || $anioFiltro > 2100) {
+            $anioFiltro = now()->year;
+        }
+
+        $empresas = Empresa::query()
+            ->with(['planillaArchivos' => fn ($q) => $q->orderByDesc('periodo_anio')->orderByDesc('periodo_mes')])
+            ->withCount([
+                'planillaArchivos',
+                'planillaArchivos as planilla_archivos_anio_count' => fn ($q) => $q->where('periodo_anio', $anioFiltro),
+            ])
+            ->when($tipoFiltro === 'SIN_CLASIFICAR', fn ($q) => $q->whereNull('tipo_empresa'))
+            ->when(in_array($tipoFiltro, EmpresaTipo::valores(), true), fn ($q) => $q->where('tipo_empresa', $tipoFiltro))
+            ->when($busqueda !== '', function ($q) use ($busqueda) {
+                $q->where(function ($query) use ($busqueda) {
+                    $query->where('nombre', 'ilike', '%'.$busqueda.'%')
+                        ->orWhere('nit', 'ilike', '%'.$busqueda.'%');
+                });
+            })
+            ->orderBy('nombre')
+            ->get();
+
+        return view('planillas.index', compact('empresas', 'tipoFiltro', 'busqueda', 'anioFiltro'));
+    }
+
+    public function storeArchivo(StorePlanillaArchivoRequest $request, Empresa $empresa): RedirectResponse
+    {
+        if ($empresa->limite === null) {
+            return redirect()
+                ->route('planillas.index', $this->filtrosRedirect($request))
+                ->with('error', 'La empresa debe tener una fecha límite definida para registrar planillas mensuales.');
+        }
+
+        $anio = (int) $request->validated('periodo_anio');
+        $mes = (int) $request->validated('periodo_mes');
+        $archivo = $request->file('archivo');
+        $ruta = PlanillaEmpresaStorage::guardar($empresa->id, $archivo);
+
+        $datosArchivo = [
+            'archivo' => $ruta,
+            'nombre_original' => $archivo->getClientOriginalName(),
+            'mime' => $archivo->getClientMimeType(),
+            'tamano_bytes' => $archivo->getSize(),
+            'user_id' => $request->user()?->id,
+            'vigencia_hasta' => $empresa->limite,
+        ];
+
+        $registro = EmpresaPlanillaArchivo::query()
+            ->where('empresa_id', $empresa->id)
+            ->where('periodo_anio', $anio)
+            ->where('periodo_mes', $mes)
+            ->first();
+
+        if ($registro !== null) {
+            PlanillaEmpresaStorage::eliminar($registro->archivo);
+            $registro->update($datosArchivo);
+
+            $mensaje = "Planilla de «{$empresa->nombre}» actualizada para ".PeriodoPlanilla::etiqueta($anio, $mes).'.';
+        } else {
+            EmpresaPlanillaArchivo::query()->create([
+                'empresa_id' => $empresa->id,
+                'periodo_anio' => $anio,
+                'periodo_mes' => $mes,
+                ...$datosArchivo,
+            ]);
+
+            $mensaje = "Planilla de «{$empresa->nombre}» registrada para ".PeriodoPlanilla::etiqueta($anio, $mes).'.';
+        }
+
+        return redirect()
+            ->route('planillas.index', array_merge($this->filtrosRedirect($request), ['abrir' => $empresa->id]))
+            ->with('success', $mensaje);
+    }
+
+    public function updateTipo(UpdateEmpresaTipoRequest $request, Empresa $empresa): RedirectResponse
+    {
+        $empresa->update([
+            'tipo_empresa' => $request->validated('tipo_empresa'),
+        ]);
+
+        return redirect()
+            ->route('planillas.index', $this->filtrosRedirect($request))
+            ->with('success', "Clasificación de «{$empresa->nombre}» actualizada.");
+    }
+
+    public function destroyArchivo(Request $request, EmpresaPlanillaArchivo $archivo): RedirectResponse
+    {
+        abort_unless($request->user()?->puedeEditar(), 403);
+
+        $empresa = $archivo->empresa;
+        $nombreEmpresa = $empresa?->nombre ?? 'Empresa';
+        $periodo = $archivo->periodoEtiqueta();
+
+        PlanillaEmpresaStorage::eliminar($archivo->archivo);
+        $archivo->delete();
+
+        $redirect = array_merge($this->filtrosRedirect($request), $empresa ? ['abrir' => $empresa->id] : []);
+
+        return redirect()
+            ->route('planillas.index', $redirect)
+            ->with('success', "Registro de {$periodo} de «{$nombreEmpresa}» eliminado.");
+    }
+
+    public function descargar(EmpresaPlanillaArchivo $archivo): StreamedResponse
+    {
+        abort_unless(Storage::disk('public')->exists($archivo->archivo), 404);
+
+        $nombre = $archivo->nombre_original ?: basename($archivo->archivo);
+
+        return Storage::disk('public')->download($archivo->archivo, $nombre);
+    }
+
+    /** @return array<string, string|int> */
+    private function filtrosRedirect(Request $request): array
+    {
+        return array_filter([
+            'tipo_empresa' => $request->input('_filtro_tipo'),
+            'q' => $request->input('_filtro_q'),
+            'anio' => $request->input('_filtro_anio'),
+        ], fn ($valor) => $valor !== null && $valor !== '');
+    }
+}

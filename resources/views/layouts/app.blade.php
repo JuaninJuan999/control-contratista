@@ -33,6 +33,12 @@
                     Empresas
                 </a>
                 <a
+                    href="{{ route('planillas.index') }}"
+                    class="shrink-0 rounded-lg px-2 py-1.5 transition md:px-3 md:py-2 {{ request()->routeIs('planillas.*') ? 'bg-emerald-700 text-white' : 'text-zinc-700 hover:bg-zinc-100' }}"
+                >
+                    Planillas
+                </a>
+                <a
                     href="{{ route('contratistas-externos.index') }}"
                     class="shrink-0 rounded-lg px-2 py-1.5 transition md:px-3 md:py-2 {{ request()->routeIs('contratistas-externos.*') ? 'bg-emerald-700 text-white' : 'text-zinc-700 hover:bg-zinc-100' }}"
                 >
