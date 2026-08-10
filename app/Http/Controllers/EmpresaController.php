@@ -25,8 +25,9 @@ class EmpresaController extends Controller
                 'contratistasExternos' => fn ($q) => $q->orderBy('nombres_apellidos'),
                 'contratistasInternos' => fn ($q) => $q->orderBy('nombres_apellidos'),
                 'vehiculos' => fn ($q) => $q->orderBy('placa'),
+                'planillaArchivos' => fn ($q) => $q->orderByDesc('vigencia_hasta')->orderByDesc('periodo_anio')->orderByDesc('periodo_mes'),
             ])
-            ->withCount(['contratistasExternos', 'contratistasInternos', 'vehiculos'])
+            ->withCount(['contratistasExternos', 'contratistasInternos', 'vehiculos', 'planillaArchivos'])
             ->orderBy('nombre')
             ->paginate(15)
             ->withQueryString();

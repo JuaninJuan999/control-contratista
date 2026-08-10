@@ -47,13 +47,17 @@ class EmpresaPlanillaArchivo extends Model
 
     public function esPeriodoVigenteActual(): bool
     {
-        $periodo = $this->empresa?->periodoVigenciaActual();
+        $empresa = $this->empresa;
 
-        if ($periodo === null) {
+        if ($empresa === null || $empresa->limite === null || $this->vigencia_hasta === null) {
             return false;
         }
 
-        return $this->periodo_anio === $periodo['anio'] && $this->periodo_mes === $periodo['mes'];
+        if ($empresa->estado_limite === 'VENCIDA') {
+            return false;
+        }
+
+        return $this->vigencia_hasta->isSameDay($empresa->limite);
     }
 
     public function tamanoLegible(): string

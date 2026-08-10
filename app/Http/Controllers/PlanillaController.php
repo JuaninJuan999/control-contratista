@@ -8,7 +8,6 @@ use App\Models\Empresa;
 use App\Models\EmpresaPlanillaArchivo;
 use App\Services\PlanillaEmpresaStorage;
 use App\Support\EmpresaTipo;
-use App\Support\PeriodoPlanilla;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,7 +30,7 @@ class PlanillaController extends Controller
         }
 
         $empresas = Empresa::query()
-            ->with(['planillaArchivos' => fn ($q) => $q->orderByDesc('periodo_anio')->orderByDesc('periodo_mes')])
+            ->with(['planillaArchivos' => fn ($q) => $q->orderByDesc('vigencia_hasta')->orderByDesc('periodo_anio')->orderByDesc('periodo_mes')])
             ->withCount([
                 'planillaArchivos',
                 'planillaArchivos as planilla_archivos_anio_count' => fn ($q) => $q->where('periodo_anio', $anioFiltro),
@@ -58,40 +57,47 @@ class PlanillaController extends Controller
                 ->with('error', 'La empresa debe tener una fecha límite definida para registrar planillas mensuales.');
         }
 
-        $anio = (int) $request->validated('periodo_anio');
-        $mes = (int) $request->validated('periodo_mes');
+        if ($empresa->estado_limite === 'VENCIDA') {
+            return redirect()
+                ->route('planillas.index', array_merge($this->filtrosRedirect($request), ['abrir' => $empresa->id]))
+                ->with('error', 'La fecha límite venció el '.$empresa->limite->format('d/m/Y').'. Renueve la vigencia en Empresas y luego adjunte la nueva planilla de seguridad social.');
+        }
+
+        $vigenciaHasta = $empresa->limite->copy()->startOfDay();
+        $anio = (int) $vigenciaHasta->year;
+        $mes = (int) $vigenciaHasta->month;
+
         $archivo = $request->file('archivo');
         $ruta = PlanillaEmpresaStorage::guardar($empresa->id, $archivo);
 
         $datosArchivo = [
+            'periodo_anio' => $anio,
+            'periodo_mes' => $mes,
             'archivo' => $ruta,
             'nombre_original' => $archivo->getClientOriginalName(),
             'mime' => $archivo->getClientMimeType(),
             'tamano_bytes' => $archivo->getSize(),
             'user_id' => $request->user()?->id,
-            'vigencia_hasta' => $empresa->limite,
+            'vigencia_hasta' => $vigenciaHasta,
         ];
 
         $registro = EmpresaPlanillaArchivo::query()
             ->where('empresa_id', $empresa->id)
-            ->where('periodo_anio', $anio)
-            ->where('periodo_mes', $mes)
+            ->whereDate('vigencia_hasta', $vigenciaHasta)
             ->first();
 
         if ($registro !== null) {
             PlanillaEmpresaStorage::eliminar($registro->archivo);
             $registro->update($datosArchivo);
 
-            $mensaje = "Planilla de «{$empresa->nombre}» actualizada para ".PeriodoPlanilla::etiqueta($anio, $mes).'.';
+            $mensaje = "Planilla de «{$empresa->nombre}» actualizada para vigencia hasta ".$vigenciaHasta->format('d/m/Y').'.';
         } else {
             EmpresaPlanillaArchivo::query()->create([
                 'empresa_id' => $empresa->id,
-                'periodo_anio' => $anio,
-                'periodo_mes' => $mes,
                 ...$datosArchivo,
             ]);
 
-            $mensaje = "Planilla de «{$empresa->nombre}» registrada para ".PeriodoPlanilla::etiqueta($anio, $mes).'.';
+            $mensaje = "Planilla de «{$empresa->nombre}» registrada para vigencia hasta ".$vigenciaHasta->format('d/m/Y').'.';
         }
 
         return redirect()

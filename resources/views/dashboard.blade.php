@@ -12,8 +12,28 @@
         <a href="{{ route('empresas.index') }}" class="dash-stat-card dash-stat-card--empresas hover:border-emerald-300" style="animation-delay: 0.05s">
             <p class="text-2xl leading-none" aria-hidden="true">🏢</p>
             <p class="mt-1.5 text-[11px] font-bold uppercase tracking-wide text-emerald-800/70">Empresas</p>
-            <p class="mt-1 font-display text-3xl font-bold tabular-nums text-emerald-900">{{ $totales['empresas'] }}</p>
-            <p class="mt-0.5 text-xs text-emerald-800/60">Registradas</p>
+            <div class="mt-2 grid grid-cols-2 gap-x-3 gap-y-2">
+                <div>
+                    <p class="font-display text-3xl font-bold tabular-nums leading-none text-emerald-900">{{ $totales['empresas'] }}</p>
+                    <p class="mt-0.5 text-xs text-emerald-800/60">Registradas</p>
+                </div>
+                <div class="space-y-1.5">
+                    <div class="flex items-baseline justify-between gap-2">
+                        <span class="text-[10px] font-bold uppercase tracking-wide text-violet-800/80">Interna</span>
+                        <span class="font-display text-lg font-bold tabular-nums text-violet-900">{{ $totales['empresas_internas'] }}</span>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-2">
+                        <span class="text-[10px] font-bold uppercase tracking-wide text-sky-800/80">Externa</span>
+                        <span class="font-display text-lg font-bold tabular-nums text-sky-900">{{ $totales['empresas_externas'] }}</span>
+                    </div>
+                    @if ($totales['empresas_sin_clasificar'] > 0)
+                    <div class="flex items-baseline justify-between gap-2">
+                        <span class="text-[10px] font-bold uppercase tracking-wide text-zinc-600">Sin clasificar</span>
+                        <span class="font-display text-lg font-bold tabular-nums text-zinc-700">{{ $totales['empresas_sin_clasificar'] }}</span>
+                    </div>
+                    @endif
+                </div>
+            </div>
         </a>
         <a href="{{ route('contratistas-externos.index') }}" class="dash-stat-card dash-stat-card--externos hover:border-sky-300" style="animation-delay: 0.1s">
             <p class="text-2xl leading-none" aria-hidden="true">👷</p>

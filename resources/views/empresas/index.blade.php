@@ -68,7 +68,19 @@
                     </select>
                 </div>
                 <div>
-                    <label for="filtro-planilla" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Planilla</label>
+                    <label for="filtro-tipo-empresa" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Clasificación</label>
+                    <select
+                        id="filtro-tipo-empresa"
+                        class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                    >
+                        <option value="">Todas</option>
+                        <option value="INTERNA">Interna</option>
+                        <option value="EXTERNA">Externa</option>
+                        <option value="SIN_CLASIFICAR">Sin clasificar</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="filtro-planilla" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Tipo planilla</label>
                     <select
                         id="filtro-planilla"
                         class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
@@ -91,7 +103,7 @@
             <p id="filtro-empresas-resumen" class="mt-3 hidden text-xs font-medium text-emerald-800"></p>
         </div>
 
-        <p class="mb-4 text-xs text-zinc-600 md:text-sm">Haz clic en una empresa para ver <strong>Contratistas</strong> y <strong>Vehículos</strong>. Luego expande cada sección y el registro que quieras consultar.</p>
+        <p class="mb-4 text-xs text-zinc-600 md:text-sm">Haz clic en una empresa para ver <strong>Contratistas</strong>, <strong>Vehículos</strong> y <strong>Planilla</strong>. Luego expande cada sección y el registro que quieras consultar.</p>
 
         <div class="rounded-lg border border-zinc-200">
         <table class="w-full table-auto text-left text-sm">
@@ -104,7 +116,8 @@
                     <th class="px-3 py-3">Correos</th>
                     <th class="px-3 py-3">Límite</th>
                     <th class="px-3 py-3">Estado</th>
-                    <th class="px-3 py-3">Planilla</th>
+                    <th class="px-3 py-3">Clasificación</th>
+                    <th class="px-3 py-3">Tipo planilla</th>
                     @if (auth()->user()?->puedeEditar())
                     <th class="w-20 px-2 py-3 text-center">Acciones</th>
                     @endif
@@ -112,12 +125,17 @@
             </thead>
             <tbody class="divide-y divide-zinc-200">
                 @forelse ($empresas as $empresa)
+                    @php
+                        $planillaVigenteAdjunta = $empresa->planillaVigenteAdjunta();
+                        $limiteVencido = $empresa->estado_limite === 'VENCIDA';
+                    @endphp
                     <tr
                         class="empresa-fila cursor-pointer bg-white hover:bg-emerald-50/60"
                         data-empresa-toggle="{{ $empresa->id }}"
                         data-filtro-nombre="{{ mb_strtolower($empresa->nombre, 'UTF-8') }}"
                         data-filtro-nit="{{ mb_strtolower($empresa->nit ?? '', 'UTF-8') }}"
                         data-filtro-estado="{{ $empresa->estado_limite ?? 'SIN FECHA' }}"
+                        data-filtro-tipo-empresa="{{ $empresa->tipo_empresa ?? 'SIN_CLASIFICAR' }}"
                         data-filtro-planilla="{{ mb_strtolower($empresa->planilla ?? '', 'UTF-8') }}"
                         aria-expanded="false"
                     >
@@ -136,6 +154,13 @@
                                     <span class="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-zinc-700">
                                         {{ $empresa->vehiculos_count }} vehículo{{ $empresa->vehiculos_count === 1 ? '' : 's' }}
                                     </span>
+                                @endif
+                                @if ($planillaVigenteAdjunta)
+                                    <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-800" title="Planilla SS adjunta para la vigencia actual">Planilla SS</span>
+                                @elseif ($limiteVencido)
+                                    <span class="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-800" title="Fecha límite vencida; renueve y adjunte nueva planilla">SS vencida</span>
+                                @elseif ($empresa->limite !== null)
+                                    <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-900" title="Planilla SS pendiente para la vigencia actual">SS pendiente</span>
                                 @endif
                             </div>
                         </td>
@@ -166,6 +191,15 @@
                                 <span class="rounded bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-800">Vencida ({{ $diasVencida }} día{{ $diasVencida === 1 ? '' : 's' }})</span>
                             @endif
                         </td>
+                        <td class="px-3 py-2 whitespace-nowrap">
+                            @if ($empresa->tipo_empresa === \App\Support\EmpresaTipo::INTERNA)
+                                <span class="rounded bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-800">Interna</span>
+                            @elseif ($empresa->tipo_empresa === \App\Support\EmpresaTipo::EXTERNA)
+                                <span class="rounded bg-sky-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-sky-800">Externa</span>
+                            @else
+                                <span class="rounded bg-zinc-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-zinc-700">Sin clasificar</span>
+                            @endif
+                        </td>
                         <td class="px-3 py-2 text-zinc-800">{{ $empresa->planilla ?? '—' }}</td>
                         @if (auth()->user()?->puedeEditar())
                         <td class="px-2 py-2 text-center" data-acciones>
@@ -192,17 +226,42 @@
                         @endif
                     </tr>
                     <tr class="empresa-detalle hidden bg-zinc-50/80" data-empresa-panel="{{ $empresa->id }}" hidden>
-                        <td colspan="{{ auth()->user()?->puedeEditar() ? 9 : 8 }}" class="px-4 py-3">
+                        <td colspan="{{ auth()->user()?->puedeEditar() ? 10 : 9 }}" class="px-4 py-3">
                             @php
                                 $totalContratistasEmpresa = $empresa->contratistasExternos->count() + $empresa->contratistasInternos->count();
                                 $categoriaContratistasId = 'empresa-'.$empresa->id.'-contratistas';
                                 $categoriaVehiculosId = 'empresa-'.$empresa->id.'-vehiculos';
+                                $categoriaPlanillaId = 'empresa-'.$empresa->id.'-planilla';
                             @endphp
-                            @if ($totalContratistasEmpresa === 0 && $empresa->vehiculos->isEmpty())
-                                <p class="text-sm text-zinc-500">Esta empresa no tiene contratistas ni vehículos vinculados.</p>
-                            @else
-                                <div class="divide-y divide-zinc-200 overflow-hidden rounded-lg border border-zinc-200 bg-white">
-                                    {{-- Categoría Contratistas --}}
+                            <div class="divide-y divide-zinc-200 overflow-hidden rounded-lg border border-zinc-200 bg-white">
+                                {{-- Categoría Planilla --}}
+                                <div class="categoria-grupo" data-categoria-grupo="{{ $categoriaPlanillaId }}">
+                                    <button
+                                        type="button"
+                                        class="categoria-toggle flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-zinc-50"
+                                        data-categoria-toggle="{{ $categoriaPlanillaId }}"
+                                        aria-expanded="false"
+                                    >
+                                        <svg class="categoria-chevron size-4 shrink-0 text-emerald-700 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd" />
+                                        </svg>
+                                        <span class="text-sm font-bold uppercase tracking-wide text-emerald-800">Planilla</span>
+                                        @if ($planillaVigenteAdjunta)
+                                            <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-900">Adjuntada</span>
+                                        @elseif ($limiteVencido)
+                                            <span class="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-800">Límite vencido</span>
+                                        @elseif ($empresa->limite !== null)
+                                            <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-900">Pendiente</span>
+                                        @else
+                                            <span class="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-bold text-zinc-700">Sin vigencia</span>
+                                        @endif
+                                    </button>
+                                    <div class="categoria-panel hidden border-t border-zinc-100 bg-zinc-50/40" data-categoria-panel="{{ $categoriaPlanillaId }}" hidden>
+                                        @include('empresas._planilla_section', ['empresa' => $empresa])
+                                    </div>
+                                </div>
+
+                                {{-- Categoría Contratistas --}}
                                     <div class="categoria-grupo" data-categoria-grupo="{{ $categoriaContratistasId }}">
                                         <button
                                             type="button"
@@ -292,13 +351,12 @@
                                             @endif
                                         </div>
                                     </div>
-                                </div>
-                            @endif
+                            </div>
                         </td>
                     </tr>
                 @empty
                     <tr id="tabla-empresas-vacia">
-                        <td colspan="{{ auth()->user()?->puedeEditar() ? 9 : 8 }}" class="px-3 py-8 text-center text-zinc-500">
+                        <td colspan="{{ auth()->user()?->puedeEditar() ? 10 : 9 }}" class="px-3 py-8 text-center text-zinc-500">
                             No hay empresas registradas.
                             @if (auth()->user()?->puedeEditar())
                             <a href="{{ route('empresas.create') }}" class="font-medium text-emerald-700 underline hover:text-emerald-800">Crear una</a>
@@ -307,7 +365,7 @@
                     </tr>
                 @endforelse
                 <tr id="filtro-empresas-sin-resultados" class="hidden">
-                    <td colspan="{{ auth()->user()?->puedeEditar() ? 9 : 8 }}" class="px-3 py-8 text-center text-zinc-500">
+                    <td colspan="{{ auth()->user()?->puedeEditar() ? 10 : 9 }}" class="px-3 py-8 text-center text-zinc-500">
                         No hay empresas que coincidan con los filtros.
                     </td>
                 </tr>
@@ -332,6 +390,7 @@
                 return normalizar(document.getElementById('filtro-nombre')?.value)
                     || normalizar(document.getElementById('filtro-nit')?.value)
                     || (document.getElementById('filtro-estado')?.value || '')
+                    || (document.getElementById('filtro-tipo-empresa')?.value || '')
                     || normalizar(document.getElementById('filtro-planilla')?.value);
             }
 
@@ -339,6 +398,7 @@
                 var nombre = normalizar(document.getElementById('filtro-nombre')?.value);
                 var nit = normalizar(document.getElementById('filtro-nit')?.value);
                 var estado = document.getElementById('filtro-estado')?.value || '';
+                var tipoEmpresa = document.getElementById('filtro-tipo-empresa')?.value || '';
                 var planilla = normalizar(document.getElementById('filtro-planilla')?.value);
                 var visibles = 0;
                 var total = 0;
@@ -354,6 +414,9 @@
                         coincide = false;
                     }
                     if (estado && fila.getAttribute('data-filtro-estado') !== estado) {
+                        coincide = false;
+                    }
+                    if (tipoEmpresa && fila.getAttribute('data-filtro-tipo-empresa') !== tipoEmpresa) {
                         coincide = false;
                     }
                     if (planilla && fila.getAttribute('data-filtro-planilla') !== planilla) {
@@ -405,11 +468,13 @@
                 var nombre = document.getElementById('filtro-nombre');
                 var nit = document.getElementById('filtro-nit');
                 var estado = document.getElementById('filtro-estado');
+                var tipoEmpresa = document.getElementById('filtro-tipo-empresa');
                 var planilla = document.getElementById('filtro-planilla');
 
                 if (nombre) nombre.value = '';
                 if (nit) nit.value = '';
                 if (estado) estado.value = '';
+                if (tipoEmpresa) tipoEmpresa.value = '';
                 if (planilla) planilla.value = '';
 
                 aplicarFiltrosEmpresas();

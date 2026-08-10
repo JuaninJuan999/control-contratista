@@ -9,7 +9,7 @@
         <div class="mb-4">
             <h1 class="login-text-glow font-display text-2xl font-semibold text-zinc-950 md:text-3xl">Planillas</h1>
             <p class="login-text-glow mt-1 text-sm font-medium text-zinc-900">
-                Adjunte la seguridad social de cada empresa por mes de vigencia. El periodo se toma de la <strong>fecha límite</strong> de la empresa; cada mes se conserva un registro histórico.
+                Adjunte la seguridad social de cada empresa por ciclo de vigencia. Cada archivo queda vinculado a la <strong>fecha límite</strong> de la empresa (<strong>vigencia hasta</strong>). Al vencer esa fecha o renovarla, debe adjuntar la nueva planilla.
             </p>
         </div>
 
@@ -73,9 +73,8 @@
                     @forelse ($empresas as $empresa)
                         @php
                             $periodoVigente = $empresa->periodoVigenciaActual();
-                            $archivoVigente = $periodoVigente
-                                ? $empresa->planillaArchivos->first(fn ($a) => $a->periodo_anio === $periodoVigente['anio'] && $a->periodo_mes === $periodoVigente['mes'])
-                                : null;
+                            $archivoVigente = $empresa->archivoPlanillaVigenteActual();
+                            $planillaAdjunta = $empresa->planillaVigenteAdjunta();
                             $archivosAnio = $empresa->planillaArchivos->where('periodo_anio', $anioFiltro);
                         @endphp
                         <tr
@@ -103,8 +102,10 @@
                             <td class="px-3 py-3">
                                 @if ($periodoVigente === null)
                                     <span class="rounded bg-zinc-200 px-2 py-0.5 text-[10px] font-bold uppercase text-zinc-700">Sin límite</span>
-                                @elseif ($archivoVigente)
+                                @elseif ($planillaAdjunta)
                                     <span class="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-800">Adjuntada</span>
+                                @elseif ($empresa->estado_limite === 'VENCIDA')
+                                    <span class="rounded bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase text-red-800">Límite vencido</span>
                                 @else
                                     <span class="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-900">Pendiente</span>
                                 @endif
@@ -117,8 +118,6 @@
                                     'anioFiltro' => $anioFiltro,
                                     'tipoFiltro' => $tipoFiltro,
                                     'busqueda' => $busqueda,
-                                    'periodoVigente' => $periodoVigente,
-                                    'archivoVigente' => $archivoVigente,
                                 ])
                             </td>
                         </tr>
@@ -132,7 +131,7 @@
         </div>
 
         <p class="mt-3 text-xs text-zinc-500">
-            Formatos: PDF o Excel (.xlsx, .xls), máx. 10 MB. Un registro por mes y empresa; si vuelve a subir el mismo periodo, se reemplaza el archivo anterior.
+            Formatos: PDF o Excel (.xlsx, .xls), máx. 10 MB. Un registro por fecha límite (vigencia hasta); al renovar la vigencia debe adjuntar la nueva planilla.
         </p>
     </div>
 

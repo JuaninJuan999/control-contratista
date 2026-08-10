@@ -69,6 +69,7 @@ class Empresa extends Model
     public function planillaArchivos(): HasMany
     {
         return $this->hasMany(EmpresaPlanillaArchivo::class)
+            ->orderByDesc('vigencia_hasta')
             ->orderByDesc('periodo_anio')
             ->orderByDesc('periodo_mes');
     }
@@ -86,10 +87,47 @@ class Empresa extends Model
         ];
     }
 
+    /** Planilla SS adjunta para la fecha límite vigente actual. */
+    public function archivoPlanillaVigenteActual(): ?EmpresaPlanillaArchivo
+    {
+        if ($this->limite === null) {
+            return null;
+        }
+
+        $limite = $this->limite->copy()->startOfDay();
+
+        return $this->planillaArchivos->first(
+            fn (EmpresaPlanillaArchivo $archivo) => $archivo->vigencia_hasta?->copy()->startOfDay()->equalTo($limite)
+        );
+    }
+
     public function archivoPlanillaPeriodo(int $anio, int $mes): ?EmpresaPlanillaArchivo
     {
         return $this->planillaArchivos
             ->first(fn (EmpresaPlanillaArchivo $archivo) => $archivo->periodo_anio === $anio && $archivo->periodo_mes === $mes);
+    }
+
+    /** Hay planilla SS válida para el ciclo de vigencia actual (fecha límite no vencida y archivo coincidente). */
+    public function planillaVigenteAdjunta(): bool
+    {
+        if ($this->limite === null || $this->estado_limite === 'VENCIDA') {
+            return false;
+        }
+
+        return $this->archivoPlanillaVigenteActual() !== null;
+    }
+
+    public function requierePlanillaAdjunta(): bool
+    {
+        if ($this->limite === null) {
+            return false;
+        }
+
+        if ($this->estado_limite === 'VENCIDA') {
+            return true;
+        }
+
+        return $this->archivoPlanillaVigenteActual() === null;
     }
 
     public function periodoVigenciaEtiqueta(): string

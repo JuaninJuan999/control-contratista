@@ -6,6 +6,7 @@ use App\Models\ContratistaExterno;
 use App\Models\ContratistaInterno;
 use App\Models\Empresa;
 use App\Models\Vehiculo;
+use App\Support\EmpresaTipo;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
@@ -45,6 +46,9 @@ class DashboardController extends Controller
 
         $totales = [
             'empresas' => Empresa::query()->count(),
+            'empresas_internas' => Empresa::query()->where('tipo_empresa', EmpresaTipo::INTERNA)->count(),
+            'empresas_externas' => Empresa::query()->where('tipo_empresa', EmpresaTipo::EXTERNA)->count(),
+            'empresas_sin_clasificar' => Empresa::query()->whereNull('tipo_empresa')->count(),
             'contratistas_externos' => ContratistaExterno::query()->count(),
             'contratistas_internos' => ContratistaInterno::query()->count(),
             'vehiculos' => Vehiculo::query()->count(),

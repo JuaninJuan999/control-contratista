@@ -2,7 +2,9 @@
     use App\Support\PeriodoPlanilla;
 
     $archivosHistorial = $empresa->planillaArchivos;
-    $periodoDefault = $periodoVigente ?? ['anio' => $anioFiltro, 'mes' => (int) now()->month];
+    $periodoVigente = $empresa->periodoVigenciaActual();
+    $archivoVigente = $empresa->archivoPlanillaVigenteActual();
+    $planillaAdjunta = $empresa->planillaVigenteAdjunta();
 @endphp
 
 <div class="grid gap-4 lg:grid-cols-2">
@@ -29,15 +31,10 @@
                     </thead>
                     <tbody class="divide-y divide-zinc-100">
                         @foreach ($archivosHistorial as $archivo)
-                            @php
-                                $esVigente = $periodoVigente
-                                    && $archivo->periodo_anio === $periodoVigente['anio']
-                                    && $archivo->periodo_mes === $periodoVigente['mes'];
-                            @endphp
-                            <tr class="{{ $esVigente ? 'bg-emerald-50/60' : '' }}">
+                            <tr class="{{ $archivo->esPeriodoVigenteActual() ? 'bg-emerald-50/60' : '' }}">
                                 <td class="px-3 py-2 font-semibold text-zinc-900">
                                     {{ PeriodoPlanilla::etiqueta($archivo->periodo_anio, $archivo->periodo_mes) }}
-                                    @if ($esVigente)
+                                    @if ($archivo->esPeriodoVigenteActual())
                                         <span class="ml-1 rounded bg-emerald-200 px-1.5 py-0.5 text-[9px] font-bold uppercase text-emerald-900">Vigente</span>
                                     @endif
                                 </td>
@@ -79,6 +76,15 @@
                     <a href="{{ route('empresas.edit', $empresa) }}" class="font-semibold underline hover:text-amber-900">Empresas → Editar</a>
                     para vincular la vigencia mensual de la planilla.
                 </div>
+            @elseif ($empresa->estado_limite === 'VENCIDA')
+                <div class="rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-950">
+                    <p class="font-semibold">La fecha límite venció el {{ $empresa->limite->format('d/m/Y') }}.</p>
+                    <p class="mt-1">
+                        Renueve la vigencia en
+                        <a href="{{ route('empresas.edit', $empresa) }}" class="font-semibold underline hover:text-red-900">Empresas → Editar</a>
+                        (por ejemplo, al {{ $empresa->limite->copy()->addMonth()->format('d/m/Y') }}) y luego adjunte aquí la nueva seguridad social.
+                    </p>
+                </div>
             @else
                 <form action="{{ route('planillas.archivo.store', $empresa) }}" method="post" enctype="multipart/form-data" class="rounded-lg border border-zinc-200 bg-white p-4">
                     @csrf
@@ -87,31 +93,14 @@
                     <input type="hidden" name="_filtro_anio" value="{{ $anioFiltro }}">
 
                     <p class="mb-3 text-xs text-zinc-600">
-                        Vigencia actual: <strong>{{ $empresa->limite->format('d/m/Y') }}</strong>
-                        (periodo <strong>{{ PeriodoPlanilla::etiqueta($periodoDefault['anio'], $periodoDefault['mes']) }}</strong>).
+                        Vigencia hasta: <strong>{{ $empresa->limite->format('d/m/Y') }}</strong>
+                        (periodo <strong>{{ $empresa->periodoVigenciaEtiqueta() }}</strong>).
                         @if ($archivoVigente)
-                            Ya existe un archivo para este periodo; al subir otro se <strong>reemplazará</strong>.
+                            Ya existe un archivo para esta vigencia; al subir otro se <strong>reemplazará</strong>.
+                        @else
+                            Debe adjuntar la planilla que corresponde a esta fecha límite.
                         @endif
                     </p>
-
-                    <div class="mb-3 grid gap-3 sm:grid-cols-2">
-                        <div>
-                            <label for="periodo_mes_{{ $empresa->id }}" class="mb-1 block text-xs font-semibold text-zinc-800">Mes de vigencia</label>
-                            <select name="periodo_mes" id="periodo_mes_{{ $empresa->id }}" required class="w-full rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600">
-                                @foreach (PeriodoPlanilla::MESES as $num => $nombreMes)
-                                    <option value="{{ $num }}" @selected($periodoDefault['mes'] === $num)>{{ $nombreMes }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label for="periodo_anio_{{ $empresa->id }}" class="mb-1 block text-xs font-semibold text-zinc-800">Año de vigencia</label>
-                            <select name="periodo_anio" id="periodo_anio_{{ $empresa->id }}" required class="w-full rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600">
-                                @for ($y = now()->year + 1; $y >= now()->year - 5; $y--)
-                                    <option value="{{ $y }}" @selected($periodoDefault['anio'] === $y)>{{ $y }}</option>
-                                @endfor
-                            </select>
-                        </div>
-                    </div>
 
                     <div class="mb-3">
                         <label for="archivo_{{ $empresa->id }}" class="mb-1 block text-xs font-semibold text-zinc-800">Archivo (PDF o Excel)</label>
@@ -126,7 +115,7 @@
                     </div>
 
                     <button type="submit" class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-800">
-                        Guardar registro mensual
+                        Guardar planilla de vigencia
                     </button>
                 </form>
             @endif
