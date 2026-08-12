@@ -14,57 +14,53 @@
         </a>
     </div>
 
-    <div class="grid gap-5 lg:grid-cols-[1fr,240px]">
-        <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-lg md:p-5">
-            @if ($errors->any())
-                <div class="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900 md:text-sm">
-                    <p class="font-semibold">Revisa los datos:</p>
-                    <ul class="mt-1 list-inside list-disc space-y-0.5">
-                        @foreach ($errors->all() as $message)
-                            <li>{{ $message }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+    <div class="max-w-4xl rounded-lg border border-zinc-200 bg-white p-4 shadow-lg md:p-5">
+        @if ($errors->any())
+            <div class="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900 md:text-sm">
+                <p class="font-semibold">Revisa los datos:</p>
+                <ul class="mt-1 list-inside list-disc space-y-0.5">
+                    @foreach ($errors->all() as $message)
+                        <li>{{ $message }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-            @if ($empresas->isEmpty())
-                <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-                    Aún no hay empresas en el sistema.
-                    <a href="{{ route('empresas.create') }}" class="font-semibold text-emerald-800 underline hover:text-emerald-950">Crea una empresa</a>
-                    para poder registrar un contratista interno.
-                </div>
-            @endif
+        @if ($empresas->isEmpty())
+            <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+                Aún no hay empresas en el sistema.
+                <a href="{{ route('empresas.create') }}" class="font-semibold text-emerald-800 underline hover:text-emerald-950">Crea una empresa</a>
+                para poder registrar un contratista interno.
+            </div>
+        @endif
 
-            <form action="{{ route('contratistas-internos.store') }}" method="post" enctype="multipart/form-data" class="flex flex-col gap-3" id="form-contratista-interno">
-                @csrf
+        <form action="{{ route('contratistas-internos.store') }}" method="post" enctype="multipart/form-data" class="flex flex-col gap-3" id="form-contratista-interno">
+            @csrf
 
-                <div class="grid grid-cols-1 gap-3 md:grid-cols-12 md:gap-x-3 md:gap-y-3">
-                    @include('contratistas._form_campos_base', [
-                        'inputClass' => $inputClass,
-                        'selectClass' => $inputClass,
-                    ])
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-12 md:gap-x-3 md:gap-y-3">
+                @include('contratistas._form_campos_base', [
+                    'inputClass' => $inputClass,
+                    'selectClass' => $inputClass,
+                    'mostrarCamposIr' => false,
+                ])
 
-                    @include('contratistas._campos_adicionales', [
-                        'inputClass' => $inputClass,
-                        'selectClass' => $inputClass,
-                    ])
-                </div>
+                @include('contratistas._campos_adicionales', [
+                    'inputClass' => $inputClass,
+                    'selectClass' => $inputClass,
+                ])
+            </div>
 
-                <p class="text-[11px] leading-tight text-zinc-500">El control mensual (meses EN–DI) se marca en el listado después de crear el contratista.</p>
+            <p class="text-[11px] leading-tight text-zinc-500">El control mensual (meses EN–DI) se marca en el listado después de crear el contratista.</p>
 
-                <button
-                    type="submit"
-                    @disabled($empresas->isEmpty())
-                    class="mt-1 w-full rounded-md bg-emerald-700 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-6"
-                >
-                    Guardar
-                </button>
-            </form>
-        </div>
-
-        @include('contratistas._preview_aside')
+            <button
+                type="submit"
+                @disabled($empresas->isEmpty())
+                class="mt-1 w-full rounded-md bg-emerald-700 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-6"
+            >
+                Guardar
+            </button>
+        </form>
     </div>
 
-    @include('contratistas._preview_script')
     @include('contratistas._campos_adicionales_script')
 @endsection

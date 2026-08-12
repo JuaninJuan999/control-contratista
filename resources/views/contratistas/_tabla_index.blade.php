@@ -3,8 +3,11 @@
     $rutaBase = 'contratistas-'.$tipo.'s';
     $puedeEditar = auth()->user()?->puedeEditar();
     $mostrarControlMensual = $mostrarControlMensual ?? ($tipo === 'interno');
+    $mostrarCamposIr = $mostrarCamposIr ?? ($tipo === 'externo');
     $columnasMeses = $mostrarControlMensual ? count(\App\Models\ContratistaInterno::MESES) : 0;
-    $totalColumnas = 9 + $columnasMeses + 1 + ($puedeEditar ? 1 : 0);
+    $columnasIr = $mostrarCamposIr ? 4 : 0;
+    $columnasNit = $mostrarCamposIr ? 0 : 1;
+    $totalColumnas = 5 + $columnasNit + $columnasIr + $columnasMeses + 1 + ($puedeEditar ? 1 : 0);
 @endphp
 
 <div class="rounded-lg border border-zinc-200">
@@ -15,11 +18,16 @@
                 <th class="px-3 py-3">Tipo doc.</th>
                 <th class="px-3 py-3">Documento</th>
                 <th class="min-w-[8rem] px-3 py-3">Empresa</th>
+                @if (! $mostrarCamposIr)
+                <th class="px-3 py-3">NIT</th>
+                @endif
                 <th class="px-3 py-3">ARL</th>
+                @if ($mostrarCamposIr)
                 <th class="px-3 py-3">Última I/R</th>
                 <th class="px-3 py-3">Días falt.</th>
                 <th class="px-3 py-3">Vencimiento</th>
                 <th class="px-3 py-3">Estado I/R</th>
+                @endif
                 @if ($mostrarControlMensual)
                 @foreach (\App\Models\ContratistaInterno::MESES as $mes => $abrev)
                     <th class="w-9 px-0.5 py-3 text-center text-[10px]">{{ $abrev }}</th>
@@ -49,7 +57,10 @@
                         data-filtro-tipo-documento="{{ $c->tipo_documento }}"
                         data-filtro-documento="{{ mb_strtolower(preg_replace('/\s+/', '', $c->numero_documento), 'UTF-8') }}"
                         data-filtro-arl="{{ mb_strtolower($c->arl ?? '', 'UTF-8') }}"
+                        data-filtro-empresa="{{ $c->empresa_id ?? '' }}"
+                        @if ($mostrarCamposIr)
                         data-filtro-estado="{{ $estadoFiltro }}"
+                        @endif
                     @endif
                 >
                     <td class="px-3 py-2 font-medium text-zinc-900">
@@ -63,7 +74,11 @@
                     <td class="px-3 py-2 text-zinc-800">{{ $c->tipo_documento }}</td>
                     <td class="px-3 py-2 text-zinc-800">{{ $c->numero_documento }}</td>
                     <td class="px-3 py-2 break-words text-zinc-800">{{ $c->empresa?->nombre ?? '—' }}</td>
+                    @if (! $mostrarCamposIr)
+                    <td class="px-3 py-2 text-zinc-800">{{ $c->empresa?->nit ?? '—' }}</td>
+                    @endif
                     <td class="px-3 py-2 text-zinc-800">{{ $c->arl ?? '—' }}</td>
+                    @if ($mostrarCamposIr)
                     <td class="px-3 py-2 text-zinc-800">{{ $c->fecha_ultima_ir?->format('d/m/Y') ?? '—' }}</td>
                     <td class="px-3 py-2 font-semibold tabular-nums text-zinc-900">{{ $c->dias_faltantes ?? '—' }}</td>
                     <td class="px-3 py-2 text-zinc-800">{{ $c->fecha_vencimiento?->format('d/m/Y') ?? '—' }}</td>
@@ -76,6 +91,7 @@
                             <span class="font-semibold text-zinc-400">—</span>
                         @endif
                     </td>
+                    @endif
                     @if ($mostrarControlMensual)
                     @foreach (\App\Models\ContratistaInterno::MESES as $mes => $abrev)
                         @php $estadoMes = $c->estadoMes($anio, $mes); @endphp
@@ -126,11 +142,16 @@
                             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Nombres y apellidos</dt><dd class="mt-0.5 font-medium text-zinc-900">{{ $c->nombres_apellidos }}</dd></div>
                             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Documento</dt><dd class="mt-0.5 text-zinc-900">{{ $c->tipo_documento }} {{ $c->numero_documento }}</dd></div>
                             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Empresa</dt><dd class="mt-0.5 text-zinc-900">{{ $c->empresa?->nombre ?? '—' }}</dd></div>
+                            @if (! $mostrarCamposIr)
+                            <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">NIT</dt><dd class="mt-0.5 text-zinc-900">{{ $c->empresa?->nit ?? '—' }}</dd></div>
+                            @endif
                             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">ARL</dt><dd class="mt-0.5 text-zinc-900">{{ $c->arl ?? '—' }}</dd></div>
+                            @if ($mostrarCamposIr)
                             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Fecha última I/R</dt><dd class="mt-0.5 text-zinc-900">{{ $c->fecha_ultima_ir?->format('d/m/Y') ?? '—' }}</dd></div>
                             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Vencimiento</dt><dd class="mt-0.5 text-zinc-900">{{ $c->fecha_vencimiento?->format('d/m/Y') ?? '—' }}</dd></div>
                             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Días faltantes</dt><dd class="mt-0.5 font-bold tabular-nums text-zinc-900">{{ $c->dias_faltantes ?? '—' }}</dd></div>
                             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Estado I/R</dt><dd class="mt-0.5"><span class="font-bold {{ $c->estado === 'VIGENTE' ? 'text-emerald-700' : ($c->estado === 'VENCIDA' ? 'text-red-700' : 'text-zinc-400') }}">{{ $c->estado }}</span></dd></div>
+                            @endif
                             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Registro</dt><dd class="mt-0.5 text-zinc-900">{{ $c->activo ? 'Activo' : 'Inactivo' }}</dd></div>
                         </dl>
                         @include('contratistas._detalle_campos_adicionales', ['contratista' => $c])

@@ -1,5 +1,6 @@
 @php
     $contratista = $contratista ?? null;
+    $mostrarCamposIr = $mostrarCamposIr ?? true;
 @endphp
 
 <div class="md:col-span-5">
@@ -42,6 +43,7 @@
     <label for="arl" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">ARL</label>
     <input type="text" name="arl" id="arl" value="{{ old('arl', $contratista?->arl) }}" required maxlength="120" placeholder="Ej. SURA, Positiva, Colmena…" class="{{ $inputClass }}">
 </div>
+@if ($mostrarCamposIr)
 <div class="md:col-span-4">
     <label for="fecha_ultima_ir" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Fecha de última I/R</label>
     <input type="date" name="fecha_ultima_ir" id="fecha_ultima_ir" value="{{ old('fecha_ultima_ir', $contratista?->fecha_ultima_ir?->format('Y-m-d')) }}" required class="{{ $inputClass }}">
@@ -51,3 +53,4 @@
     <input type="number" name="vigencia_dias" id="vigencia_dias" value="{{ old('vigencia_dias', $contratista?->vigencia_dias ?? 365) }}" required min="1" max="3650" class="{{ $inputClass }}">
     <p class="mt-0.5 text-[11px] leading-tight text-zinc-500">Predeterminado: 365 días.</p>
 </div>
+@endif

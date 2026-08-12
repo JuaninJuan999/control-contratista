@@ -32,7 +32,7 @@
             Agregar persona
         </button>
     </div>
-    <p class="mt-1 text-[11px] leading-tight text-zinc-500">Opcional. Elige si es interno o externo antes de agregar.</p>
+    <p class="mt-1 text-[11px] leading-tight text-zinc-500">Opcional. Se sincroniza con la clasificación de la empresa; puedes cambiarlo antes de agregar.</p>
 
     <div id="personas-lista" class="mt-3 flex flex-col gap-3">
         @foreach ($personasIniciales as $index => $persona)
@@ -68,12 +68,28 @@
         var plantilla = document.getElementById('persona-plantilla');
         var nombreEmpresaInput = document.getElementById('nombre');
         var tipoDefaultSelect = document.getElementById('persona-tipo-default');
+        var tipoEmpresaSelect = document.getElementById('tipo_empresa');
         if (!lista || !btnAgregar || !plantilla) return;
 
         var placeholderEmpresa = '— (nombre de la empresa arriba)';
 
         function etiquetaTipo(valor) {
             return valor === 'interno' ? 'Interno' : 'Externo';
+        }
+
+        function tipoPersonaDesdeEmpresa(valorEmpresa) {
+            if (valorEmpresa === 'INTERNA') return 'interno';
+            if (valorEmpresa === 'EXTERNA') return 'externo';
+            return null;
+        }
+
+        function sincronizarTipoPersonaDesdeEmpresa() {
+            if (!tipoEmpresaSelect || !tipoDefaultSelect) return;
+
+            var tipoPersona = tipoPersonaDesdeEmpresa(tipoEmpresaSelect.value);
+            if (tipoPersona === null) return;
+
+            tipoDefaultSelect.value = tipoPersona;
         }
 
         function aplicarTipoEnBloque(bloque, valor) {
@@ -83,6 +99,9 @@
             if (campo) campo.value = valor;
             if (etiqueta) etiqueta.textContent = etiquetaTipo(valor);
             bloque.setAttribute('data-persona-tipo', valor);
+            bloque.querySelectorAll('.persona-campos-ir').forEach(function (el) {
+                el.classList.toggle('hidden', valor === 'interno');
+            });
         }
 
         function tipoSeleccionado() {
@@ -150,6 +169,12 @@
         if (nombreEmpresaInput) {
             nombreEmpresaInput.addEventListener('input', actualizarEmpresaEnPersonas);
             nombreEmpresaInput.addEventListener('change', actualizarEmpresaEnPersonas);
+        }
+
+        sincronizarTipoPersonaDesdeEmpresa();
+
+        if (tipoEmpresaSelect) {
+            tipoEmpresaSelect.addEventListener('change', sincronizarTipoPersonaDesdeEmpresa);
         }
     })();
 </script>

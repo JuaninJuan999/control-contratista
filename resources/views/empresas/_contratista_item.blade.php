@@ -2,6 +2,7 @@
     /** @var \App\Models\ContratistaExterno|\App\Models\ContratistaInterno $contratista */
     /** @var string $tipo  'externo' | 'interno' */
     $tipoLabel = $tipo === 'interno' ? 'Interno' : 'Externo';
+    $mostrarCamposIr = $tipo === 'externo';
 @endphp
 
 <div class="item-grupo {{ ! $contratista->activo ? 'bg-zinc-50/80' : '' }}" data-item-grupo="{{ $tipo }}-{{ $contratista->id }}">
@@ -15,12 +16,14 @@
             <span class="rounded bg-zinc-300 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-zinc-800">Inactivo</span>
         @endif
         <span class="text-xs text-zinc-500">{{ $contratista->tipo_documento }} {{ $contratista->numero_documento }}</span>
-        @if ($contratista->estado === 'VIGENTE')
-            <span class="ml-auto rounded px-2 py-0.5 text-[10px] font-bold uppercase {{ $contratista->activo ? 'bg-emerald-100 text-emerald-800' : 'bg-emerald-50 text-emerald-600' }}">Vigente</span>
-        @elseif ($contratista->estado === 'VENCIDA')
-            <span class="ml-auto rounded px-2 py-0.5 text-[10px] font-bold uppercase {{ $contratista->activo ? 'bg-red-100 text-red-800' : 'bg-red-50 text-red-600' }}">Vencida</span>
-        @else
-            <span class="ml-auto rounded px-2 py-0.5 text-[10px] font-bold uppercase {{ $contratista->activo ? 'bg-zinc-100 text-zinc-500' : 'bg-zinc-100 text-zinc-400' }}">Sin I/R</span>
+        @if ($mostrarCamposIr)
+            @if ($contratista->estado === 'VIGENTE')
+                <span class="ml-auto rounded px-2 py-0.5 text-[10px] font-bold uppercase {{ $contratista->activo ? 'bg-emerald-100 text-emerald-800' : 'bg-emerald-50 text-emerald-600' }}">Vigente</span>
+            @elseif ($contratista->estado === 'VENCIDA')
+                <span class="ml-auto rounded px-2 py-0.5 text-[10px] font-bold uppercase {{ $contratista->activo ? 'bg-red-100 text-red-800' : 'bg-red-50 text-red-600' }}">Vencida</span>
+            @else
+                <span class="ml-auto rounded px-2 py-0.5 text-[10px] font-bold uppercase {{ $contratista->activo ? 'bg-zinc-100 text-zinc-500' : 'bg-zinc-100 text-zinc-400' }}">Sin I/R</span>
+            @endif
         @endif
     </button>
     <div class="item-detalle hidden border-t border-zinc-100 bg-zinc-50/50 px-4 py-3" data-item-panel="{{ $tipo }}-{{ $contratista->id }}" hidden>
@@ -30,10 +33,12 @@
             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Documento</dt><dd class="mt-0.5 text-zinc-900">{{ $contratista->tipo_documento }} {{ $contratista->numero_documento }}</dd></div>
             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Empresa</dt><dd class="mt-0.5 text-zinc-900">{{ $empresa->nombre }}</dd></div>
             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">ARL</dt><dd class="mt-0.5 text-zinc-900">{{ $contratista->arl ?? '—' }}</dd></div>
+            @if ($mostrarCamposIr)
             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Fecha última I/R</dt><dd class="mt-0.5 text-zinc-900">{{ $contratista->fecha_ultima_ir?->format('d/m/Y') ?? '—' }}</dd></div>
             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Vencimiento</dt><dd class="mt-0.5 text-zinc-900">{{ $contratista->fecha_vencimiento?->format('d/m/Y') ?? '—' }}</dd></div>
             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Días faltantes</dt><dd class="mt-0.5 font-bold tabular-nums text-zinc-900">{{ $contratista->dias_faltantes ?? '—' }}</dd></div>
             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Estado I/R</dt><dd class="mt-0.5"><span class="font-bold {{ $contratista->estado === 'VIGENTE' ? 'text-emerald-700' : ($contratista->estado === 'VENCIDA' ? 'text-red-700' : 'text-zinc-400') }}">{{ $contratista->estado }}</span></dd></div>
+            @endif
             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Registro</dt><dd class="mt-0.5">
                 @if ($contratista->activo)
                     <span class="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-800">Activo</span>

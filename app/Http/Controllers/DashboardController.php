@@ -84,22 +84,6 @@ class DashboardController extends Controller
                 ]);
             });
 
-        ContratistaInterno::query()
-            ->where('activo', true)
-            ->whereNull('fecha_ultima_ir')
-            ->with('empresa:id,nombre')
-            ->orderBy('nombres_apellidos')
-            ->get()
-            ->each(function (ContratistaInterno $c) use ($items): void {
-                $items->push([
-                    'nombre' => $c->nombres_apellidos,
-                    'documento' => $c->tipo_documento.' '.$c->numero_documento,
-                    'empresa' => $c->empresa?->nombre,
-                    'tipo_label' => 'Interno',
-                    'editar_url' => route('contratistas-internos.edit', $c),
-                ]);
-            });
-
         return $items->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE)->values();
     }
 
@@ -152,7 +136,6 @@ class DashboardController extends Controller
             });
 
         $this->agregarIndRnd($items, ContratistaExterno::class, route('contratistas-externos.index'), 'externo');
-        $this->agregarIndRnd($items, ContratistaInterno::class, route('contratistas-internos.index'), 'interno');
 
         $this->agregarDocumentosContratistas($items, ContratistaExterno::class, route('contratistas-externos.index'));
         $this->agregarDocumentosContratistas($items, ContratistaInterno::class, route('contratistas-internos.index'));

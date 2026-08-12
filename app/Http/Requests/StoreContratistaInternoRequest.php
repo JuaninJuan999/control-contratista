@@ -35,8 +35,6 @@ class StoreContratistaInternoRequest extends FormRequest
             ],
             'empresa_id' => ['required', 'integer', 'exists:empresas,id'],
             'arl' => ['required', 'string', 'max:120'],
-            'fecha_ultima_ir' => ['required', 'date'],
-            'vigencia_dias' => ['required', 'integer', 'min:1', 'max:3650'],
         ], $this->camposAdicionalesRules());
     }
 
@@ -51,8 +49,6 @@ class StoreContratistaInternoRequest extends FormRequest
             'numero_documento' => 'documento',
             'empresa_id' => 'empresa',
             'arl' => 'ARL',
-            'fecha_ultima_ir' => 'fecha de última inducción/reinducción',
-            'vigencia_dias' => 'vigencia',
         ], $this->camposAdicionalesAttributes());
     }
 
@@ -76,6 +72,8 @@ class StoreContratistaInternoRequest extends FormRequest
             'licencia_conduccion' => $this->boolean('licencia_conduccion'),
             'licencia_categoria' => $this->input('licencia_categoria'),
             'licencia_vencimientos' => $this->input('licencia_vencimientos'),
+            'fecha_ultima_ir' => null,
+            'vigencia_dias' => null,
         ];
 
         $this->prepararCamposAdicionales($datos);

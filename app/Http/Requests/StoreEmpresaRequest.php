@@ -113,7 +113,7 @@ class StoreEmpresaRequest extends EmpresaRequest
                     $tipo = $persona['tipo_documento'] ?? '';
                     $numero = $persona['numero_documento'] ?? '';
 
-                    if (empty($persona['fecha_ultima_ir'])) {
+                    if ($tipoContratista === 'externo' && empty($persona['fecha_ultima_ir'])) {
                         $validator->errors()->add(
                             "personas.{$index}.fecha_ultima_ir",
                             'La fecha de última I/R es obligatoria.'
@@ -252,7 +252,7 @@ class StoreEmpresaRequest extends EmpresaRequest
             $vigencia = $persona['vigencia_dias'] ?? null;
             $arl = is_string($persona['arl'] ?? null) ? trim($persona['arl']) : '';
 
-            $tieneDatos = $nombres !== '' || $numero !== '' || $fecha !== '' || $arl !== '';
+            $tieneDatos = $nombres !== '' || $numero !== '' || $arl !== '' || ($tipoContratista === 'externo' && $fecha !== '');
 
             if (! $tieneDatos) {
                 return null;
@@ -264,8 +264,8 @@ class StoreEmpresaRequest extends EmpresaRequest
                 'tipo_documento' => $tipo !== '' ? $tipo : 'CC',
                 'numero_documento' => $numero,
                 'arl' => $arl,
-                'fecha_ultima_ir' => $fecha !== '' ? $fecha : null,
-                'vigencia_dias' => is_numeric($vigencia) ? (int) $vigencia : 365,
+                'fecha_ultima_ir' => $tipoContratista === 'interno' ? null : ($fecha !== '' ? $fecha : null),
+                'vigencia_dias' => $tipoContratista === 'interno' ? null : (is_numeric($vigencia) ? (int) $vigencia : 365),
             ];
 
             if (array_key_exists('licencia_vencimientos', $persona) && is_array($persona['licencia_vencimientos'])) {

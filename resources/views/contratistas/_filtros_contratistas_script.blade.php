@@ -20,11 +20,15 @@
         }
 
         function hayFiltrosActivos() {
+            var estadoInput = document.getElementById(id('estado'));
+            var empresaInput = document.getElementById(id('empresa'));
+
             return normalizar(document.getElementById(id('nombre'))?.value)
                 || (document.getElementById(id('tipo-documento'))?.value || '')
                 || documentoNormalizado(document.getElementById(id('documento'))?.value)
                 || normalizar(document.getElementById(id('arl'))?.value)
-                || (document.getElementById(id('estado'))?.value || '');
+                || (empresaInput ? (empresaInput.value || '') : '')
+                || (estadoInput ? (estadoInput.value || '') : '');
         }
 
         function colapsarFila(fila) {
@@ -54,7 +58,10 @@
             var tipoDocumento = document.getElementById(id('tipo-documento'))?.value || '';
             var documento = documentoNormalizado(document.getElementById(id('documento'))?.value);
             var arl = normalizar(document.getElementById(id('arl'))?.value);
-            var estado = document.getElementById(id('estado'))?.value || '';
+            var empresaInput = document.getElementById(id('empresa'));
+            var empresa = empresaInput ? (empresaInput.value || '') : '';
+            var estadoInput = document.getElementById(id('estado'));
+            var estado = estadoInput ? (estadoInput.value || '') : '';
             var visibles = 0;
             var total = 0;
 
@@ -72,6 +79,9 @@
                     coincide = false;
                 }
                 if (arl && (fila.getAttribute('data-filtro-arl') || '').indexOf(arl) === -1) {
+                    coincide = false;
+                }
+                if (empresa && fila.getAttribute('data-filtro-empresa') !== empresa) {
                     coincide = false;
                 }
                 if (estado && fila.getAttribute('data-filtro-estado') !== estado) {
@@ -126,7 +136,7 @@
                 }
             });
 
-            ['tipo-documento', 'estado'].forEach(function (campo) {
+            ['tipo-documento', 'estado', 'empresa'].forEach(function (campo) {
                 var select = document.getElementById(id(campo));
                 if (select) {
                     select.value = '';
@@ -160,7 +170,7 @@
             });
         });
 
-        ['tipo-documento', 'estado'].forEach(function (campo) {
+        ['tipo-documento', 'estado', 'empresa'].forEach(function (campo) {
             var select = document.getElementById(id(campo));
             if (!select) {
                 return;

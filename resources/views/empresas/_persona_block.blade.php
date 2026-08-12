@@ -81,7 +81,8 @@
                 class="{{ $inputClass }}"
             >
         </div>
-        <div class="md:col-span-4">
+        @unless ($esInterno)
+        <div class="persona-campos-ir md:col-span-4">
             <label class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Fecha de última I/R</label>
             <input
                 type="date"
@@ -90,7 +91,7 @@
                 class="{{ $inputClass }}"
             >
         </div>
-        <div class="md:col-span-4">
+        <div class="persona-campos-ir md:col-span-4">
             <label class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Vigencia (días)</label>
             <input
                 type="number"
@@ -102,6 +103,7 @@
             >
             <p class="mt-0.5 text-[11px] leading-tight text-zinc-500">Predeterminado: 365 días. El control mensual (EN–DI) se marca en el listado.</p>
         </div>
+        @endunless
 
         @include('contratistas._campos_adicionales', [
             'namePrefix' => 'personas['.$index.']',

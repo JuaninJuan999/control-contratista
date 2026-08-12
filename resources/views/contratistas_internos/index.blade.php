@@ -38,13 +38,17 @@
             </div>
         </form>
 
-        @include('contratistas._filtros_contratistas_panel', ['filtrosTipo' => 'interno'])
+        @include('contratistas._filtros_contratistas_panel', [
+            'filtrosTipo' => 'interno',
+            'empresasFiltro' => $empresasFiltro ?? collect(),
+        ])
 
         @include('contratistas._tabla_index', [
             'contratistas' => $contratistasInternos,
             'tipo' => 'interno',
             'anio' => $anio,
             'habilitarFiltrosCliente' => true,
+            'mostrarCamposIr' => false,
         ])
     </div>
 

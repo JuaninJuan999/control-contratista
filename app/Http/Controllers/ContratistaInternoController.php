@@ -24,12 +24,17 @@ class ContratistaInternoController extends Controller
         }
 
         $contratistasInternos = ContratistaInterno::query()
-            ->with('empresa:id,nombre')
+            ->with('empresa:id,nombre,nit')
             ->orderByDesc('activo')
             ->orderBy('nombres_apellidos')
             ->get();
 
-        return view('contratistas_internos.index', compact('contratistasInternos', 'anio'));
+        $empresasFiltro = Empresa::query()
+            ->whereHas('contratistasInternos')
+            ->orderBy('nombre')
+            ->get(['id', 'nombre']);
+
+        return view('contratistas_internos.index', compact('contratistasInternos', 'anio', 'empresasFiltro'));
     }
 
     public function create(): View
