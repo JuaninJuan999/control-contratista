@@ -76,7 +76,10 @@ class ContratistaInternoController extends Controller
         );
 
         return redirect()
-            ->route('contratistas-internos.index')
+            ->route('contratistas-internos.index', [
+                'anio' => (int) $request->input('anio', now()->year),
+                'abrir' => 'interno-'.$contratistasInterno->id,
+            ])
             ->with('success', 'Contratista interno actualizado correctamente.');
     }
 

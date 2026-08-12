@@ -104,15 +104,15 @@
                                 <input type="hidden" name="mes" value="{{ $mes }}">
                                 <button
                                     type="submit"
-                                    title="{{ $abrev }} — clic para cambiar estado (vacío → OK → no vigente)"
-                                    class="inline-flex h-7 w-7 items-center justify-center rounded text-[10px] font-bold transition {{ $estadoMes === 'ok' ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : ($estadoMes === 'rechazado' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'text-zinc-300 hover:bg-zinc-100 hover:text-zinc-500') }}"
+                                    title="{{ $abrev }} — clic para cambiar estado (vacío → registrado → no vigente)"
+                                    class="inline-flex h-7 min-w-7 items-center justify-center rounded px-0.5 text-[10px] font-bold transition {{ $estadoMes === 'ok' ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : ($estadoMes === 'rechazado' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-zinc-200 text-zinc-600 hover:bg-zinc-300 hover:text-zinc-800') }}"
                                 >
-                                    {{ $estadoMes === 'ok' ? 'OK' : ($estadoMes === 'rechazado' ? '✕' : '·') }}
+                                    {{ $estadoMes === 'rechazado' ? '✕' : $abrev }}
                                 </button>
                             </form>
                             @else
-                            <span class="inline-flex h-7 w-7 items-center justify-center rounded text-[10px] font-bold {{ $estadoMes === 'ok' ? 'bg-emerald-100 text-emerald-800' : ($estadoMes === 'rechazado' ? 'bg-red-100 text-red-700' : 'text-zinc-300') }}">
-                                {{ $estadoMes === 'ok' ? 'OK' : ($estadoMes === 'rechazado' ? '✕' : '·') }}
+                            <span class="inline-flex h-7 min-w-7 items-center justify-center rounded px-0.5 text-[10px] font-bold {{ $estadoMes === 'ok' ? 'bg-emerald-100 text-emerald-800' : ($estadoMes === 'rechazado' ? 'bg-red-100 text-red-700' : 'bg-zinc-200 text-zinc-600') }}">
+                                {{ $estadoMes === 'rechazado' ? '✕' : $abrev }}
                             </span>
                             @endif
                         </td>
@@ -129,7 +129,7 @@
                     <td class="px-2 py-2 text-center">
                         @include('contratistas._acciones_contratista', array_merge([
                             'contratista' => $c,
-                            'editRoute' => route($rutaBase.'.edit', $c),
+                            'editRoute' => route($rutaBase.'.edit', $c).($mostrarControlMensual ? '?anio='.$anio : ''),
                             'toggleActivoRoute' => route($rutaBase.'.toggle-activo', $c),
                             'destroyRoute' => route($rutaBase.'.destroy', $c),
                         ], $mostrarControlMensual ? ['anio' => $anio] : []))
@@ -160,8 +160,8 @@
                         <div class="flex flex-wrap gap-1">
                             @foreach (\App\Models\ContratistaInterno::MESES as $mes => $abrev)
                                 @php $estadoMesDet = $c->estadoMes($anio, $mes); @endphp
-                                <span class="inline-flex h-7 min-w-7 items-center justify-center rounded text-[10px] font-bold {{ $estadoMesDet === 'ok' ? 'bg-emerald-100 text-emerald-800' : ($estadoMesDet === 'rechazado' ? 'bg-red-100 text-red-700' : 'bg-zinc-100 text-zinc-400') }}" title="{{ $abrev }}">
-                                    {{ $estadoMesDet === 'ok' ? 'OK' : $abrev }}
+                                <span class="inline-flex h-7 min-w-7 items-center justify-center rounded px-0.5 text-[10px] font-bold {{ $estadoMesDet === 'ok' ? 'bg-emerald-100 text-emerald-800' : ($estadoMesDet === 'rechazado' ? 'bg-red-100 text-red-700' : 'bg-zinc-200 text-zinc-600') }}" title="{{ $abrev }}">
+                                    {{ $estadoMesDet === 'rechazado' ? '✕' : $abrev }}
                                 </span>
                             @endforeach
                         </div>

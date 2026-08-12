@@ -19,13 +19,18 @@ class ContratistaExternoController extends Controller
     public function index(): View
     {
         $contratistasExternos = ContratistaExterno::query()
-            ->with('empresa:id,nombre')
+            ->with('empresa:id,nombre,nit')
             ->orderByDesc('activo')
             ->orderByDesc('fecha_ultima_ir')
             ->orderBy('nombres_apellidos')
             ->get();
 
-        return view('contratistas_externos.index', compact('contratistasExternos'));
+        $empresasFiltro = Empresa::query()
+            ->whereHas('contratistasExternos')
+            ->orderBy('nombre')
+            ->get(['id', 'nombre']);
+
+        return view('contratistas_externos.index', compact('contratistasExternos', 'empresasFiltro'));
     }
 
     public function create(): View
@@ -67,7 +72,9 @@ class ContratistaExternoController extends Controller
         );
 
         return redirect()
-            ->route('contratistas-externos.index')
+            ->route('contratistas-externos.index', [
+                'abrir' => 'externo-'.$contratistasExterno->id,
+            ])
             ->with('success', 'Contratista externo actualizado correctamente.');
     }
 

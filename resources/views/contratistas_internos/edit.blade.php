@@ -9,7 +9,7 @@
 
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 class="font-display text-xl font-semibold text-zinc-950 md:text-2xl">Editar contratista interno</h1>
-        <a href="{{ route('contratistas-internos.index') }}" class="text-xs font-medium text-emerald-800 underline hover:text-emerald-950 md:text-sm">
+        <a href="{{ route('contratistas-internos.index', array_filter(['anio' => request('anio'), 'abrir' => 'interno-'.$contratistaInterno->id])) }}" class="text-xs font-medium text-emerald-800 underline hover:text-emerald-950 md:text-sm">
             Volver al listado
         </a>
     </div>
@@ -29,6 +29,9 @@
         <form action="{{ route('contratistas-internos.update', $contratistaInterno) }}" method="post" enctype="multipart/form-data" class="flex flex-col gap-3" id="form-contratista-interno">
             @csrf
             @method('PUT')
+            @if (request('anio'))
+                <input type="hidden" name="anio" value="{{ request('anio') }}">
+            @endif
 
             <div class="grid grid-cols-1 gap-3 md:grid-cols-12 md:gap-x-3 md:gap-y-3">
                 @include('contratistas._form_campos_base', [

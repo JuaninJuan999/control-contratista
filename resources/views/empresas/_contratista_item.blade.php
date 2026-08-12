@@ -52,8 +52,8 @@
         <div class="flex flex-wrap gap-1">
             @foreach (\App\Models\ContratistaInterno::MESES as $mes => $abrev)
                 @php $estadoMesEmp = $contratista->estadoMes($anioActual, $mes); @endphp
-                <span class="inline-flex h-7 min-w-7 items-center justify-center rounded text-[10px] font-bold {{ $estadoMesEmp === 'ok' ? 'bg-emerald-100 text-emerald-800' : ($estadoMesEmp === 'rechazado' ? 'bg-red-100 text-red-700' : 'bg-zinc-100 text-zinc-400') }}" title="{{ $abrev }}">
-                    {{ $estadoMesEmp === 'ok' ? 'OK' : $abrev }}
+                <span class="inline-flex h-7 min-w-7 items-center justify-center rounded px-0.5 text-[10px] font-bold {{ $estadoMesEmp === 'ok' ? 'bg-emerald-100 text-emerald-800' : ($estadoMesEmp === 'rechazado' ? 'bg-red-100 text-red-700' : 'bg-zinc-200 text-zinc-600') }}" title="{{ $abrev }}">
+                    {{ $estadoMesEmp === 'rechazado' ? '✕' : $abrev }}
                 </span>
             @endforeach
         </div>

@@ -27,7 +27,10 @@
             </div>
         @endif
 
-        @include('contratistas._filtros_contratistas_panel', ['filtrosTipo' => 'externo'])
+        @include('contratistas._filtros_contratistas_panel', [
+            'filtrosTipo' => 'externo',
+            'empresasFiltro' => $empresasFiltro ?? collect(),
+        ])
 
         @include('contratistas._tabla_index', [
             'contratistas' => $contratistasExternos,

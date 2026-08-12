@@ -1,5 +1,55 @@
 <script>
     (function () {
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+
+        var scrollKey = 'cc-scroll-' + window.location.pathname;
+        var scrollRestaurado = false;
+        var scrollPendiente = null;
+
+        function restaurarScrollGuardado() {
+            var guardado = sessionStorage.getItem(scrollKey);
+            if (guardado === null) {
+                return false;
+            }
+
+            sessionStorage.removeItem(scrollKey);
+            var y = parseInt(guardado, 10);
+            if (isNaN(y)) {
+                return false;
+            }
+
+            scrollRestaurado = true;
+            scrollPendiente = y;
+
+            function aplicarScroll() {
+                if (scrollPendiente === null) {
+                    return;
+                }
+                window.scrollTo(0, scrollPendiente);
+            }
+
+            aplicarScroll();
+            requestAnimationFrame(aplicarScroll);
+            window.addEventListener('load', aplicarScroll, { once: true });
+
+            return true;
+        }
+
+        document.addEventListener('submit', function (event) {
+            var form = event.target;
+            if (!(form instanceof HTMLFormElement)) {
+                return;
+            }
+
+            if (!form.closest('tr.contratista-fila')) {
+                return;
+            }
+
+            sessionStorage.setItem(scrollKey, String(window.scrollY));
+        }, true);
+
         function togglePanel(panel, trigger, chevron, expanded) {
             if (!panel || !trigger) return;
             panel.hidden = !expanded;
@@ -39,6 +89,8 @@
         });
 
         (function abrirDesdeUrl() {
+            restaurarScrollGuardado();
+
             var params = new URLSearchParams(window.location.search);
             var abrir = params.get('abrir');
             if (!abrir) return;
@@ -47,16 +99,22 @@
                 var fila = document.querySelector('[data-contratista-toggle="' + abrir + '"]');
                 if (!fila) return;
 
+                if (!scrollRestaurado) {
+                    fila.scrollIntoView({ block: 'center', behavior: 'instant' in window ? 'instant' : 'auto' });
+                }
+
                 if (fila.getAttribute('aria-expanded') !== 'true') {
                     fila.click();
                 }
 
                 setTimeout(function () {
-                    if (window.resaltarFilaBusqueda) {
+                    if (window.resaltarFilaBusqueda && !scrollRestaurado) {
                         window.resaltarFilaBusqueda(fila);
+                    } else if (scrollRestaurado) {
+                        fila.classList.add('busqueda-resaltado');
                     }
                 }, 80);
-            }, 120);
+            }, scrollRestaurado ? 0 : 120);
         })();
     })();
 </script>
