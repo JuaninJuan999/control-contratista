@@ -134,7 +134,7 @@ class BusquedaGlobalIndice
         return $resultados;
     }
 
-    private function textoBusqueda(string ...$partes): string
+    private function textoBusqueda(?string ...$partes): string
     {
         return $this->normalizar(implode(' ', array_filter($partes, fn ($p) => is_string($p) && trim($p) !== '')));
     }
