@@ -21,8 +21,13 @@ abstract class EmpresaRequest extends FormRequest
             'correos' => ['nullable', 'array'],
             'correos.*' => ['required', 'email', 'max:255'],
             'limite' => ['nullable', 'date'],
-            'planilla' => ['required', 'string', Rule::in($this->planillasPermitidas())],
-            'tipo_empresa' => ['nullable', 'string', Rule::in(EmpresaTipo::valores())],
+            'planilla' => [
+                Rule::requiredIf(fn () => $this->input('tipo_empresa') === EmpresaTipo::INTERNA),
+                'nullable',
+                'string',
+                Rule::in($this->planillasPermitidas()),
+            ],
+            'tipo_empresa' => ['required', 'string', Rule::in(EmpresaTipo::valores())],
         ];
     }
 
@@ -59,14 +64,22 @@ abstract class EmpresaRequest extends FormRequest
         $planilla = $this->input('planilla');
         $tipoEmpresa = $this->input('tipo_empresa');
 
+        $tipoEmpresa = is_string($tipoEmpresa)
+            ? (trim($tipoEmpresa) === '' ? null : strtoupper(trim($tipoEmpresa)))
+            : $tipoEmpresa;
+
+        // Una empresa externa no maneja NIT, planilla ni contacto: se descartan por
+        // si llegan valores residuales al reclasificar una empresa que era interna.
+        $esExterna = $tipoEmpresa === EmpresaTipo::EXTERNA;
+
         $this->merge([
             'nombre' => is_string($this->input('nombre')) ? trim($this->input('nombre')) : $this->input('nombre'),
-            'nit' => is_string($nit) ? (trim($nit) === '' ? null : preg_replace('/\s+/', '', trim($nit))) : $nit,
-            'telefono' => is_string($telefono) ? (trim($telefono) === '' ? null : trim($telefono)) : $telefono,
-            'correos' => $correos === [] ? null : $correos,
-            'limite' => $this->filled('limite') ? $this->input('limite') : null,
-            'planilla' => is_string($planilla) ? (trim($planilla) === '' ? null : strtoupper(trim($planilla))) : $planilla,
-            'tipo_empresa' => is_string($tipoEmpresa) ? (trim($tipoEmpresa) === '' ? null : strtoupper(trim($tipoEmpresa))) : $tipoEmpresa,
+            'nit' => $esExterna ? null : (is_string($nit) ? (trim($nit) === '' ? null : preg_replace('/\s+/', '', trim($nit))) : $nit),
+            'telefono' => $esExterna ? null : (is_string($telefono) ? (trim($telefono) === '' ? null : trim($telefono)) : $telefono),
+            'correos' => $esExterna || $correos === [] ? null : $correos,
+            'limite' => ! $esExterna && $this->filled('limite') ? $this->input('limite') : null,
+            'planilla' => $esExterna ? null : (is_string($planilla) ? (trim($planilla) === '' ? null : strtoupper(trim($planilla))) : $planilla),
+            'tipo_empresa' => $tipoEmpresa,
         ]);
     }
 
@@ -85,7 +98,9 @@ abstract class EmpresaRequest extends FormRequest
 
     protected function validarPlanillaEmpresaEnValidator(Validator $validator): void
     {
-        if ($this->input('planilla') === PlanillaTipo::DEPENDIENTE && ! $this->filled('limite')) {
+        if ($this->input('tipo_empresa') === EmpresaTipo::INTERNA
+            && $this->input('planilla') === PlanillaTipo::DEPENDIENTE
+            && ! $this->filled('limite')) {
             $validator->errors()->add(
                 'limite',
                 'La fecha límite es obligatoria cuando la planilla es dependiente.'

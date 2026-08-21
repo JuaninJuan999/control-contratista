@@ -13,16 +13,43 @@
     }
     $planillaSeleccionada = old('planilla', $empresa?->planilla ?? '');
     $esIndependienteInicial = $planillaSeleccionada === \App\Support\PlanillaTipo::INDEPENDIENTE;
+    $tipoEmpresaSeleccionado = old('tipo_empresa', $empresa?->tipo_empresa ?? '');
+    $esInternaInicial = $tipoEmpresaSeleccionado === \App\Support\EmpresaTipo::INTERNA;
+    $esExternaInicial = $tipoEmpresaSeleccionado === \App\Support\EmpresaTipo::EXTERNA;
 @endphp
 
 <div class="rounded-lg border border-emerald-200 bg-emerald-50/50 p-3 md:p-4">
-    <p class="mb-2 text-[11px] font-bold uppercase tracking-wide text-emerald-900">Paso 1 — Tipo de planilla</p>
+    <p class="mb-2 text-[11px] font-bold uppercase tracking-wide text-emerald-900">Paso 1 — Clasificación de la empresa</p>
+    <div>
+        <label for="tipo_empresa" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Interna o externa <span class="text-red-600">*</span></label>
+        <select
+            name="tipo_empresa"
+            id="tipo_empresa"
+            required
+            class="{{ $inputClass }}"
+        >
+            <option value="">Seleccionar…</option>
+            @foreach (\App\Support\EmpresaTipo::OPCIONES as $valor => $etiqueta)
+                <option value="{{ $valor }}" @selected($tipoEmpresaSeleccionado === $valor)>{{ $etiqueta }}</option>
+            @endforeach
+        </select>
+    </div>
+    <p id="clasificacion-ayuda-interna" class="mt-2 text-[11px] leading-snug text-zinc-600 {{ $esInternaInicial ? '' : 'hidden' }}">
+        <strong>Interna:</strong> lleva planilla de seguridad social, fecha límite y datos de contacto para las alertas.
+    </p>
+    <p id="clasificacion-ayuda-externa" class="mt-2 text-[11px] leading-snug text-zinc-600 {{ $esExternaInicial ? '' : 'hidden' }}">
+        <strong>Externa:</strong> solo se registran el nombre, las personas externas y los vehículos.
+    </p>
+</div>
+
+<div class="bloque-solo-interna rounded-lg border border-emerald-200 bg-emerald-50/50 p-3 md:p-4 {{ $esInternaInicial ? '' : 'hidden' }}">
+    <p class="mb-2 text-[11px] font-bold uppercase tracking-wide text-emerald-900">Paso 2 — Tipo de planilla</p>
     <div>
         <label for="planilla" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Planilla de seguridad social <span class="text-red-600">*</span></label>
         <select
             name="planilla"
             id="planilla"
-            required
+            @if ($esInternaInicial) required @endif
             class="{{ $inputClass }}"
         >
             <option value="">Seleccionar…</option>
@@ -65,7 +92,7 @@
     >
 </div>
 
-<div class="grid gap-3 sm:grid-cols-2">
+<div class="bloque-solo-interna flex flex-col gap-3 {{ $esInternaInicial ? '' : 'hidden' }}">
     <div>
         <label for="nit" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">NIT <span class="font-normal text-zinc-500">(opcional)</span></label>
         <input
@@ -78,6 +105,7 @@
             class="{{ $inputClass }}"
         >
     </div>
+
     <div>
         <label for="telefono" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Teléfono</label>
         <input
@@ -90,89 +118,118 @@
             class="{{ $inputClass }}"
         >
     </div>
-</div>
 
-<div>
-    <div class="flex flex-wrap items-center justify-between gap-2">
-        <label class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Correos</label>
-        <button type="button" id="btn-agregar-correo" class="text-xs font-medium text-emerald-800 underline hover:text-emerald-950">
-            + Agregar correo
-        </button>
+    <div>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <label class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Correos</label>
+            <button type="button" id="btn-agregar-correo" class="text-xs font-medium text-emerald-800 underline hover:text-emerald-950">
+                + Agregar correo
+            </button>
+        </div>
+        <div id="correos-lista" class="mt-1 flex flex-col gap-2">
+            @foreach ($correosIniciales as $index => $correo)
+                <div class="correo-fila flex gap-2">
+                    <input
+                        type="email"
+                        name="correos[]"
+                        value="{{ $correo }}"
+                        maxlength="255"
+                        placeholder="correo@empresa.com"
+                        class="{{ $inputClass }} mt-0"
+                    >
+                    <button
+                        type="button"
+                        class="btn-quitar-correo shrink-0 rounded-md border border-zinc-300 px-2 text-xs text-zinc-600 hover:bg-zinc-50 {{ count($correosIniciales) <= 1 ? 'invisible pointer-events-none' : '' }}"
+                        title="Quitar correo"
+                    >
+                        Quitar
+                    </button>
+                </div>
+            @endforeach
+        </div>
+        <p class="mt-1 text-[11px] leading-tight text-zinc-500">Puedes registrar varios correos de contacto. A estos correos llegan las alertas de planilla.</p>
     </div>
-    <div id="correos-lista" class="mt-1 flex flex-col gap-2">
-        @foreach ($correosIniciales as $index => $correo)
-            <div class="correo-fila flex gap-2">
-                <input
-                    type="email"
-                    name="correos[]"
-                    value="{{ $correo }}"
-                    maxlength="255"
-                    placeholder="correo@empresa.com"
-                    class="{{ $inputClass }} mt-0"
-                >
-                <button
-                    type="button"
-                    class="btn-quitar-correo shrink-0 rounded-md border border-zinc-300 px-2 text-xs text-zinc-600 hover:bg-zinc-50 {{ count($correosIniciales) <= 1 ? 'invisible pointer-events-none' : '' }}"
-                    title="Quitar correo"
-                >
-                    Quitar
-                </button>
-            </div>
-        @endforeach
-    </div>
-    <p class="mt-1 text-[11px] leading-tight text-zinc-500">Puedes registrar varios correos de contacto.</p>
-</div>
-
-<div>
-    <label for="tipo_empresa" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Clasificación empresa</label>
-    @php
-        $tipoEmpresaSeleccionado = old('tipo_empresa', $empresa?->tipo_empresa ?? '');
-    @endphp
-    <select
-        name="tipo_empresa"
-        id="tipo_empresa"
-        class="{{ $inputClass }}"
-    >
-        <option value="">Sin clasificar</option>
-        @foreach (\App\Support\EmpresaTipo::OPCIONES as $valor => $etiqueta)
-            <option value="{{ $valor }}" @selected($tipoEmpresaSeleccionado === $valor)>{{ $etiqueta }}</option>
-        @endforeach
-    </select>
-    <p class="mt-0.5 text-[11px] leading-tight text-zinc-500">Interna o externa según el tipo de relación con Colbeef.</p>
 </div>
 
 <script>
     (function () {
+        var INTERNA = @json(\App\Support\EmpresaTipo::INTERNA);
+        var EXTERNA = @json(\App\Support\EmpresaTipo::EXTERNA);
+        var INDEPENDIENTE = @json(\App\Support\PlanillaTipo::INDEPENDIENTE);
+
+        var tipoEmpresa = document.getElementById('tipo_empresa');
+        var bloquesSoloInterna = document.querySelectorAll('.bloque-solo-interna');
+        var ayudaInterna = document.getElementById('clasificacion-ayuda-interna');
+        var ayudaExterna = document.getElementById('clasificacion-ayuda-externa');
         var planilla = document.getElementById('planilla');
         var bloqueLimite = document.getElementById('bloque-limite-empresa');
         var limiteInput = document.getElementById('limite');
+        var nitInput = document.getElementById('nit');
+        var telefonoInput = document.getElementById('telefono');
         var ayudaDep = document.getElementById('planilla-ayuda-dependiente');
         var ayudaInd = document.getElementById('planilla-ayuda-independiente');
         var limiteReq = document.getElementById('limite-requerido');
+        var lista = document.getElementById('correos-lista');
+        var btnAgregar = document.getElementById('btn-agregar-correo');
+        var inputClass = @json($inputClass);
+
+        function clasificacion() {
+            return tipoEmpresa ? tipoEmpresa.value : '';
+        }
 
         function actualizarPlanilla() {
             if (!planilla) return;
-            var esIndependiente = planilla.value === @json(\App\Support\PlanillaTipo::INDEPENDIENTE);
+            var interna = clasificacion() === INTERNA;
+            var esIndependiente = planilla.value === INDEPENDIENTE;
             if (bloqueLimite) bloqueLimite.classList.toggle('hidden', esIndependiente);
             if (ayudaDep) ayudaDep.classList.toggle('hidden', esIndependiente);
             if (ayudaInd) ayudaInd.classList.toggle('hidden', !esIndependiente);
             if (limiteInput) {
-                limiteInput.required = !esIndependiente;
+                // Un campo oculto con required bloquea el envío sin mostrar mensaje.
+                limiteInput.required = interna && !esIndependiente;
                 if (esIndependiente) limiteInput.value = '';
             }
             if (limiteReq) limiteReq.classList.toggle('hidden', esIndependiente);
         }
 
-        if (planilla) {
-            planilla.addEventListener('change', actualizarPlanilla);
+        function limpiarCorreos() {
+            if (!lista) return;
+            lista.querySelectorAll('input[type="email"]').forEach(function (input) {
+                input.value = '';
+            });
+        }
+
+        function actualizarPorClasificacion() {
+            var valor = clasificacion();
+            var interna = valor === INTERNA;
+            var externa = valor === EXTERNA;
+
+            bloquesSoloInterna.forEach(function (bloque) {
+                bloque.classList.toggle('hidden', !interna);
+            });
+            if (ayudaInterna) ayudaInterna.classList.toggle('hidden', !interna);
+            if (ayudaExterna) ayudaExterna.classList.toggle('hidden', !externa);
+
+            if (planilla) planilla.required = interna;
+
+            // Solo se limpia al elegir externa: sin seleccion hay que conservar lo
+            // que el usuario ya escribio (y lo que restaura old() tras un error).
+            if (externa) {
+                if (planilla) planilla.value = '';
+                if (limiteInput) limiteInput.value = '';
+                if (nitInput) nitInput.value = '';
+                if (telefonoInput) telefonoInput.value = '';
+                limpiarCorreos();
+            }
+
             actualizarPlanilla();
         }
 
-        var lista = document.getElementById('correos-lista');
-        var btnAgregar = document.getElementById('btn-agregar-correo');
-        if (!lista || !btnAgregar) return;
+        if (planilla) planilla.addEventListener('change', actualizarPlanilla);
+        if (tipoEmpresa) tipoEmpresa.addEventListener('change', actualizarPorClasificacion);
+        actualizarPorClasificacion();
 
-        var inputClass = @json($inputClass);
+        if (!lista || !btnAgregar) return;
 
         function actualizarBotonesQuitar() {
             var filas = lista.querySelectorAll('.correo-fila');

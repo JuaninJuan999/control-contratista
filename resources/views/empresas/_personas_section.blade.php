@@ -13,6 +13,10 @@
     <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex flex-wrap items-center gap-2">
             <h2 class="text-sm font-semibold text-zinc-950">Persona</h2>
+            <span
+                id="persona-tipo-fijo"
+                class="hidden rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-900 ring-1 ring-emerald-200 md:text-sm"
+            ></span>
             <select
                 id="persona-tipo-default"
                 class="rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-xs font-medium text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 md:text-sm"
@@ -32,7 +36,7 @@
             Agregar persona
         </button>
     </div>
-    <p class="mt-1 text-[11px] leading-tight text-zinc-500">Opcional. Se sincroniza con la clasificación de la empresa; puedes cambiarlo antes de agregar.</p>
+    <p class="mt-1 text-[11px] leading-tight text-zinc-500">Opcional. El tipo de persona lo define la clasificación elegida en el paso 1.</p>
 
     <div id="personas-lista" class="mt-3 flex flex-col gap-3">
         @foreach ($personasIniciales as $index => $persona)
@@ -68,6 +72,7 @@
         var plantilla = document.getElementById('persona-plantilla');
         var nombreEmpresaInput = document.getElementById('nombre');
         var tipoDefaultSelect = document.getElementById('persona-tipo-default');
+        var tipoFijoEtiqueta = document.getElementById('persona-tipo-fijo');
         var tipoEmpresaSelect = document.getElementById('tipo_empresa');
         if (!lista || !btnAgregar || !plantilla) return;
 
@@ -87,9 +92,20 @@
             if (!tipoEmpresaSelect || !tipoDefaultSelect) return;
 
             var tipoPersona = tipoPersonaDesdeEmpresa(tipoEmpresaSelect.value);
-            if (tipoPersona === null) return;
+            var fijo = tipoPersona !== null;
+
+            tipoDefaultSelect.classList.toggle('hidden', fijo);
+            if (tipoFijoEtiqueta) {
+                tipoFijoEtiqueta.classList.toggle('hidden', !fijo);
+                tipoFijoEtiqueta.textContent = tipoPersona === 'interno' ? 'Personas internas' : 'Personas externas';
+            }
+
+            if (!fijo) return;
 
             tipoDefaultSelect.value = tipoPersona;
+            lista.querySelectorAll('[data-persona-index]').forEach(function (bloque) {
+                aplicarTipoEnBloque(bloque, tipoPersona);
+            });
         }
 
         function aplicarTipoEnBloque(bloque, valor) {

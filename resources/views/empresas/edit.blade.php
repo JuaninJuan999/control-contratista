@@ -149,6 +149,9 @@
             }
 
             function abrirModal() {
+                // El boton no es submit, asi que hay que disparar la validacion nativa a mano.
+                if (typeof form.reportValidity === 'function' && !form.reportValidity()) return;
+
                 actualizarMesLabel();
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
