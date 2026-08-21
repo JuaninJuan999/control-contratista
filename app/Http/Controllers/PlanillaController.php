@@ -8,6 +8,7 @@ use App\Models\Empresa;
 use App\Models\EmpresaPlanillaArchivo;
 use App\Services\PlanillaEmpresaStorage;
 use App\Support\EmpresaTipo;
+use App\Support\PlanillaTipo;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -100,6 +101,8 @@ class PlanillaController extends Controller
             $mensaje = "Planilla de «{$empresa->nombre}» registrada para vigencia hasta ".$vigenciaHasta->format('d/m/Y').'.';
         }
 
+        $this->marcarMesVigenciaDependientes($empresa, $anio, $mes);
+
         return redirect()
             ->route('planillas.index', array_merge($this->filtrosRedirect($request), ['abrir' => $empresa->id]))
             ->with('success', $mensaje);
@@ -151,5 +154,19 @@ class PlanillaController extends Controller
             'q' => $request->input('_filtro_q'),
             'anio' => $request->input('_filtro_anio'),
         ], fn ($valor) => $valor !== null && $valor !== '');
+    }
+
+    private function marcarMesVigenciaDependientes(Empresa $empresa, int $anio, int $mes): void
+    {
+        $empresa->loadMissing(['contratistasInternos']);
+
+        foreach ($empresa->contratistasInternos as $contratista) {
+            if ($contratista->tipo_planilla === PlanillaTipo::INDEPENDIENTE) {
+                continue;
+            }
+
+            $contratista->marcarMes($anio, $mes, 'ok');
+            $contratista->save();
+        }
     }
 }

@@ -99,6 +99,8 @@ class StoreEmpresaRequest extends EmpresaRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {
+            $this->validarPlanillaEmpresaEnValidator($validator);
+
             $personas = $this->input('personas', []);
             if (is_array($personas) && $personas !== []) {
                 $vistosExternos = [];

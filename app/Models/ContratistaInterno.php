@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\ContratistaComun;
+use App\Models\Concerns\ContratistaInternoSeguridadSocial;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -22,6 +23,8 @@ use Illuminate\Database\Eloquent\Model;
     'cedula_archivo',
     'empresa_id',
     'arl',
+    'tipo_planilla',
+    'limite',
     'fecha_ultima_ir',
     'vigencia_dias',
     'meses_por_anio',
@@ -31,6 +34,14 @@ use Illuminate\Database\Eloquent\Model;
 class ContratistaInterno extends Model
 {
     use ContratistaComun;
+    use ContratistaInternoSeguridadSocial;
 
     protected $table = 'contratistas_internos';
+
+    protected static function booted(): void
+    {
+        static::mergeCasts([
+            'limite' => 'date',
+        ]);
+    }
 }

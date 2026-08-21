@@ -51,10 +51,25 @@
         <p class="mb-2 mt-3 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Control mensual {{ $anioActual }}</p>
         <div class="flex flex-wrap gap-1">
             @foreach (\App\Models\ContratistaInterno::MESES as $mes => $abrev)
+                @if ($tipo === 'interno')
+                    @php $uiEmp = $contratista->controlMesSsUi($anioActual, $mes, false); @endphp
+                    <span
+                        title="{{ $uiEmp['titulo'] }}"
+                        class="relative inline-flex h-7 min-w-7 items-center justify-center rounded px-0.5 text-[10px] font-bold {{ $uiEmp['estado'] === 'ok' ? 'bg-emerald-100 text-emerald-800' : ($uiEmp['estado'] === 'rechazado' ? 'bg-red-100 text-red-700' : 'bg-zinc-200 text-zinc-600') }}"
+                    >
+                        {{ $uiEmp['estado'] === 'rechazado' ? '✕' : $uiEmp['abrev'] }}
+                        @if ($uiEmp['mostrar_badge'])
+                            <span class="absolute -right-1.5 -top-1.5 inline-flex min-h-[14px] min-w-[14px] items-center justify-center rounded-full px-0.5 text-[9px] font-bold leading-none shadow {{ $uiEmp['urgencia'] === 'proxima' ? 'bg-amber-500 text-white' : 'bg-emerald-700 text-white' }}">
+                                {{ $uiEmp['dias'] }}
+                            </span>
+                        @endif
+                    </span>
+                @else
                 @php $estadoMesEmp = $contratista->estadoMes($anioActual, $mes); @endphp
                 <span class="inline-flex h-7 min-w-7 items-center justify-center rounded px-0.5 text-[10px] font-bold {{ $estadoMesEmp === 'ok' ? 'bg-emerald-100 text-emerald-800' : ($estadoMesEmp === 'rechazado' ? 'bg-red-100 text-red-700' : 'bg-zinc-200 text-zinc-600') }}" title="{{ $abrev }}">
                     {{ $estadoMesEmp === 'rechazado' ? '✕' : $abrev }}
                 </span>
+                @endif
             @endforeach
         </div>
     </div>

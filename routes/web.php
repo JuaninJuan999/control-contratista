@@ -66,6 +66,8 @@ Route::middleware(['auth', 'restrict.consulta'])->group(function () {
         ->name('contratistas-internos.toggle-activo');
     Route::patch('contratistas-internos/{contratistaInterno}/mes', [ContratistaInternoController::class, 'toggleMes'])
         ->name('contratistas-internos.toggle-mes');
+    Route::get('contratistas-internos/planilla/{archivo}/descargar', [ContratistaInternoController::class, 'descargarPlanilla'])
+        ->name('contratistas-internos.planilla.descargar');
     Route::resource('vehiculos', VehiculoController::class)->except(['show', 'destroy']);
 
     Route::middleware('access.usuarios')->group(function () {

@@ -96,13 +96,14 @@
         >
     </div>
     <div>
-        <label for="planilla" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Planilla</label>
+        <label for="planilla" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Planilla <span class="text-red-600">*</span></label>
         @php
             $planillaSeleccionada = old('planilla', $empresa?->planilla ?? '');
         @endphp
         <select
             name="planilla"
             id="planilla"
+            required
             class="{{ $inputClass }}"
         >
             <option value="">Seleccionar…</option>

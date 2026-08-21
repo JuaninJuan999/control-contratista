@@ -46,6 +46,12 @@
                     'inputClass' => $inputClass,
                     'selectClass' => $inputClass,
                 ])
+
+                @include('contratistas._form_planilla_ss_interno', [
+                    'contratista' => $contratistaInterno,
+                    'inputClass' => $inputClass,
+                    'selectClass' => $inputClass,
+                ])
             </div>
 
             <button type="submit" class="mt-1 w-full rounded-md bg-emerald-700 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-800 sm:w-auto sm:px-6">

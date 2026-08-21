@@ -47,4 +47,11 @@ class UpdateEmpresaRequest extends EmpresaRequest
     {
         $this->prepareEmpresaFieldsForValidation();
     }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            $this->validarPlanillaEmpresaEnValidator($validator);
+        });
+    }
 }

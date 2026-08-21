@@ -7,14 +7,14 @@
         $inputClass = 'mt-0.5 w-full rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600';
     @endphp
 
-    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h1 class="font-display text-xl font-semibold text-zinc-950 md:text-2xl">Nuevo contratista interno</h1>
-        <a href="{{ route('contratistas-internos.index') }}" class="text-xs font-medium text-emerald-800 underline hover:text-emerald-950 md:text-sm">
-            Volver al listado
-        </a>
-    </div>
+    <div class="max-w-4xl rounded-lg border border-zinc-200 bg-white p-4 shadow-lg md:p-6">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-4">
+            <h1 class="font-display text-2xl font-semibold text-zinc-950 md:text-3xl">Nuevo contratista interno</h1>
+            <a href="{{ route('contratistas-internos.index') }}" class="text-xs font-medium text-emerald-800 underline hover:text-emerald-950 md:text-sm">
+                Volver al listado
+            </a>
+        </div>
 
-    <div class="max-w-4xl rounded-lg border border-zinc-200 bg-white p-4 shadow-lg md:p-5">
         @if ($errors->any())
             <div class="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900 md:text-sm">
                 <p class="font-semibold">Revisa los datos:</p>
@@ -48,9 +48,15 @@
                     'inputClass' => $inputClass,
                     'selectClass' => $inputClass,
                 ])
+
+                @include('contratistas._form_planilla_ss_interno', [
+                    'contratista' => null,
+                    'inputClass' => $inputClass,
+                    'selectClass' => $inputClass,
+                ])
             </div>
 
-            <p class="text-[11px] leading-tight text-zinc-500">El control mensual (meses EN–DI) se marca en el listado después de crear el contratista.</p>
+            <p class="text-[11px] leading-tight text-zinc-500">El mes de vigencia SS muestra los días restantes cuando la planilla está al día. El historial de meses anteriores se conserva en el listado.</p>
 
             <button
                 type="submit"

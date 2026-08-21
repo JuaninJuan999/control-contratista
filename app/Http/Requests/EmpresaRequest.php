@@ -7,6 +7,7 @@ use App\Support\EmpresaTipo;
 use App\Support\PlanillaTipo;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 abstract class EmpresaRequest extends FormRequest
 {
@@ -20,7 +21,7 @@ abstract class EmpresaRequest extends FormRequest
             'correos' => ['nullable', 'array'],
             'correos.*' => ['required', 'email', 'max:255'],
             'limite' => ['nullable', 'date'],
-            'planilla' => ['nullable', 'string', Rule::in($this->planillasPermitidas())],
+            'planilla' => ['required', 'string', Rule::in($this->planillasPermitidas())],
             'tipo_empresa' => ['nullable', 'string', Rule::in(EmpresaTipo::valores())],
         ];
     }
@@ -80,5 +81,15 @@ abstract class EmpresaRequest extends FormRequest
         }
 
         return array_values(array_unique($valores));
+    }
+
+    protected function validarPlanillaEmpresaEnValidator(Validator $validator): void
+    {
+        if ($this->input('planilla') === PlanillaTipo::DEPENDIENTE && ! $this->filled('limite')) {
+            $validator->errors()->add(
+                'limite',
+                'La fecha límite es obligatoria cuando la planilla es dependiente.'
+            );
+        }
     }
 }

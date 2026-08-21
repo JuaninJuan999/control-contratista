@@ -94,6 +94,14 @@
                     @endif
                     @if ($mostrarControlMensual)
                     @foreach (\App\Models\ContratistaInterno::MESES as $mes => $abrev)
+                        @if ($tipo === 'interno')
+                            @include('contratistas._celda_control_mensual_interno', [
+                                'contratista' => $c,
+                                'anio' => $anio,
+                                'mes' => $mes,
+                                'puedeEditar' => $puedeEditar,
+                            ])
+                        @else
                         @php $estadoMes = $c->estadoMes($anio, $mes); @endphp
                         <td class="px-0.5 py-2 text-center">
                             @if ($puedeEditar)
@@ -116,6 +124,7 @@
                             </span>
                             @endif
                         </td>
+                        @endif
                     @endforeach
                     @endif
                     <td class="px-3 py-2">
@@ -159,10 +168,25 @@
                         <p class="mb-2 mt-3 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Control mensual {{ $anio }}</p>
                         <div class="flex flex-wrap gap-1">
                             @foreach (\App\Models\ContratistaInterno::MESES as $mes => $abrev)
+                                @if ($tipo === 'interno')
+                                    @php $uiDet = $c->controlMesSsUi($anio, $mes, false); @endphp
+                                    <span
+                                        title="{{ $uiDet['titulo'] }}"
+                                        class="relative inline-flex h-7 min-w-7 items-center justify-center rounded px-0.5 text-[10px] font-bold {{ $uiDet['estado'] === 'ok' ? 'bg-emerald-100 text-emerald-800' : ($uiDet['estado'] === 'rechazado' ? 'bg-red-100 text-red-700' : 'bg-zinc-200 text-zinc-600') }}"
+                                    >
+                                        {{ $uiDet['estado'] === 'rechazado' ? '✕' : $uiDet['abrev'] }}
+                                        @if ($uiDet['mostrar_badge'])
+                                            <span class="absolute -right-1.5 -top-1.5 inline-flex min-h-[14px] min-w-[14px] items-center justify-center rounded-full px-0.5 text-[9px] font-bold leading-none shadow {{ $uiDet['urgencia'] === 'proxima' ? 'bg-amber-500 text-white' : 'bg-emerald-700 text-white' }}">
+                                                {{ $uiDet['dias'] }}
+                                            </span>
+                                        @endif
+                                    </span>
+                                @else
                                 @php $estadoMesDet = $c->estadoMes($anio, $mes); @endphp
                                 <span class="inline-flex h-7 min-w-7 items-center justify-center rounded px-0.5 text-[10px] font-bold {{ $estadoMesDet === 'ok' ? 'bg-emerald-100 text-emerald-800' : ($estadoMesDet === 'rechazado' ? 'bg-red-100 text-red-700' : 'bg-zinc-200 text-zinc-600') }}" title="{{ $abrev }}">
                                     {{ $estadoMesDet === 'rechazado' ? '✕' : $abrev }}
                                 </span>
+                                @endif
                             @endforeach
                         </div>
                         @endif

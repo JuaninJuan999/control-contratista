@@ -3,7 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\ValidatesContratistaCamposAdicionales;
+use App\Http\Requests\Concerns\ValidatesContratistaPlanillaSs;
 use App\Models\ContratistaInterno;
+use App\Support\PlanillaTipo;
 use App\Support\TiposDocumento;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -12,6 +14,7 @@ use Illuminate\Validation\Validator;
 class UpdateContratistaInternoRequest extends FormRequest
 {
     use ValidatesContratistaCamposAdicionales;
+    use ValidatesContratistaPlanillaSs;
 
     public function authorize(): bool
     {
@@ -39,7 +42,7 @@ class UpdateContratistaInternoRequest extends FormRequest
             ],
             'empresa_id' => ['required', 'integer', 'exists:empresas,id'],
             'arl' => ['required', 'string', 'max:120'],
-        ], $this->camposAdicionalesRules());
+        ], $this->camposAdicionalesRules(), $this->planillaSsRules());
     }
 
     /**
@@ -53,7 +56,7 @@ class UpdateContratistaInternoRequest extends FormRequest
             'numero_documento' => 'documento',
             'empresa_id' => 'empresa',
             'arl' => 'ARL',
-        ], $this->camposAdicionalesAttributes());
+        ], $this->camposAdicionalesAttributes(), $this->planillaSsAttributes());
     }
 
     public function withValidator(Validator $validator): void
@@ -61,6 +64,9 @@ class UpdateContratistaInternoRequest extends FormRequest
         /** @var ContratistaInterno $contratista */
         $contratista = $this->route('contratistas_interno');
         $this->validarCamposAdicionalesEnValidator($validator, '', $contratista);
+        $validator->after(function (Validator $validator): void {
+            $this->validarPlanillaSsEnValidator($validator);
+        });
     }
 
     protected function prepareForValidation(): void
@@ -72,11 +78,17 @@ class UpdateContratistaInternoRequest extends FormRequest
         $nombres = $this->input('nombres_apellidos');
         $arl = $this->input('arl');
 
+        $tipoPlanilla = $this->input('tipo_planilla', $contratista->tipo_planilla ?? PlanillaTipo::DEPENDIENTE);
+
         $datos = [
             'numero_documento' => is_string($numero) ? preg_replace('/\s+/', '', trim($numero)) : $numero,
             'nombres_apellidos' => is_string($nombres) ? trim($nombres) : $nombres,
             'arl' => is_string($arl) ? trim($arl) : $arl,
             'empresa_id' => $this->filled('empresa_id') ? (int) $this->input('empresa_id') : null,
+            'tipo_planilla' => is_string($tipoPlanilla) ? strtoupper(trim($tipoPlanilla)) : PlanillaTipo::DEPENDIENTE,
+            'limite' => strtoupper((string) $tipoPlanilla) === PlanillaTipo::INDEPENDIENTE && $this->filled('limite')
+                ? $this->input('limite')
+                : null,
             'manipulador_alimentos' => $this->has('manipulador_alimentos')
                 ? $this->boolean('manipulador_alimentos')
                 : (bool) $contratista->manipulador_alimentos,
@@ -89,6 +101,7 @@ class UpdateContratistaInternoRequest extends FormRequest
             'vigencia_dias' => null,
         ];
 
+        $this->preparePlanillaSsForValidation();
         $this->prepararCamposAdicionales($datos);
         $this->merge($datos);
     }

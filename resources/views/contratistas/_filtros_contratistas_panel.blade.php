@@ -84,5 +84,5 @@
         </div>
     </div>
     <p id="filtro-{{ $filtrosModulo }}-resumen" class="mt-3 hidden text-xs font-medium text-emerald-800"></p>
-    <p class="mt-2 text-xs text-zinc-600 md:text-sm">Clic en el nombre para ver el detalle.@if ($filtrosTipo === 'interno' && auth()->user()?->puedeEditar()) Clic en un mes para marcarlo como registrado.@endif</p>
+    <p class="mt-2 text-xs text-zinc-600 md:text-sm">Clic en el nombre para ver el detalle.@if ($filtrosTipo === 'interno' && auth()->user()?->puedeEditar()) El mes de vigencia SS muestra los días restantes cuando la planilla está al día.@endif</p>
 </div>

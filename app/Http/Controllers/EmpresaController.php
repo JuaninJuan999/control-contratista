@@ -23,7 +23,7 @@ class EmpresaController extends Controller
         $empresas = Empresa::query()
             ->with([
                 'contratistasExternos' => fn ($q) => $q->orderBy('nombres_apellidos'),
-                'contratistasInternos' => fn ($q) => $q->orderBy('nombres_apellidos'),
+                'contratistasInternos' => fn ($q) => $q->with('planillaArchivos')->orderBy('nombres_apellidos'),
                 'vehiculos' => fn ($q) => $q->orderBy('placa'),
                 'planillaArchivos' => fn ($q) => $q->orderByDesc('vigencia_hasta')->orderByDesc('periodo_anio')->orderByDesc('periodo_mes'),
             ])
@@ -139,7 +139,7 @@ class EmpresaController extends Controller
     {
         $empresa->load([
             'contratistasExternos' => fn ($query) => $query->orderBy('nombres_apellidos'),
-            'contratistasInternos' => fn ($query) => $query->orderBy('nombres_apellidos'),
+            'contratistasInternos' => fn ($query) => $query->with('planillaArchivos')->orderBy('nombres_apellidos'),
         ]);
 
         return view('empresas.edit', compact('empresa'));
@@ -184,6 +184,10 @@ class EmpresaController extends Controller
         }
 
         foreach ($empresa->contratistasInternos as $contratista) {
+            if ($contratista->esPlanillaIndependiente()) {
+                continue;
+            }
+
             $estado = $vigentes->contains('interno-'.$contratista->id) ? 'ok' : 'rechazado';
             $contratista->marcarMes($anio, $mes, $estado);
             $contratista->save();
