@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Empresa;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class UpdateEmpresaRequest extends EmpresaRequest
 {
