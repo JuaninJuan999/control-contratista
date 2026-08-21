@@ -3,6 +3,15 @@
     /** @var string $tipo  'externo' | 'interno' */
     $tipoLabel = $tipo === 'interno' ? 'Interno' : 'Externo';
     $mostrarCamposIr = $tipo === 'externo';
+    $estadoSs = null;
+    $diasSs = null;
+    $limiteSs = null;
+    if ($tipo === 'interno') {
+        $contratista->setRelation('empresa', $empresa);
+        $estadoSs = $contratista->estadoLimiteSs();
+        $diasSs = $contratista->diasParaLimiteSs();
+        $limiteSs = $contratista->limiteEfectivo();
+    }
 @endphp
 
 <div class="item-grupo {{ ! $contratista->activo ? 'bg-zinc-50/80' : '' }}" data-item-grupo="{{ $tipo }}-{{ $contratista->id }}">
@@ -16,7 +25,10 @@
             <span class="rounded bg-zinc-300 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-zinc-800">Inactivo</span>
         @endif
         <span class="text-xs text-zinc-500">{{ $contratista->tipo_documento }} {{ $contratista->numero_documento }}</span>
-        @if ($mostrarCamposIr)
+        @if ($tipo === 'interno')
+            <span class="text-xs tabular-nums text-zinc-600">Límite SS: {{ $limiteSs?->format('d/m/Y') ?? '—' }}</span>
+            <span class="ml-auto">@include('empresas._badge_estado_ss', ['estado' => $estadoSs, 'dias' => $diasSs])</span>
+        @elseif ($mostrarCamposIr)
             @if ($contratista->estado === 'VIGENTE')
                 <span class="ml-auto rounded px-2 py-0.5 text-[10px] font-bold uppercase {{ $contratista->activo ? 'bg-emerald-100 text-emerald-800' : 'bg-emerald-50 text-emerald-600' }}">Vigente</span>
             @elseif ($contratista->estado === 'VENCIDA')
@@ -33,6 +45,12 @@
             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Documento</dt><dd class="mt-0.5 text-zinc-900">{{ $contratista->tipo_documento }} {{ $contratista->numero_documento }}</dd></div>
             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Empresa</dt><dd class="mt-0.5 text-zinc-900">{{ $empresa->nombre }}</dd></div>
             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">ARL</dt><dd class="mt-0.5 text-zinc-900">{{ $contratista->arl ?? '—' }}</dd></div>
+            @if ($tipo === 'interno')
+            <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Tipo planilla</dt><dd class="mt-0.5 text-zinc-900">{{ $contratista->tipo_planilla ?? '—' }}</dd></div>
+            <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Fecha límite SS</dt><dd class="mt-0.5 text-zinc-900">{{ $limiteSs?->format('d/m/Y') ?? '—' }}</dd></div>
+            <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Días para límite SS</dt><dd class="mt-0.5 font-bold tabular-nums text-zinc-900">{{ $diasSs ?? '—' }}</dd></div>
+            <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Estado SS</dt><dd class="mt-0.5">@include('empresas._badge_estado_ss', ['estado' => $estadoSs, 'dias' => $diasSs])</dd></div>
+            @endif
             @if ($mostrarCamposIr)
             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Fecha última I/R</dt><dd class="mt-0.5 text-zinc-900">{{ $contratista->fecha_ultima_ir?->format('d/m/Y') ?? '—' }}</dd></div>
             <div><dt class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Vencimiento</dt><dd class="mt-0.5 text-zinc-900">{{ $contratista->fecha_vencimiento?->format('d/m/Y') ?? '—' }}</dd></div>

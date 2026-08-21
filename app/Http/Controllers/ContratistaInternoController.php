@@ -127,14 +127,6 @@ class ContratistaInternoController extends Controller
                 ->with('error', 'Mes o año no válido.');
         }
 
-        $contratistaInterno->load(['empresa.planillaArchivos', 'planillaArchivos']);
-        $ui = $contratistaInterno->controlMesSsUi($anio, $mes, false);
-        if (! $ui['editable']) {
-            return redirect()
-                ->route('contratistas-internos.index', ['anio' => $anio])
-                ->with('error', 'La vigencia SS del mes activo se calcula automáticamente desde la fecha límite.');
-        }
-
         $contratistaInterno->toggleMes($anio, $mes);
 
         return redirect()

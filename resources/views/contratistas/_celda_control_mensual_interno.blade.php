@@ -23,7 +23,7 @@
 @endphp
 
 <td class="px-0.5 py-2 text-center">
-    @if ($ui['editable'] && $puedeEditar)
+    @if ($ui['editable'])
         <form action="{{ route('contratistas-internos.toggle-mes', $contratista) }}" method="post" class="inline" onclick="event.stopPropagation()">
             @csrf
             @method('PATCH')
@@ -35,6 +35,11 @@
                 class="relative inline-flex h-7 min-w-7 items-center justify-center rounded px-0.5 text-[10px] font-bold transition {{ $clasesEstado }} {{ $clasesHover }}"
             >
                 {{ $ui['estado'] === 'rechazado' ? '✕' : $ui['abrev'] }}
+                @if ($ui['mostrar_badge'])
+                    <span class="pointer-events-none absolute -right-1.5 -top-1.5 inline-flex min-h-[14px] min-w-[14px] items-center justify-center rounded-full px-0.5 text-[9px] font-bold leading-none shadow {{ $clasesBadge }}">
+                        {{ $ui['dias'] }}
+                    </span>
+                @endif
             </button>
         </form>
     @else

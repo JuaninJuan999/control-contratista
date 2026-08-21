@@ -192,13 +192,17 @@ trait ContratistaInternoSeguridadSocial
             $titulo = $abrev.' — '.$dias.' día'.($dias === 1 ? '' : 's').' restantes (vence '.$limite->format('d/m/Y').')';
         } elseif ($estadoHistorico === 'ok') {
             $estado = 'ok';
-            $titulo = $abrev.' — registrado como vigente en este periodo';
+            $titulo = $abrev.' — registrado como vigente. Clic para cambiar estado.';
         } elseif ($estadoHistorico === 'rechazado') {
             $estado = 'rechazado';
-            $titulo = $abrev.' — no vigente en este periodo';
+            $titulo = $abrev.' — no vigente. Clic para cambiar estado.';
         } else {
             $estado = 'vacio';
-            $titulo = $abrev.' — sin registro en este periodo';
+            $titulo = $abrev.' — sin registro. Clic para marcar vigente.';
+        }
+
+        if ($mostrarBadge) {
+            $titulo = $abrev.' — '.$dias.' día'.($dias === 1 ? '' : 's').' restantes (vence '.$limite->format('d/m/Y').'). Clic para ajustar manualmente si hubo error.';
         }
 
         return [
@@ -209,7 +213,7 @@ trait ContratistaInternoSeguridadSocial
             'dias' => $mostrarBadge ? $dias : null,
             'urgencia' => $urgencia,
             'titulo' => $titulo,
-            'editable' => $puedeEditar && ! $mostrarBadge,
+            'editable' => $puedeEditar,
         ];
     }
 

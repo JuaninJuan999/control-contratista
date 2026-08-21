@@ -7,6 +7,7 @@ use App\Models\ContratistaInterno;
 use App\Models\Empresa;
 use App\Models\Vehiculo;
 use App\Support\EmpresaTipo;
+use App\Support\PlanillaTipo;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
@@ -18,7 +19,8 @@ class DashboardController extends Controller
 
     /** @var array<string, string> */
     public const TIPOS = [
-        'empresas' => 'Empresas',
+        'empresas' => 'Empresas (SS)',
+        'planilla_ss' => 'Planilla SS internos',
         'ind_rnd' => 'Ind/Rnd',
         'licencia' => 'Licencia de conducción',
         'manipulador' => 'Manipulador de Alimentos',
@@ -123,17 +125,20 @@ class DashboardController extends Controller
 
         Empresa::query()
             ->whereNotNull('limite')
+            ->where('planilla', PlanillaTipo::DEPENDIENTE)
             ->get()
             ->each(function (Empresa $empresa) use ($items): void {
                 $items->push($this->item(
                     'empresas',
                     $empresa->nombre,
-                    'Fecha límite',
+                    'Fecha límite SS (dependiente)',
                     $empresa->limite,
                     route('empresas.index'),
                     route('empresas.edit', $empresa),
                 ));
             });
+
+        $this->agregarPlanillaSsInternos($items);
 
         $this->agregarIndRnd($items, ContratistaExterno::class, route('contratistas-externos.index'), 'externo');
 
@@ -162,6 +167,36 @@ class DashboardController extends Controller
             });
 
         return $items;
+    }
+
+    /**
+     * @param  Collection<int, array<string, mixed>>  $items
+     */
+    private function agregarPlanillaSsInternos(Collection $items): void
+    {
+        ContratistaInterno::query()
+            ->where('activo', true)
+            ->with(['empresa', 'planillaArchivos'])
+            ->get()
+            ->each(function (ContratistaInterno $contratista) use ($items): void {
+                $limite = $contratista->limiteEfectivo();
+
+                if ($limite === null) {
+                    return;
+                }
+
+                $tipoPlanilla = $contratista->esPlanillaIndependiente() ? 'Independiente' : 'Dependiente';
+                $empresaNombre = $contratista->empresa ? ' · '.$contratista->empresa->nombre : '';
+
+                $items->push($this->item(
+                    'planilla_ss',
+                    $contratista->nombres_apellidos,
+                    'Planilla SS '.$tipoPlanilla.$empresaNombre,
+                    $limite,
+                    route('contratistas-internos.index'),
+                    route('contratistas-internos.edit', $contratista),
+                ));
+            });
     }
 
     /**

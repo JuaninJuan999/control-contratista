@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Models\Empresa;
+use App\Support\AlertaPlanillaHito;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -16,12 +17,16 @@ class PlanillaProximaVencerEmpresaMail extends Mailable
     public function __construct(
         public Empresa $empresa,
         public int $diasRestantes,
+        public string $hito = AlertaPlanillaHito::PROXIMA_10,
     ) {}
 
     public function envelope(): Envelope
     {
+        $esVencida = AlertaPlanillaHito::esVencida($this->hito);
+        $prefijo = $esVencida ? 'Planilla SS vencida' : 'Recordatorio planilla SS';
+
         return new Envelope(
-            subject: 'Recordatorio: planilla de seguridad social próxima a vencer — '.$this->empresa->nombre,
+            subject: $prefijo.' — '.$this->empresa->nombre,
         );
     }
 

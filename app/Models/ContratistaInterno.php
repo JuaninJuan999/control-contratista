@@ -33,14 +33,16 @@ use Illuminate\Database\Eloquent\Model;
 ])]
 class ContratistaInterno extends Model
 {
-    use ContratistaComun;
+    use ContratistaComun {
+        casts as protected castsContratistaComun;
+    }
     use ContratistaInternoSeguridadSocial;
 
     protected $table = 'contratistas_internos';
 
-    protected static function booted(): void
+    protected function casts(): array
     {
-        static::mergeCasts([
+        return array_merge($this->castsContratistaComun(), [
             'limite' => 'date',
         ]);
     }

@@ -11,7 +11,46 @@
     if ($limiteValor === null && $empresa?->limite) {
         $limiteValor = $empresa->limite->format('Y-m-d');
     }
+    $planillaSeleccionada = old('planilla', $empresa?->planilla ?? '');
+    $esIndependienteInicial = $planillaSeleccionada === \App\Support\PlanillaTipo::INDEPENDIENTE;
 @endphp
+
+<div class="rounded-lg border border-emerald-200 bg-emerald-50/50 p-3 md:p-4">
+    <p class="mb-2 text-[11px] font-bold uppercase tracking-wide text-emerald-900">Paso 1 — Tipo de planilla</p>
+    <div>
+        <label for="planilla" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Planilla de seguridad social <span class="text-red-600">*</span></label>
+        <select
+            name="planilla"
+            id="planilla"
+            required
+            class="{{ $inputClass }}"
+        >
+            <option value="">Seleccionar…</option>
+            @if ($planillaSeleccionada && ! array_key_exists($planillaSeleccionada, \App\Support\PlanillaTipo::OPCIONES))
+                <option value="{{ $planillaSeleccionada }}" selected>{{ $planillaSeleccionada }}</option>
+            @endif
+            @foreach (\App\Support\PlanillaTipo::OPCIONES as $valor => $etiqueta)
+                <option value="{{ $valor }}" @selected($planillaSeleccionada === $valor)>{{ $etiqueta }}</option>
+            @endforeach
+        </select>
+    </div>
+    <p id="planilla-ayuda-dependiente" class="mt-2 text-[11px] leading-snug text-zinc-600 {{ $esIndependienteInicial ? 'hidden' : '' }}">
+        <strong>Dependiente:</strong> la empresa tiene una sola fecha límite y planilla mensual compartida para todos los internos vinculados.
+    </p>
+    <p id="planilla-ayuda-independiente" class="mt-2 text-[11px] leading-snug text-zinc-600 {{ $esIndependienteInicial ? '' : 'hidden' }}">
+        <strong>Independiente:</strong> cada contratista interno lleva su propia fecha límite y planilla. No necesita fecha límite a nivel empresa; podrá registrarla al crear cada persona.
+    </p>
+    <div id="bloque-limite-empresa" class="mt-3 {{ $esIndependienteInicial ? 'hidden' : '' }}">
+        <label for="limite" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Fecha límite empresa <span id="limite-requerido" class="text-red-600">*</span></label>
+        <input
+            type="date"
+            name="limite"
+            id="limite"
+            value="{{ old('limite', $limiteValor ?? '') }}"
+            class="{{ $inputClass }}"
+        >
+    </div>
+</div>
 
 <div>
     <label for="nombre" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Nombre o razón social</label>
@@ -84,58 +123,51 @@
     <p class="mt-1 text-[11px] leading-tight text-zinc-500">Puedes registrar varios correos de contacto.</p>
 </div>
 
-<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-    <div>
-        <label for="limite" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Límite</label>
-        <input
-            type="date"
-            name="limite"
-            id="limite"
-            value="{{ old('limite', $limiteValor ?? '') }}"
-            class="{{ $inputClass }}"
-        >
-    </div>
-    <div>
-        <label for="planilla" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Planilla <span class="text-red-600">*</span></label>
-        @php
-            $planillaSeleccionada = old('planilla', $empresa?->planilla ?? '');
-        @endphp
-        <select
-            name="planilla"
-            id="planilla"
-            required
-            class="{{ $inputClass }}"
-        >
-            <option value="">Seleccionar…</option>
-            @if ($planillaSeleccionada && ! array_key_exists($planillaSeleccionada, \App\Support\PlanillaTipo::OPCIONES))
-                <option value="{{ $planillaSeleccionada }}" selected>{{ $planillaSeleccionada }}</option>
-            @endif
-            @foreach (\App\Support\PlanillaTipo::OPCIONES as $valor => $etiqueta)
-                <option value="{{ $valor }}" @selected($planillaSeleccionada === $valor)>{{ $etiqueta }}</option>
-            @endforeach
-        </select>
-    </div>
-    <div>
-        <label for="tipo_empresa" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Clasificación empresa</label>
-        @php
-            $tipoEmpresaSeleccionado = old('tipo_empresa', $empresa?->tipo_empresa ?? '');
-        @endphp
-        <select
-            name="tipo_empresa"
-            id="tipo_empresa"
-            class="{{ $inputClass }}"
-        >
-            <option value="">Sin clasificar</option>
-            @foreach (\App\Support\EmpresaTipo::OPCIONES as $valor => $etiqueta)
-                <option value="{{ $valor }}" @selected($tipoEmpresaSeleccionado === $valor)>{{ $etiqueta }}</option>
-            @endforeach
-        </select>
-        <p class="mt-0.5 text-[11px] leading-tight text-zinc-500">Interna o externa según el tipo de relación con Colbeef.</p>
-    </div>
+<div>
+    <label for="tipo_empresa" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Clasificación empresa</label>
+    @php
+        $tipoEmpresaSeleccionado = old('tipo_empresa', $empresa?->tipo_empresa ?? '');
+    @endphp
+    <select
+        name="tipo_empresa"
+        id="tipo_empresa"
+        class="{{ $inputClass }}"
+    >
+        <option value="">Sin clasificar</option>
+        @foreach (\App\Support\EmpresaTipo::OPCIONES as $valor => $etiqueta)
+            <option value="{{ $valor }}" @selected($tipoEmpresaSeleccionado === $valor)>{{ $etiqueta }}</option>
+        @endforeach
+    </select>
+    <p class="mt-0.5 text-[11px] leading-tight text-zinc-500">Interna o externa según el tipo de relación con Colbeef.</p>
 </div>
 
 <script>
     (function () {
+        var planilla = document.getElementById('planilla');
+        var bloqueLimite = document.getElementById('bloque-limite-empresa');
+        var limiteInput = document.getElementById('limite');
+        var ayudaDep = document.getElementById('planilla-ayuda-dependiente');
+        var ayudaInd = document.getElementById('planilla-ayuda-independiente');
+        var limiteReq = document.getElementById('limite-requerido');
+
+        function actualizarPlanilla() {
+            if (!planilla) return;
+            var esIndependiente = planilla.value === @json(\App\Support\PlanillaTipo::INDEPENDIENTE);
+            if (bloqueLimite) bloqueLimite.classList.toggle('hidden', esIndependiente);
+            if (ayudaDep) ayudaDep.classList.toggle('hidden', esIndependiente);
+            if (ayudaInd) ayudaInd.classList.toggle('hidden', !esIndependiente);
+            if (limiteInput) {
+                limiteInput.required = !esIndependiente;
+                if (esIndependiente) limiteInput.value = '';
+            }
+            if (limiteReq) limiteReq.classList.toggle('hidden', esIndependiente);
+        }
+
+        if (planilla) {
+            planilla.addEventListener('change', actualizarPlanilla);
+            actualizarPlanilla();
+        }
+
         var lista = document.getElementById('correos-lista');
         var btnAgregar = document.getElementById('btn-agregar-correo');
         if (!lista || !btnAgregar) return;

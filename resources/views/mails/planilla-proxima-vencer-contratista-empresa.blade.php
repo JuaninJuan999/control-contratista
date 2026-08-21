@@ -3,9 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Recordatorio planilla de seguridad social</title>
+    <title>Recordatorio planilla SS contratista</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b;line-height:1.6;">
+    @php
+        $empresa = $contratista->empresa;
+        $limite = $contratista->limiteEfectivo();
+    @endphp
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f4f4f5;padding:24px 12px;">
         <tr>
             <td align="center">
@@ -17,47 +21,42 @@
                     </tr>
                     <tr>
                         <td style="padding:28px;">
-                            <p style="margin:0 0 16px;font-size:15px;">Estimado(a) representante de <strong>{{ $empresa->nombre }}</strong>,</p>
+                            <p style="margin:0 0 16px;font-size:15px;">Estimado(a) representante@if ($empresa) de <strong>{{ $empresa->nombre }}</strong>@endif,</p>
 
                             @include('mails._alerta_planilla_hito', ['hito' => $hito, 'diasRestantes' => $diasRestantes])
 
                             <p style="margin:0 0 16px;font-size:15px;">
+                                Le informamos que la vigencia de la <strong>planilla de seguridad social</strong> del contratista
+                                <strong>{{ $contratista->nombres_apellidos }}</strong> (planilla <strong>independiente</strong>)
                                 @if (\App\Support\AlertaPlanillaHito::esVencida($hito))
-                                    Le informamos que la vigencia de la <strong>planilla de seguridad social</strong>
-                                    asociada a su empresa <strong>ya venció</strong> y lleva {{ abs($diasRestantes) }} día{{ abs($diasRestantes) === 1 ? '' : 's' }} sin renovación registrada.
+                                    <strong>ya venció</strong> hace {{ abs($diasRestantes) }} día{{ abs($diasRestantes) === 1 ? '' : 's' }}.
                                 @else
-                                    Por medio del presente, le informamos que la vigencia de la <strong>planilla de seguridad social</strong>
-                                    asociada a su empresa se encuentra <strong>próxima a vencer</strong>.
+                                    se encuentra <strong>próxima a vencer</strong>.
                                 @endif
                             </p>
 
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 20px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;">
                                 <tr>
                                     <td style="padding:16px 18px;font-size:14px;">
-                                        <p style="margin:0 0 8px;"><strong>Fecha límite de vigencia:</strong> {{ $empresa->limite->format('d/m/Y') }}</p>
-                                        <p style="margin:0 0 8px;"><strong>Periodo:</strong> {{ $empresa->periodoVigenciaEtiqueta() }}</p>
-                                        @if ($empresa->nit)
-                                        <p style="margin:0 0 8px;"><strong>NIT:</strong> {{ $empresa->nit }}</p>
+                                        <p style="margin:0 0 8px;"><strong>Contratista:</strong> {{ $contratista->nombres_apellidos }}</p>
+                                        <p style="margin:0 0 8px;"><strong>Documento:</strong> {{ $contratista->tipo_documento }} {{ $contratista->numero_documento }}</p>
+                                        @if ($empresa)
+                                        <p style="margin:0 0 8px;"><strong>Empresa:</strong> {{ $empresa->nombre }}</p>
                                         @endif
+                                        <p style="margin:0 0 8px;"><strong>Fecha límite SS:</strong> {{ $limite?->format('d/m/Y') }}</p>
                                         <p style="margin:0;"><strong>Días restantes:</strong> {{ $diasRestantes }} día{{ $diasRestantes === 1 ? '' : 's' }}</p>
                                     </td>
                                 </tr>
                             </table>
 
                             <p style="margin:0 0 16px;font-size:15px;">
-                                Con el fin de mantener su registro al día en nuestro sistema de control de contratistas,
-                                le solicitamos <strong>comunicarse con el área de Seguridad y Salud en el Trabajo (SST) de Colbeef</strong>
-                                y remitir oportunamente la <strong>nueva planilla de seguridad social</strong> correspondiente al próximo periodo de vigencia.
-                            </p>
-
-                            <p style="margin:0 0 16px;font-size:15px;">
-                                Agradecemos su pronta gestión para evitar inconvenientes en el acceso y continuidad de sus actividades como empresa contratista.
+                                Solicitamos gestionar oportunamente la renovación y remitir la nueva planilla de seguridad social
+                                al área de SST de Colbeef, o actualizar el registro en el sistema de control de contratistas.
                             </p>
 
                             <p style="margin:0;font-size:15px;">
                                 Atentamente,<br>
-                                <strong>Área de Seguridad y Salud en el Trabajo — Colbeef</strong><br>
-                                <span style="color:#52525b;font-size:13px;">Sistema de Control de Contratistas</span>
+                                <strong>Área de Seguridad y Salud en el Trabajo — Colbeef</strong>
                             </p>
                         </td>
                     </tr>

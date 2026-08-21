@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\PeriodoPlanilla;
+use App\Support\PlanillaTipo;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -139,5 +140,119 @@ class Empresa extends Model
         }
 
         return PeriodoPlanilla::etiqueta($periodo['anio'], $periodo['mes']);
+    }
+
+    public function esPlanillaIndependiente(): bool
+    {
+        return $this->planilla === PlanillaTipo::INDEPENDIENTE;
+    }
+
+    public function esPlanillaDependiente(): bool
+    {
+        return $this->planilla === PlanillaTipo::DEPENDIENTE;
+    }
+
+    /**
+     * Resumen de vigencia SS de contratistas internos (planilla independiente por persona).
+     *
+     * @return array{
+     *     vigentes: int,
+     *     proximas: int,
+     *     vencidas: int,
+     *     sin_fecha: int,
+     *     total: int,
+     *     items: list<array{nombre: string, tipo: string, limite: ?\Illuminate\Support\Carbon, estado: ?string, dias: ?int, tipo_planilla: ?string}>
+     * }
+     */
+    public function resumenVigenciaSsContratistas(): array
+    {
+        $this->loadMissing([
+            'contratistasInternos.planillaArchivos',
+            'contratistasExternos',
+            'planillaArchivos',
+        ]);
+
+        $resumen = [
+            'vigentes' => 0,
+            'proximas' => 0,
+            'vencidas' => 0,
+            'sin_fecha' => 0,
+            'total' => 0,
+            'items' => [],
+        ];
+
+        foreach ($this->contratistasInternos as $contratista) {
+            $contratista->setRelation('empresa', $this);
+            $estado = $contratista->estadoLimiteSs();
+            $resumen['total']++;
+
+            match ($estado) {
+                'VIGENTE' => $resumen['vigentes']++,
+                'PRÓXIMA A VENCER' => $resumen['proximas']++,
+                'VENCIDA' => $resumen['vencidas']++,
+                default => $resumen['sin_fecha']++,
+            };
+
+            $resumen['items'][] = [
+                'nombre' => $contratista->nombres_apellidos,
+                'tipo' => 'interno',
+                'limite' => $contratista->limiteEfectivo(),
+                'estado' => $estado,
+                'dias' => $contratista->diasParaLimiteSs(),
+                'tipo_planilla' => $contratista->tipo_planilla,
+            ];
+        }
+
+        foreach ($this->contratistasExternos as $contratista) {
+            $resumen['total']++;
+            $resumen['items'][] = [
+                'nombre' => $contratista->nombres_apellidos,
+                'tipo' => 'externo',
+                'limite' => null,
+                'estado' => null,
+                'dias' => null,
+                'tipo_planilla' => null,
+            ];
+        }
+
+        usort($resumen['items'], function (array $a, array $b): int {
+            $orden = ['VENCIDA' => 0, 'PRÓXIMA A VENCER' => 1, 'VIGENTE' => 2, null => 3];
+            $oa = $orden[$a['estado']] ?? 4;
+            $ob = $orden[$b['estado']] ?? 4;
+            if ($oa !== $ob) {
+                return $oa <=> $ob;
+            }
+
+            return strcasecmp($a['nombre'], $b['nombre']);
+        });
+
+        return $resumen;
+    }
+
+    /**
+     * Estado límite para la fila principal: empresa dependiente usa su fecha;
+     * independiente usa el peor estado entre sus internos.
+     */
+    public function estadoLimiteParaListado(): ?string
+    {
+        if (! $this->esPlanillaIndependiente()) {
+            return $this->estado_limite;
+        }
+
+        $resumen = $this->resumenVigenciaSsContratistas();
+
+        if ($resumen['vencidas'] > 0) {
+            return 'VENCIDA';
+        }
+
+        if ($resumen['proximas'] > 0) {
+            return 'PRÓXIMA A VENCER';
+        }
+
+        if ($resumen['vigentes'] > 0) {
+            return 'VIGENTE';
+        }
+
+        return $resumen['total'] > 0 ? null : $this->estado_limite;
     }
 }

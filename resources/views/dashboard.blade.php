@@ -89,6 +89,7 @@
                 @php
                     $emojisEstadisticas = [
                         'empresas' => '🏢',
+                        'planilla_ss' => '📋',
                         'ind_rnd' => '🩺',
                         'licencia' => '🪪',
                         'manipulador' => '🍽️',

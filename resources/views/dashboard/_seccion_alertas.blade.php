@@ -4,6 +4,7 @@
         : ['borde' => 'border-amber-200', 'fondo' => 'bg-amber-100/80', 'texto' => 'text-amber-700', 'textoFuerte' => 'text-amber-800', 'pill' => 'bg-amber-500', 'activo' => 'border-amber-400 ring-2 ring-amber-300 ring-offset-1', 'seccion' => 'dash-alert-section--proxima', 'tarjeta' => 'dash-alert-card--proxima', 'emoji' => '⏳'];
     $emojisTipo = [
         'empresas' => '🏢',
+        'planilla_ss' => '📋',
         'ind_rnd' => '🩺',
         'licencia' => '🪪',
         'manipulador' => '🍽️',
@@ -23,7 +24,7 @@
         <span class="rounded-full {{ $tema['pill'] }} px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">{{ $total }}</span>
     </div>
 
-    <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-7">
+    <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8">
         @foreach ($tipos as $tipoKey => $tipoLabel)
             @php $cantidad = $grupos->get($tipoKey)?->count() ?? 0; @endphp
             <button

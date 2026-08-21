@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class EmpresaAlertaPlanillaEnvio extends Model
+class ContratistaInternoAlertaPlanillaEnvio extends Model
 {
     public const UPDATED_AT = null;
 
@@ -14,7 +14,7 @@ class EmpresaAlertaPlanillaEnvio extends Model
     public const CANAL_INTERNO = 'interno';
 
     protected $fillable = [
-        'empresa_id',
+        'contratista_interno_id',
         'canal',
         'hito',
         'vigencia_hasta',
@@ -29,8 +29,8 @@ class EmpresaAlertaPlanillaEnvio extends Model
         ];
     }
 
-    public function empresa(): BelongsTo
+    public function contratistaInterno(): BelongsTo
     {
-        return $this->belongsTo(Empresa::class);
+        return $this->belongsTo(ContratistaInterno::class);
     }
 }

@@ -128,13 +128,16 @@
                     @php
                         $planillaVigenteAdjunta = $empresa->planillaVigenteAdjunta();
                         $limiteVencido = $empresa->estado_limite === 'VENCIDA';
+                        $esIndependiente = $empresa->esPlanillaIndependiente();
+                        $resumenSs = $esIndependiente ? $empresa->resumenVigenciaSsContratistas() : null;
+                        $estadoListado = $empresa->estadoLimiteParaListado();
                     @endphp
                     <tr
                         class="empresa-fila cursor-pointer bg-white hover:bg-emerald-50/60"
                         data-empresa-toggle="{{ $empresa->id }}"
                         data-filtro-nombre="{{ mb_strtolower($empresa->nombre, 'UTF-8') }}"
                         data-filtro-nit="{{ mb_strtolower($empresa->nit ?? '', 'UTF-8') }}"
-                        data-filtro-estado="{{ $empresa->estado_limite ?? 'SIN FECHA' }}"
+                        data-filtro-estado="{{ $estadoListado ?? 'SIN FECHA' }}"
                         data-filtro-tipo-empresa="{{ $empresa->tipo_empresa ?? 'SIN_CLASIFICAR' }}"
                         data-filtro-planilla="{{ mb_strtolower($empresa->planilla ?? '', 'UTF-8') }}"
                         aria-expanded="false"
@@ -157,10 +160,18 @@
                                 @endif
                                 @if ($planillaVigenteAdjunta)
                                     <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-800" title="Planilla SS adjunta para la vigencia actual">Planilla SS</span>
-                                @elseif ($limiteVencido)
+                                @elseif ($limiteVencido && ! $esIndependiente)
                                     <span class="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-800" title="Fecha límite vencida; renueve y adjunte nueva planilla">SS vencida</span>
-                                @elseif ($empresa->limite !== null)
+                                @elseif ($empresa->limite !== null && ! $esIndependiente)
                                     <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-900" title="Planilla SS pendiente para la vigencia actual">SS pendiente</span>
+                                @endif
+                                @if ($esIndependiente && $resumenSs)
+                                    @if ($resumenSs['vencidas'] > 0)
+                                        <span class="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-800">{{ $resumenSs['vencidas'] }} SS vencida{{ $resumenSs['vencidas'] === 1 ? '' : 's' }}</span>
+                                    @endif
+                                    @if ($resumenSs['proximas'] > 0)
+                                        <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-900">{{ $resumenSs['proximas'] }} por vencer</span>
+                                    @endif
                                 @endif
                             </div>
                         </td>
@@ -177,18 +188,43 @@
                                 —
                             @endif
                         </td>
-                        <td class="px-3 py-2 whitespace-nowrap text-zinc-800">{{ $empresa->limite?->format('d/m/Y') ?? '—' }}</td>
+                        <td class="px-3 py-2 text-zinc-800">
+                            @if ($esIndependiente && $resumenSs && $resumenSs['total'] > 0)
+                                <div class="flex max-w-xs flex-col gap-1 text-xs">
+                                    @foreach ($resumenSs['items'] as $item)
+                                        @if ($item['tipo'] !== 'interno')
+                                            @continue
+                                        @endif
+                                        <div class="flex flex-wrap items-center gap-1.5">
+                                            <span class="truncate font-medium text-zinc-900" title="{{ $item['nombre'] }}">{{ Str::limit($item['nombre'], 22) }}</span>
+                                            <span class="tabular-nums text-zinc-600">{{ $item['limite']?->format('d/m/Y') ?? '—' }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <span class="whitespace-nowrap">{{ $empresa->limite?->format('d/m/Y') ?? '—' }}</span>
+                            @endif
+                        </td>
                         <td class="px-3 py-2 whitespace-nowrap">
-                            @php $estadoLimite = $empresa->estado_limite; @endphp
+                            @php $estadoLimite = $estadoListado; @endphp
                             @if ($estadoLimite === null)
                                 <span class="text-zinc-400">—</span>
                             @elseif ($estadoLimite === 'VIGENTE')
                                 <span class="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-800">Vigente</span>
                             @elseif ($estadoLimite === 'PRÓXIMA A VENCER')
                                 <span class="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800">Próxima a vencer</span>
-                            @else
-                                @php $diasVencida = abs($empresa->dias_para_limite); @endphp
-                                <span class="rounded bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-800">Vencida ({{ $diasVencida }} día{{ $diasVencida === 1 ? '' : 's' }})</span>
+                            @elseif ($estadoLimite === 'VENCIDA')
+                                @php
+                                    $diasVencida = $esIndependiente && $resumenSs
+                                        ? null
+                                        : abs($empresa->dias_para_limite ?? 0);
+                                    $sufijoVencida = match (true) {
+                                        $diasVencida !== null => ' ('.$diasVencida.' día'.($diasVencida === 1 ? '' : 's').')',
+                                        $esIndependiente && $resumenSs => ' ('.$resumenSs['vencidas'].' pers.)',
+                                        default => '',
+                                    };
+                                @endphp
+                                <span class="rounded bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-800">Vencida{{ $sufijoVencida }}</span>
                             @endif
                         </td>
                         <td class="px-3 py-2 whitespace-nowrap">
@@ -274,16 +310,44 @@
                                             </svg>
                                             <span class="text-sm font-bold uppercase tracking-wide text-emerald-800">Contratistas</span>
                                             <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-900">{{ $totalContratistasEmpresa }}</span>
+                                            @if ($esIndependiente && $resumenSs)
+                                                @if ($resumenSs['vigentes'] > 0)
+                                                    <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">{{ $resumenSs['vigentes'] }} vig.</span>
+                                                @endif
+                                                @if ($resumenSs['proximas'] > 0)
+                                                    <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-900">{{ $resumenSs['proximas'] }} por vencer</span>
+                                                @endif
+                                                @if ($resumenSs['vencidas'] > 0)
+                                                    <span class="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-800">{{ $resumenSs['vencidas'] }} venc.</span>
+                                                @endif
+                                            @endif
                                         </button>
                                         <div class="categoria-panel hidden border-t border-zinc-100 bg-zinc-50/40" data-categoria-panel="{{ $categoriaContratistasId }}" hidden>
                                             @if ($totalContratistasEmpresa === 0)
                                                 <p class="px-4 py-3 text-sm text-zinc-500">No hay contratistas vinculados a esta empresa.</p>
                                             @else
+                                                @if ($esIndependiente)
+                                                    @include('empresas._contratistas_resumen_ss', ['empresa' => $empresa])
+                                                @endif
                                                 <div class="divide-y divide-zinc-200 border-t border-zinc-100 bg-white">
                                                     @foreach ($empresa->contratistasExternos as $contratista)
                                                         @include('empresas._contratista_item', ['contratista' => $contratista, 'tipo' => 'externo', 'empresa' => $empresa, 'anioActual' => $anioActual])
                                                     @endforeach
-                                                    @foreach ($empresa->contratistasInternos as $contratista)
+                                                    @php
+                                                        $internosOrdenados = $empresa->contratistasInternos->sort(function ($a, $b) use ($empresa) {
+                                                            $a->setRelation('empresa', $empresa);
+                                                            $b->setRelation('empresa', $empresa);
+                                                            $orden = ['VENCIDA' => 0, 'PRÓXIMA A VENCER' => 1, 'VIGENTE' => 2, null => 3];
+                                                            $oa = $orden[$a->estadoLimiteSs()] ?? 4;
+                                                            $ob = $orden[$b->estadoLimiteSs()] ?? 4;
+                                                            if ($oa !== $ob) {
+                                                                return $oa <=> $ob;
+                                                            }
+
+                                                            return strcasecmp($a->nombres_apellidos, $b->nombres_apellidos);
+                                                        })->values();
+                                                    @endphp
+                                                    @foreach ($internosOrdenados as $contratista)
                                                         @include('empresas._contratista_item', ['contratista' => $contratista, 'tipo' => 'interno', 'empresa' => $empresa, 'anioActual' => $anioActual])
                                                     @endforeach
                                                 </div>
