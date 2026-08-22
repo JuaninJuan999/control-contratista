@@ -31,6 +31,8 @@ class PlanillaController extends Controller
         }
 
         $empresas = Empresa::query()
+            ->where('tipo_empresa', EmpresaTipo::INTERNA)
+            ->where('planilla', PlanillaTipo::DEPENDIENTE)
             ->with(['planillaArchivos' => fn ($q) => $q->orderByDesc('vigencia_hasta')->orderByDesc('periodo_anio')->orderByDesc('periodo_mes')])
             ->withCount([
                 'planillaArchivos',
@@ -52,6 +54,12 @@ class PlanillaController extends Controller
 
     public function storeArchivo(StorePlanillaArchivoRequest $request, Empresa $empresa): RedirectResponse
     {
+        if (! $empresa->llevaPlanillaSs()) {
+            return redirect()
+                ->route('planillas.index', $this->filtrosRedirect($request))
+                ->with('error', 'Esta empresa no lleva planilla de seguridad social a nivel empresa. En empresas independientes, cada contratista gestiona su propia planilla.');
+        }
+
         if ($empresa->limite === null) {
             return redirect()
                 ->route('planillas.index', $this->filtrosRedirect($request))

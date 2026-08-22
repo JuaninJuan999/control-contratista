@@ -23,21 +23,11 @@
 </div>
 
 <div class="md:col-span-4">
-    <label for="empresa_id" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Empresa</label>
-    <select
-        name="empresa_id"
-        id="empresa_id"
-        @if ($empresas->isEmpty()) disabled @else required @endif
-        class="{{ $selectClass }} disabled:cursor-not-allowed disabled:bg-zinc-100"
-    >
-        <option value="">— Seleccionar empresa —</option>
-        @foreach ($empresas as $emp)
-            <option value="{{ $emp->id }}" @selected(old('empresa_id', $contratista?->empresa_id) == $emp->id)>{{ $emp->nombre }}</option>
-        @endforeach
-    </select>
-    <p class="mt-0.5 text-[11px] leading-tight text-zinc-500">
-        Lista administrada en <a href="{{ route('empresas.index') }}" class="font-medium text-emerald-800 underline hover:text-emerald-950">Empresas</a>.
-    </p>
+    @include('contratistas._empresa_select_busqueda', [
+        'contratista' => $contratista,
+        'empresas' => $empresas,
+        'inputClass' => $inputClass,
+    ])
 </div>
 <div class="md:col-span-4">
     <label for="arl" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">ARL</label>

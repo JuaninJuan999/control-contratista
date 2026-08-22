@@ -24,6 +24,7 @@ class PlanillaContratistaController extends Controller
     public function create(Empresa $empresa): View
     {
         $this->autorizarImportacion();
+        $this->autorizarEmpresaPlanillaDependiente($empresa);
 
         return view('empresas.planilla_importar', compact('empresa'));
     }
@@ -31,6 +32,7 @@ class PlanillaContratistaController extends Controller
     public function preview(Request $request, Empresa $empresa): View|RedirectResponse
     {
         $this->autorizarImportacion();
+        $this->autorizarEmpresaPlanillaDependiente($empresa);
 
         $request->validate([
             'planilla' => ['required', 'file', 'mimes:xlsx,xls', 'max:10240'],
@@ -63,6 +65,7 @@ class PlanillaContratistaController extends Controller
     public function importar(Request $request, Empresa $empresa): RedirectResponse
     {
         $this->autorizarImportacion();
+        $this->autorizarEmpresaPlanillaDependiente($empresa);
 
         $request->validate([
             'token' => ['required', 'string'],
@@ -108,6 +111,11 @@ class PlanillaContratistaController extends Controller
     private function autorizarImportacion(): void
     {
         abort_unless(auth()->user()?->puedeImportarPlanilla(), 403);
+    }
+
+    private function autorizarEmpresaPlanillaDependiente(Empresa $empresa): void
+    {
+        abort_unless($empresa->llevaPlanillaSs(), 404);
     }
 
     /**

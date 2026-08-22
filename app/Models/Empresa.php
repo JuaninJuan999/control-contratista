@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\EmpresaTipo;
 use App\Support\PeriodoPlanilla;
 use App\Support\PlanillaTipo;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -142,14 +143,36 @@ class Empresa extends Model
         return PeriodoPlanilla::etiqueta($periodo['anio'], $periodo['mes']);
     }
 
+    public function esInterna(): bool
+    {
+        return $this->tipo_empresa === EmpresaTipo::INTERNA;
+    }
+
+    public function esExterna(): bool
+    {
+        return $this->tipo_empresa === EmpresaTipo::EXTERNA;
+    }
+
+    /** Planilla SS compartida a nivel empresa (interna + dependiente). */
+    public function llevaPlanillaSs(): bool
+    {
+        return $this->esInterna() && $this->planilla === PlanillaTipo::DEPENDIENTE;
+    }
+
+    /** Cada empleado interno lleva su propia planilla SS (interna + independiente). */
+    public function planillaSsPorEmpleado(): bool
+    {
+        return $this->esInterna() && $this->planilla === PlanillaTipo::INDEPENDIENTE;
+    }
+
     public function esPlanillaIndependiente(): bool
     {
-        return $this->planilla === PlanillaTipo::INDEPENDIENTE;
+        return $this->planillaSsPorEmpleado();
     }
 
     public function esPlanillaDependiente(): bool
     {
-        return $this->planilla === PlanillaTipo::DEPENDIENTE;
+        return $this->llevaPlanillaSs();
     }
 
     /**
@@ -166,6 +189,17 @@ class Empresa extends Model
      */
     public function resumenVigenciaSsContratistas(): array
     {
+        if (! $this->planillaSsPorEmpleado()) {
+            return [
+                'vigentes' => 0,
+                'proximas' => 0,
+                'vencidas' => 0,
+                'sin_fecha' => 0,
+                'total' => 0,
+                'items' => [],
+            ];
+        }
+
         $this->loadMissing([
             'contratistasInternos.planillaArchivos',
             'contratistasExternos',
@@ -235,24 +269,32 @@ class Empresa extends Model
      */
     public function estadoLimiteParaListado(): ?string
     {
-        if (! $this->esPlanillaIndependiente()) {
+        if ($this->esExterna()) {
+            return null;
+        }
+
+        if ($this->planillaSsPorEmpleado()) {
+            $resumen = $this->resumenVigenciaSsContratistas();
+
+            if ($resumen['vencidas'] > 0) {
+                return 'VENCIDA';
+            }
+
+            if ($resumen['proximas'] > 0) {
+                return 'PRÓXIMA A VENCER';
+            }
+
+            if ($resumen['vigentes'] > 0) {
+                return 'VIGENTE';
+            }
+
+            return $resumen['total'] > 0 ? null : null;
+        }
+
+        if ($this->llevaPlanillaSs()) {
             return $this->estado_limite;
         }
 
-        $resumen = $this->resumenVigenciaSsContratistas();
-
-        if ($resumen['vencidas'] > 0) {
-            return 'VENCIDA';
-        }
-
-        if ($resumen['proximas'] > 0) {
-            return 'PRÓXIMA A VENCER';
-        }
-
-        if ($resumen['vigentes'] > 0) {
-            return 'VIGENTE';
-        }
-
-        return $resumen['total'] > 0 ? null : $this->estado_limite;
+        return null;
     }
 }

@@ -33,6 +33,7 @@ class EmpresaController extends Controller
             ->withQueryString();
 
         $planillas = Empresa::query()
+            ->where('tipo_empresa', \App\Support\EmpresaTipo::INTERNA)
             ->whereNotNull('planilla')
             ->where('planilla', '!=', '')
             ->distinct()

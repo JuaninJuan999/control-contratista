@@ -55,7 +55,7 @@
                     >
                 </div>
                 <div>
-                    <label for="filtro-estado" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Estado</label>
+                    <label for="filtro-estado" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Estado SS</label>
                     <select
                         id="filtro-estado"
                         class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
@@ -103,7 +103,7 @@
             <p id="filtro-empresas-resumen" class="mt-3 hidden text-xs font-medium text-emerald-800"></p>
         </div>
 
-        <p class="mb-4 text-xs text-zinc-600 md:text-sm">Haz clic en una empresa para ver <strong>Contratistas</strong>, <strong>Vehículos</strong> y <strong>Planilla</strong>. Luego expande cada sección y el registro que quieras consultar.</p>
+        <p class="mb-4 text-xs text-zinc-600 md:text-sm">Haz clic en una empresa para ver <strong>Contratistas</strong> y <strong>Vehículos</strong>. Las empresas <strong>internas dependientes</strong> también muestran planilla SS de la empresa; las <strong>internas independientes</strong> la llevan cada empleado en Contratistas.</p>
 
         <div class="rounded-lg border border-zinc-200">
         <table class="w-full table-auto text-left text-sm">
@@ -114,8 +114,8 @@
                     <th class="px-3 py-3">NIT</th>
                     <th class="px-3 py-3">Teléfono</th>
                     <th class="px-3 py-3">Correos</th>
-                    <th class="px-3 py-3">Límite</th>
-                    <th class="px-3 py-3">Estado</th>
+                    <th class="px-3 py-3">Límite SS</th>
+                    <th class="px-3 py-3">Estado SS</th>
                     <th class="px-3 py-3">Clasificación</th>
                     <th class="px-3 py-3">Tipo planilla</th>
                     @if (auth()->user()?->puedeEditar())
@@ -126,20 +126,23 @@
             <tbody class="divide-y divide-zinc-200">
                 @forelse ($empresas as $empresa)
                     @php
-                        $planillaVigenteAdjunta = $empresa->planillaVigenteAdjunta();
-                        $limiteVencido = $empresa->estado_limite === 'VENCIDA';
-                        $esIndependiente = $empresa->esPlanillaIndependiente();
+                        $esInterna = $empresa->esInterna();
+                        $esIndependiente = $empresa->planillaSsPorEmpleado();
+                        $llevaPlanillaEmpresa = $empresa->llevaPlanillaSs();
+                        $planillaVigenteAdjunta = $llevaPlanillaEmpresa ? $empresa->planillaVigenteAdjunta() : false;
+                        $limiteVencido = $llevaPlanillaEmpresa && $empresa->estado_limite === 'VENCIDA';
                         $resumenSs = $esIndependiente ? $empresa->resumenVigenciaSsContratistas() : null;
                         $estadoListado = $empresa->estadoLimiteParaListado();
+                        $muestraSsEnListado = $esInterna;
                     @endphp
                     <tr
                         class="empresa-fila cursor-pointer bg-white hover:bg-emerald-50/60"
                         data-empresa-toggle="{{ $empresa->id }}"
                         data-filtro-nombre="{{ mb_strtolower($empresa->nombre, 'UTF-8') }}"
                         data-filtro-nit="{{ mb_strtolower($empresa->nit ?? '', 'UTF-8') }}"
-                        data-filtro-estado="{{ $estadoListado ?? 'SIN FECHA' }}"
+                        data-filtro-estado="{{ $muestraSsEnListado ? ($estadoListado ?? 'SIN FECHA') : 'NO_APLICA' }}"
                         data-filtro-tipo-empresa="{{ $empresa->tipo_empresa ?? 'SIN_CLASIFICAR' }}"
-                        data-filtro-planilla="{{ mb_strtolower($empresa->planilla ?? '', 'UTF-8') }}"
+                        data-filtro-planilla="{{ $esInterna ? mb_strtolower($empresa->planilla ?? '', 'UTF-8') : '' }}"
                         aria-expanded="false"
                     >
                         <td class="px-2 py-2 text-zinc-500">
@@ -158,14 +161,15 @@
                                         {{ $empresa->vehiculos_count }} vehículo{{ $empresa->vehiculos_count === 1 ? '' : 's' }}
                                     </span>
                                 @endif
-                                @if ($planillaVigenteAdjunta)
-                                    <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-800" title="Planilla SS adjunta para la vigencia actual">Planilla SS</span>
-                                @elseif ($limiteVencido && ! $esIndependiente)
-                                    <span class="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-800" title="Fecha límite vencida; renueve y adjunte nueva planilla">SS vencida</span>
-                                @elseif ($empresa->limite !== null && ! $esIndependiente)
-                                    <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-900" title="Planilla SS pendiente para la vigencia actual">SS pendiente</span>
-                                @endif
-                                @if ($esIndependiente && $resumenSs)
+                                @if ($llevaPlanillaEmpresa)
+                                    @if ($planillaVigenteAdjunta)
+                                        <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-800" title="Planilla SS adjunta para la vigencia actual">Planilla SS</span>
+                                    @elseif ($limiteVencido)
+                                        <span class="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-800" title="Fecha límite vencida; renueve y adjunte nueva planilla">SS vencida</span>
+                                    @elseif ($empresa->limite !== null)
+                                        <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-900" title="Planilla SS pendiente para la vigencia actual">SS pendiente</span>
+                                    @endif
+                                @elseif ($esIndependiente && $resumenSs)
                                     @if ($resumenSs['vencidas'] > 0)
                                         <span class="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-800">{{ $resumenSs['vencidas'] }} SS vencida{{ $resumenSs['vencidas'] === 1 ? '' : 's' }}</span>
                                     @endif
@@ -189,7 +193,9 @@
                             @endif
                         </td>
                         <td class="px-3 py-2 text-zinc-800">
-                            @if ($esIndependiente && $resumenSs && $resumenSs['total'] > 0)
+                            @if (! $muestraSsEnListado)
+                                <span class="text-zinc-400">—</span>
+                            @elseif ($esIndependiente && $resumenSs && $resumenSs['total'] > 0)
                                 <div class="flex max-w-xs flex-col gap-1 text-xs">
                                     @foreach ($resumenSs['items'] as $item)
                                         @if ($item['tipo'] !== 'interno')
@@ -206,6 +212,9 @@
                             @endif
                         </td>
                         <td class="px-3 py-2 whitespace-nowrap">
+                            @if (! $muestraSsEnListado)
+                                <span class="text-zinc-400">—</span>
+                            @else
                             @php $estadoLimite = $estadoListado; @endphp
                             @if ($estadoLimite === null)
                                 <span class="text-zinc-400">—</span>
@@ -226,6 +235,7 @@
                                 @endphp
                                 <span class="rounded bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-800">Vencida{{ $sufijoVencida }}</span>
                             @endif
+                            @endif
                         </td>
                         <td class="px-3 py-2 whitespace-nowrap">
                             @if ($empresa->tipo_empresa === \App\Support\EmpresaTipo::INTERNA)
@@ -236,7 +246,13 @@
                                 <span class="rounded bg-zinc-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-zinc-700">Sin clasificar</span>
                             @endif
                         </td>
-                        <td class="px-3 py-2 text-zinc-800">{{ $empresa->planilla ?? '—' }}</td>
+                        <td class="px-3 py-2 text-zinc-800">
+                            @if ($esInterna)
+                                {{ $empresa->planilla ?? '—' }}
+                            @else
+                                <span class="text-zinc-400">—</span>
+                            @endif
+                        </td>
                         @if (auth()->user()?->puedeEditar())
                         <td class="px-2 py-2 text-center" data-acciones>
                             <div class="inline-flex items-center justify-center gap-1" data-acciones onclick="event.stopPropagation()">
@@ -270,7 +286,8 @@
                                 $categoriaPlanillaId = 'empresa-'.$empresa->id.'-planilla';
                             @endphp
                             <div class="divide-y divide-zinc-200 overflow-hidden rounded-lg border border-zinc-200 bg-white">
-                                {{-- Categoría Planilla --}}
+                                @if ($llevaPlanillaEmpresa)
+                                {{-- Categoría Planilla (solo internas dependientes) --}}
                                 <div class="categoria-grupo" data-categoria-grupo="{{ $categoriaPlanillaId }}">
                                     <button
                                         type="button"
@@ -296,6 +313,7 @@
                                         @include('empresas._planilla_section', ['empresa' => $empresa])
                                     </div>
                                 </div>
+                                @endif
 
                                 {{-- Categoría Contratistas --}}
                                     <div class="categoria-grupo" data-categoria-grupo="{{ $categoriaContratistasId }}">

@@ -35,7 +35,7 @@
         </select>
     </div>
     <p id="clasificacion-ayuda-interna" class="mt-2 text-[11px] leading-snug text-zinc-600 {{ $esInternaInicial ? '' : 'hidden' }}">
-        <strong>Interna:</strong> lleva planilla de seguridad social, fecha límite y datos de contacto para las alertas.
+        <strong>Interna:</strong> elija si la planilla SS es compartida (dependiente) o por empleado (independiente). Los correos reciben alertas según el tipo.
     </p>
     <p id="clasificacion-ayuda-externa" class="mt-2 text-[11px] leading-snug text-zinc-600 {{ $esExternaInicial ? '' : 'hidden' }}">
         <strong>Externa:</strong> solo se registran el nombre, las personas externas y los vehículos.

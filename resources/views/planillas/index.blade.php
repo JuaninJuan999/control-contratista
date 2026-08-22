@@ -9,7 +9,7 @@
         <div class="mb-4">
             <h1 class="login-text-glow font-display text-2xl font-semibold text-zinc-950 md:text-3xl">Planillas</h1>
             <p class="login-text-glow mt-1 text-sm font-medium text-zinc-900">
-                Adjunte la seguridad social de cada empresa por ciclo de vigencia. Cada archivo queda vinculado a la <strong>fecha límite</strong> de la empresa (<strong>vigencia hasta</strong>). Al vencer esa fecha o renovarla, debe adjuntar la nueva planilla.
+                Adjunte la seguridad social de empresas <strong>internas dependientes</strong> por ciclo de vigencia. Cada archivo queda vinculado a la <strong>fecha límite</strong> de la empresa. Las empresas <strong>independientes</strong> gestionan la planilla por contratista en el módulo Contratistas.
             </p>
         </div>
 

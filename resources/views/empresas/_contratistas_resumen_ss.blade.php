@@ -1,5 +1,8 @@
 @php
     /** @var \App\Models\Empresa $empresa */
+    if (! $empresa->planillaSsPorEmpleado()) {
+        return;
+    }
     $resumen = $empresa->resumenVigenciaSsContratistas();
 @endphp
 

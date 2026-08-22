@@ -44,13 +44,13 @@
 
             <div id="personas-vigentes-inputs"></div>
 
-            <button type="button" id="btn-actualizar-empresa" class="mt-1 w-full rounded-md bg-emerald-700 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-800 sm:w-auto sm:px-6">
+            <button type="{{ $empresa->llevaPlanillaSs() ? 'button' : 'submit' }}" id="btn-actualizar-empresa" class="mt-1 w-full rounded-md bg-emerald-700 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-800 sm:w-auto sm:px-6">
                 Actualizar empresa
             </button>
         </form>
     </div>
 
-    @if (auth()->user()?->puedeImportarPlanilla())
+    @if (auth()->user()?->puedeImportarPlanilla() && $empresa->llevaPlanillaSs())
         <div class="mt-4 max-w-2xl rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 shadow-sm md:p-5">
             <h2 class="text-sm font-bold uppercase tracking-wide text-emerald-900">Importar planilla Excel</h2>
             <p class="mt-1 text-sm text-zinc-700">
@@ -67,7 +67,8 @@
         </div>
     @endif
 
-    {{-- Modal de control mensual --}}
+    @if ($empresa->llevaPlanillaSs())
+    {{-- Modal de control mensual (solo empresas internas con planilla SS) --}}
     <div id="modal-vigencia" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true">
         <div class="flex max-h-[85vh] w-full max-w-lg flex-col rounded-xl bg-white shadow-2xl">
             <div class="border-b border-zinc-200 px-5 py-4">
@@ -186,4 +187,5 @@
             });
         })();
     </script>
+    @endif
 @endsection
