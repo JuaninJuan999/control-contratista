@@ -32,9 +32,24 @@
 
     function posicionarPanel() {
         var rect = input.getBoundingClientRect();
+        var minAncho = Math.max(rect.width, 320);
+        var maxAncho = Math.min(560, window.innerWidth - 16);
+
+        panel.style.minWidth = minAncho + 'px';
+        panel.style.maxWidth = maxAncho + 'px';
+        panel.style.width = 'auto';
+
+        var anchoContenido = panel.scrollWidth || minAncho;
+        var ancho = Math.min(Math.max(minAncho, anchoContenido), maxAncho);
+        var left = rect.left;
+
+        if (left + ancho > window.innerWidth - 8) {
+            left = Math.max(8, window.innerWidth - ancho - 8);
+        }
+
         panel.style.top = (rect.bottom + 4) + 'px';
-        panel.style.left = rect.left + 'px';
-        panel.style.width = rect.width + 'px';
+        panel.style.left = left + 'px';
+        panel.style.width = ancho + 'px';
     }
 
     function cerrarPanel() {
@@ -46,10 +61,11 @@
     }
 
     function abrirPanel() {
-        posicionarPanel();
         panel.hidden = false;
         panel.classList.remove('hidden');
         panelAbierto = true;
+        posicionarPanel();
+        requestAnimationFrame(posicionarPanel);
     }
 
     function filtrarLocal(q) {
@@ -87,11 +103,11 @@
 
             return '<button type="button" role="option" data-indice="' + i + '" data-url="' + url + '" '
                 + 'class="busqueda-opcion flex w-full cursor-pointer flex-col gap-0.5 px-3 py-2 text-left hover:bg-emerald-50 focus:bg-emerald-50 focus:outline-none">'
-                + '<span class="flex items-center gap-2">'
-                + '<span class="truncate text-sm font-medium text-zinc-900">' + escapeHtml(item.label) + '</span>'
+                + '<span class="flex flex-wrap items-center gap-x-2 gap-y-0.5">'
+                + '<span class="text-sm font-medium leading-snug text-zinc-900">' + escapeHtml(item.label) + '</span>'
                 + '<span class="shrink-0 rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-zinc-600">' + escapeHtml(tipo) + '</span>'
                 + '</span>'
-                + '<span class="truncate text-xs text-zinc-500">' + escapeHtml(item.sublabel || '') + '</span>'
+                + '<span class="text-xs leading-snug text-zinc-500">' + escapeHtml(item.sublabel || '') + '</span>'
                 + '</button>';
         }).join('');
 

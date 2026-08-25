@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Requests\Concerns\ValidatesContratistaCamposAdicionales;
 use App\Http\Requests\Concerns\ValidatesContratistaPlanillaSs;
 use App\Models\Empresa;
+use App\Support\NumeroDocumento;
 use App\Support\PlanillaTipo;
 use App\Support\TiposDocumento;
 use Illuminate\Foundation\Http\FormRequest;
@@ -74,6 +75,7 @@ class StoreContratistaInternoRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $numero = $this->input('numero_documento');
+        $tipoDocumento = $this->input('tipo_documento');
         $nombres = $this->input('nombres_apellidos');
         $arl = $this->input('arl');
 
@@ -85,7 +87,10 @@ class StoreContratistaInternoRequest extends FormRequest
         }
 
         $datos = [
-            'numero_documento' => is_string($numero) ? preg_replace('/\s+/', '', trim($numero)) : $numero,
+            'numero_documento' => NumeroDocumento::normalizar(
+                is_string($numero) ? $numero : null,
+                is_string($tipoDocumento) ? $tipoDocumento : null
+            ),
             'nombres_apellidos' => is_string($nombres) ? trim($nombres) : $nombres,
             'arl' => is_string($arl) ? trim($arl) : $arl,
             'empresa_id' => $empresaId,

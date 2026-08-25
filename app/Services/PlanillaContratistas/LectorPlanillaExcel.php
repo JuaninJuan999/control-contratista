@@ -2,6 +2,7 @@
 
 namespace App\Services\PlanillaContratistas;
 
+use App\Support\NumeroDocumento;
 use App\Support\PlanillaContratistasColumnas;
 use App\Support\TiposDocumento;
 use Illuminate\Http\UploadedFile;
@@ -141,13 +142,7 @@ class LectorPlanillaExcel
 
     private function normalizarDocumento(string $documento, string $tipoDocumento): string
     {
-        $documento = trim($documento);
-
-        if (in_array($tipoDocumento, ['CC', 'CE', 'TI', 'NIT'], true)) {
-            return preg_replace('/\D+/', '', $documento) ?? $documento;
-        }
-
-        return preg_replace('/\s+/', '', $documento) ?? $documento;
+        return NumeroDocumento::normalizar($documento, $tipoDocumento) ?? '';
     }
 
     private function normalizarTipoDocumento(string $tipo): string

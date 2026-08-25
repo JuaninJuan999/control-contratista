@@ -6,6 +6,7 @@ use App\Support\EmpresaTipo;
 use App\Support\PeriodoPlanilla;
 use App\Support\PlanillaTipo;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -296,5 +297,97 @@ class Empresa extends Model
         }
 
         return null;
+    }
+
+    /**
+     * Filtra empresas internas por el estado SS mostrado en el listado.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeFiltrarEstadoSsListado(Builder $query, string $estado): void
+    {
+        $estadosValidos = ['VIGENTE', 'PRÓXIMA A VENCER', 'VENCIDA', 'SIN FECHA'];
+
+        if (! in_array($estado, $estadosValidos, true)) {
+            return;
+        }
+
+        $hoy = now()->startOfDay();
+        $limiteProxima = $hoy->copy()->addDays(10);
+
+        match ($estado) {
+            'VENCIDA' => $query->where(function (Builder $q) use ($hoy): void {
+                $q->where(function (Builder $dep) use ($hoy): void {
+                    $dep->where('tipo_empresa', EmpresaTipo::INTERNA)
+                        ->where('planilla', PlanillaTipo::DEPENDIENTE)
+                        ->whereDate('limite', '<', $hoy);
+                })->orWhere(function (Builder $ind) use ($hoy): void {
+                    $ind->where('tipo_empresa', EmpresaTipo::INTERNA)
+                        ->where('planilla', PlanillaTipo::INDEPENDIENTE)
+                        ->whereHas('contratistasInternos', function (Builder $ci) use ($hoy): void {
+                            $ci->whereNotNull('limite')->whereDate('limite', '<', $hoy);
+                        });
+                });
+            }),
+            'PRÓXIMA A VENCER' => $query->where(function (Builder $q) use ($hoy, $limiteProxima): void {
+                $q->where(function (Builder $dep) use ($hoy, $limiteProxima): void {
+                    $dep->where('tipo_empresa', EmpresaTipo::INTERNA)
+                        ->where('planilla', PlanillaTipo::DEPENDIENTE)
+                        ->whereDate('limite', '>=', $hoy)
+                        ->whereDate('limite', '<=', $limiteProxima);
+                })->orWhere(function (Builder $ind) use ($hoy, $limiteProxima): void {
+                    $ind->where('tipo_empresa', EmpresaTipo::INTERNA)
+                        ->where('planilla', PlanillaTipo::INDEPENDIENTE)
+                        ->whereDoesntHave('contratistasInternos', function (Builder $ci) use ($hoy): void {
+                            $ci->whereNotNull('limite')->whereDate('limite', '<', $hoy);
+                        })
+                        ->whereHas('contratistasInternos', function (Builder $ci) use ($hoy, $limiteProxima): void {
+                            $ci->whereNotNull('limite')
+                                ->whereDate('limite', '>=', $hoy)
+                                ->whereDate('limite', '<=', $limiteProxima);
+                        });
+                });
+            }),
+            'VIGENTE' => $query->where(function (Builder $q) use ($hoy, $limiteProxima): void {
+                $q->where(function (Builder $dep) use ($limiteProxima): void {
+                    $dep->where('tipo_empresa', EmpresaTipo::INTERNA)
+                        ->where('planilla', PlanillaTipo::DEPENDIENTE)
+                        ->whereDate('limite', '>', $limiteProxima);
+                })->orWhere(function (Builder $ind) use ($hoy, $limiteProxima): void {
+                    $ind->where('tipo_empresa', EmpresaTipo::INTERNA)
+                        ->where('planilla', PlanillaTipo::INDEPENDIENTE)
+                        ->whereDoesntHave('contratistasInternos', function (Builder $ci) use ($hoy): void {
+                            $ci->whereNotNull('limite')->whereDate('limite', '<', $hoy);
+                        })
+                        ->whereDoesntHave('contratistasInternos', function (Builder $ci) use ($hoy, $limiteProxima): void {
+                            $ci->whereNotNull('limite')
+                                ->whereDate('limite', '>=', $hoy)
+                                ->whereDate('limite', '<=', $limiteProxima);
+                        })
+                        ->whereHas('contratistasInternos', function (Builder $ci) use ($limiteProxima): void {
+                            $ci->whereNotNull('limite')->whereDate('limite', '>', $limiteProxima);
+                        });
+                });
+            }),
+            'SIN FECHA' => $query->where('tipo_empresa', EmpresaTipo::INTERNA)->where(function (Builder $q) use ($hoy, $limiteProxima): void {
+                $q->where(function (Builder $dep): void {
+                    $dep->where('planilla', PlanillaTipo::DEPENDIENTE)->whereNull('limite');
+                })->orWhere(function (Builder $ind) use ($hoy, $limiteProxima): void {
+                    $ind->where('planilla', PlanillaTipo::INDEPENDIENTE)
+                        ->whereDoesntHave('contratistasInternos', function (Builder $ci) use ($hoy): void {
+                            $ci->whereNotNull('limite')->whereDate('limite', '<', $hoy);
+                        })
+                        ->whereDoesntHave('contratistasInternos', function (Builder $ci) use ($hoy, $limiteProxima): void {
+                            $ci->whereNotNull('limite')
+                                ->whereDate('limite', '>=', $hoy)
+                                ->whereDate('limite', '<=', $limiteProxima);
+                        })
+                        ->whereDoesntHave('contratistasInternos', function (Builder $ci) use ($limiteProxima): void {
+                            $ci->whereNotNull('limite')->whereDate('limite', '>', $limiteProxima);
+                        });
+                });
+            }),
+            default => null,
+        };
     }
 }

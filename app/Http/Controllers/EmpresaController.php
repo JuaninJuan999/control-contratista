@@ -10,16 +10,33 @@ use App\Models\ContratistaInterno;
 use App\Models\Empresa;
 use App\Models\Vehiculo;
 use App\Services\VehiculoDocumentoStorage;
+use App\Support\EmpresaTipo;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class EmpresaController extends Controller
 {
     use GuardaContratistaConDocumentos;
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $nombre = trim((string) $request->query('nombre', ''));
+        $nit = trim((string) $request->query('nit', ''));
+        $estadoSs = (string) $request->query('estado_ss', '');
+        $tipoEmpresa = (string) $request->query('tipo_empresa', '');
+        $planilla = (string) $request->query('planilla', '');
+
+        $estadosSsValidos = ['VIGENTE', 'PRÓXIMA A VENCER', 'VENCIDA', 'SIN FECHA'];
+        if (! in_array($estadoSs, $estadosSsValidos, true)) {
+            $estadoSs = '';
+        }
+
+        if ($tipoEmpresa !== 'SIN_CLASIFICAR' && ! in_array($tipoEmpresa, EmpresaTipo::valores(), true)) {
+            $tipoEmpresa = '';
+        }
+
         $empresas = Empresa::query()
             ->with([
                 'contratistasExternos' => fn ($q) => $q->orderBy('nombres_apellidos'),
@@ -28,19 +45,42 @@ class EmpresaController extends Controller
                 'planillaArchivos' => fn ($q) => $q->orderByDesc('vigencia_hasta')->orderByDesc('periodo_anio')->orderByDesc('periodo_mes'),
             ])
             ->withCount(['contratistasExternos', 'contratistasInternos', 'vehiculos', 'planillaArchivos'])
+            ->when($nombre !== '', fn ($q) => $q->where('nombre', 'ilike', '%'.$nombre.'%'))
+            ->when($nit !== '', fn ($q) => $q->where('nit', 'ilike', '%'.$nit.'%'))
+            ->when($tipoEmpresa === 'SIN_CLASIFICAR', fn ($q) => $q->whereNull('tipo_empresa'))
+            ->when(in_array($tipoEmpresa, EmpresaTipo::valores(), true), fn ($q) => $q->where('tipo_empresa', $tipoEmpresa))
+            ->when($planilla !== '', function ($q) use ($planilla) {
+                $q->where('planilla', $planilla);
+            })
+            ->when($estadoSs !== '', fn ($q) => $q->filtrarEstadoSsListado($estadoSs))
             ->orderBy('nombre')
             ->paginate(15)
             ->withQueryString();
 
         $planillas = Empresa::query()
-            ->where('tipo_empresa', \App\Support\EmpresaTipo::INTERNA)
+            ->where('tipo_empresa', EmpresaTipo::INTERNA)
             ->whereNotNull('planilla')
             ->where('planilla', '!=', '')
             ->distinct()
             ->orderBy('planilla')
             ->pluck('planilla');
 
-        return view('empresas.index', compact('empresas', 'planillas'));
+        $hayFiltros = $nombre !== ''
+            || $nit !== ''
+            || $estadoSs !== ''
+            || $tipoEmpresa !== ''
+            || $planilla !== '';
+
+        return view('empresas.index', compact(
+            'empresas',
+            'planillas',
+            'nombre',
+            'nit',
+            'estadoSs',
+            'tipoEmpresa',
+            'planilla',
+            'hayFiltros',
+        ));
     }
 
     public function create(): View

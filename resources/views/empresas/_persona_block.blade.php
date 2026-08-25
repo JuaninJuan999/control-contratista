@@ -52,6 +52,7 @@
                     name="personas[{{ $index }}][numero_documento]"
                     value="{{ old("personas.{$index}.numero_documento", $persona['numero_documento'] ?? '') }}"
                     maxlength="32"
+                    placeholder="Con o sin puntos"
                     class="{{ $inputClass }}"
                 >
             </div>

@@ -6,6 +6,7 @@ use App\Http\Requests\Concerns\ValidatesContratistaCamposAdicionales;
 use App\Models\ContratistaExterno;
 use App\Models\ContratistaInterno;
 use App\Models\Vehiculo;
+use App\Support\NumeroDocumento;
 use App\Support\TiposDocumento;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -242,11 +243,13 @@ class StoreEmpresaRequest extends EmpresaRequest
             }
 
             $nombres = is_string($persona['nombres_apellidos'] ?? null) ? trim($persona['nombres_apellidos']) : '';
-            $numero = is_string($persona['numero_documento'] ?? null)
-                ? preg_replace('/\s+/', '', trim($persona['numero_documento']))
-                : '';
-            $fecha = $persona['fecha_ultima_ir'] ?? '';
             $tipo = is_string($persona['tipo_documento'] ?? null) ? trim($persona['tipo_documento']) : '';
+            $tipoDocumento = $tipo !== '' ? $tipo : 'CC';
+            $numero = NumeroDocumento::normalizar(
+                is_string($persona['numero_documento'] ?? null) ? $persona['numero_documento'] : null,
+                $tipoDocumento
+            ) ?? '';
+            $fecha = $persona['fecha_ultima_ir'] ?? '';
             $tipoContratista = is_string($persona['tipo_contratista'] ?? null) ? trim($persona['tipo_contratista']) : 'externo';
             if ($tipoContratista !== 'interno') {
                 $tipoContratista = 'externo';

@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Requests\Concerns\ValidatesContratistaCamposAdicionales;
 use App\Http\Requests\Concerns\ValidatesContratistaPlanillaSs;
 use App\Models\ContratistaInterno;
+use App\Support\NumeroDocumento;
 use App\Support\PlanillaTipo;
 use App\Support\TiposDocumento;
 use Illuminate\Foundation\Http\FormRequest;
@@ -75,13 +76,17 @@ class UpdateContratistaInternoRequest extends FormRequest
         $contratista = $this->route('contratistas_interno');
 
         $numero = $this->input('numero_documento');
+        $tipoDocumento = $this->input('tipo_documento', $contratista->tipo_documento);
         $nombres = $this->input('nombres_apellidos');
         $arl = $this->input('arl');
 
         $tipoPlanilla = $this->input('tipo_planilla', $contratista->tipo_planilla ?? PlanillaTipo::DEPENDIENTE);
 
         $datos = [
-            'numero_documento' => is_string($numero) ? preg_replace('/\s+/', '', trim($numero)) : $numero,
+            'numero_documento' => NumeroDocumento::normalizar(
+                is_string($numero) ? $numero : null,
+                is_string($tipoDocumento) ? $tipoDocumento : null
+            ),
             'nombres_apellidos' => is_string($nombres) ? trim($nombres) : $nombres,
             'arl' => is_string($arl) ? trim($arl) : $arl,
             'empresa_id' => $this->filled('empresa_id') ? (int) $this->input('empresa_id') : null,

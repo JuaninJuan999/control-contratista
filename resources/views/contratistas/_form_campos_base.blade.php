@@ -18,7 +18,8 @@
     </div>
     <div class="mt-3 sm:mt-0 md:col-span-7">
         <label for="numero_documento" class="block text-xs font-semibold text-zinc-950 md:text-[13px]">Documento</label>
-        <input type="text" name="numero_documento" id="numero_documento" value="{{ old('numero_documento', $contratista?->numero_documento) }}" required maxlength="32" class="{{ $inputClass }}">
+        <input type="text" name="numero_documento" id="numero_documento" value="{{ old('numero_documento', $contratista?->numero_documento) }}" required maxlength="32" placeholder="Ej. 1234567890 o 1.234.567.890" class="{{ $inputClass }}">
+        <p class="mt-0.5 text-[11px] leading-tight text-zinc-500">Puede ingresarlo con o sin puntos, espacios o guiones; se guardará sin separadores.</p>
     </div>
 </div>
 

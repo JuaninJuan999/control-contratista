@@ -3,6 +3,7 @@
 namespace App\Models\Concerns;
 
 use App\Models\Empresa;
+use App\Support\NumeroDocumento;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -33,6 +34,13 @@ trait ContratistaComun
     public static function bootContratistaComun(): void
     {
         static::saving(function ($contratista): void {
+            if (is_string($contratista->numero_documento) && $contratista->numero_documento !== '') {
+                $contratista->numero_documento = NumeroDocumento::normalizar(
+                    $contratista->numero_documento,
+                    $contratista->tipo_documento
+                ) ?? $contratista->numero_documento;
+            }
+
             if ($contratista->fecha_ultima_ir) {
                 $inicio = CarbonImmutable::parse($contratista->fecha_ultima_ir)->startOfDay();
                 $contratista->fecha_vencimiento = $inicio->addDays((int) $contratista->vigencia_dias);
@@ -61,6 +69,15 @@ trait ContratistaComun
             'meses_rechazados' => 'array',
             'activo' => 'boolean',
         ];
+    }
+
+    public function getNumeroDocumentoAttribute(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+
+        return NumeroDocumento::normalizar($value, $this->attributes['tipo_documento'] ?? null) ?? $value;
     }
 
     /**

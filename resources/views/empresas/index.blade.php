@@ -31,14 +31,16 @@
             </div>
         @endif
 
-        <div id="filtros-empresas" class="mb-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
-            <p class="mb-3 text-xs text-zinc-600">Filtre la tabla sin recargar la página. Pulse <strong>Filtrar</strong> o <strong>Enter</strong>.</p>
+        <form method="get" action="{{ route('empresas.index') }}" id="filtros-empresas" class="mb-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+            <p class="mb-3 text-xs text-zinc-600">Busque en <strong>todas las empresas</strong> del sistema, aunque estén en otra página. Pulse <strong>Filtrar</strong> o <strong>Enter</strong>.</p>
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
                 <div class="sm:col-span-2 lg:col-span-1 xl:col-span-2">
                     <label for="filtro-nombre" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Nombre</label>
                     <input
                         type="text"
+                        name="nombre"
                         id="filtro-nombre"
+                        value="{{ $nombre }}"
                         placeholder="Ej. TRANSCARNES"
                         autocomplete="off"
                         class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
@@ -48,7 +50,9 @@
                     <label for="filtro-nit" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">NIT</label>
                     <input
                         type="text"
+                        name="nit"
                         id="filtro-nit"
+                        value="{{ $nit }}"
                         placeholder="NIT…"
                         autocomplete="off"
                         class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
@@ -57,51 +61,63 @@
                 <div>
                     <label for="filtro-estado" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Estado SS</label>
                     <select
+                        name="estado_ss"
                         id="filtro-estado"
                         class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
                     >
                         <option value="">Todos</option>
-                        <option value="VIGENTE">Vigente</option>
-                        <option value="PRÓXIMA A VENCER">Próxima a vencer</option>
-                        <option value="VENCIDA">Vencida</option>
-                        <option value="SIN FECHA">Sin fecha límite</option>
+                        <option value="VIGENTE" @selected($estadoSs === 'VIGENTE')>Vigente</option>
+                        <option value="PRÓXIMA A VENCER" @selected($estadoSs === 'PRÓXIMA A VENCER')>Próxima a vencer</option>
+                        <option value="VENCIDA" @selected($estadoSs === 'VENCIDA')>Vencida</option>
+                        <option value="SIN FECHA" @selected($estadoSs === 'SIN FECHA')>Sin fecha límite</option>
                     </select>
                 </div>
                 <div>
                     <label for="filtro-tipo-empresa" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Clasificación</label>
                     <select
+                        name="tipo_empresa"
                         id="filtro-tipo-empresa"
                         class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
                     >
                         <option value="">Todas</option>
-                        <option value="INTERNA">Interna</option>
-                        <option value="EXTERNA">Externa</option>
-                        <option value="SIN_CLASIFICAR">Sin clasificar</option>
+                        <option value="INTERNA" @selected($tipoEmpresa === 'INTERNA')>Interna</option>
+                        <option value="EXTERNA" @selected($tipoEmpresa === 'EXTERNA')>Externa</option>
+                        <option value="SIN_CLASIFICAR" @selected($tipoEmpresa === 'SIN_CLASIFICAR')>Sin clasificar</option>
                     </select>
                 </div>
                 <div>
                     <label for="filtro-planilla" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Tipo planilla</label>
                     <select
+                        name="planilla"
                         id="filtro-planilla"
                         class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
                     >
                         <option value="">Todas</option>
-                        @foreach ($planillas as $planilla)
-                            <option value="{{ $planilla }}">{{ $planilla }}</option>
+                        @foreach ($planillas as $opcionPlanilla)
+                            <option value="{{ $opcionPlanilla }}" @selected($planilla === $opcionPlanilla)>{{ $opcionPlanilla }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="flex items-end gap-2 sm:col-span-2 lg:col-span-1">
-                    <button type="button" id="btn-filtrar-empresas" class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-800">
+                    <button type="submit" class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-800">
                         Filtrar
                     </button>
-                    <button type="button" id="btn-limpiar-empresas" class="hidden rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
-                        Limpiar
-                    </button>
+                    @if ($hayFiltros)
+                        <a href="{{ route('empresas.index') }}" class="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                            Limpiar
+                        </a>
+                    @endif
                 </div>
             </div>
-            <p id="filtro-empresas-resumen" class="mt-3 hidden text-xs font-medium text-emerald-800"></p>
-        </div>
+            @if ($hayFiltros)
+                <p class="mt-3 text-xs font-medium text-emerald-800">
+                    {{ $empresas->total() }} empresa{{ $empresas->total() === 1 ? '' : 's' }} encontrada{{ $empresas->total() === 1 ? '' : 's' }} en total.
+                    @if ($empresas->hasPages())
+                        Página {{ $empresas->currentPage() }} de {{ $empresas->lastPage() }}.
+                    @endif
+                </p>
+            @endif
+        </form>
 
         <p class="mb-4 text-xs text-zinc-600 md:text-sm">Haz clic en una empresa para ver <strong>Contratistas</strong> y <strong>Vehículos</strong>. Las empresas <strong>internas dependientes</strong> también muestran planilla SS de la empresa; las <strong>internas independientes</strong> la llevan cada empleado en Contratistas.</p>
 
@@ -138,11 +154,6 @@
                     <tr
                         class="empresa-fila cursor-pointer bg-white hover:bg-emerald-50/60"
                         data-empresa-toggle="{{ $empresa->id }}"
-                        data-filtro-nombre="{{ mb_strtolower($empresa->nombre, 'UTF-8') }}"
-                        data-filtro-nit="{{ mb_strtolower($empresa->nit ?? '', 'UTF-8') }}"
-                        data-filtro-estado="{{ $muestraSsEnListado ? ($estadoListado ?? 'SIN FECHA') : 'NO_APLICA' }}"
-                        data-filtro-tipo-empresa="{{ $empresa->tipo_empresa ?? 'SIN_CLASIFICAR' }}"
-                        data-filtro-planilla="{{ $esInterna ? mb_strtolower($empresa->planilla ?? '', 'UTF-8') : '' }}"
                         aria-expanded="false"
                     >
                         <td class="px-2 py-2 text-zinc-500">
@@ -439,18 +450,18 @@
                 @empty
                     <tr id="tabla-empresas-vacia">
                         <td colspan="{{ auth()->user()?->puedeEditar() ? 10 : 9 }}" class="px-3 py-8 text-center text-zinc-500">
-                            No hay empresas registradas.
-                            @if (auth()->user()?->puedeEditar())
-                            <a href="{{ route('empresas.create') }}" class="font-medium text-emerald-700 underline hover:text-emerald-800">Crear una</a>
+                            @if ($hayFiltros)
+                                No hay empresas que coincidan con los filtros.
+                                <a href="{{ route('empresas.index') }}" class="font-medium text-emerald-700 underline hover:text-emerald-800">Limpiar filtros</a>
+                            @else
+                                No hay empresas registradas.
+                                @if (auth()->user()?->puedeEditar())
+                                <a href="{{ route('empresas.create') }}" class="font-medium text-emerald-700 underline hover:text-emerald-800">Crear una</a>
+                                @endif
                             @endif
                         </td>
                     </tr>
                 @endforelse
-                <tr id="filtro-empresas-sin-resultados" class="hidden">
-                    <td colspan="{{ auth()->user()?->puedeEditar() ? 10 : 9 }}" class="px-3 py-8 text-center text-zinc-500">
-                        No hay empresas que coincidan con los filtros.
-                    </td>
-                </tr>
             </tbody>
         </table>
     </div>
@@ -464,130 +475,14 @@
 
     <script>
         (function () {
-            function normalizar(texto) {
-                return (texto || '').toLowerCase().trim();
-            }
+            var formFiltros = document.getElementById('filtros-empresas');
 
-            function hayFiltrosActivos() {
-                return normalizar(document.getElementById('filtro-nombre')?.value)
-                    || normalizar(document.getElementById('filtro-nit')?.value)
-                    || (document.getElementById('filtro-estado')?.value || '')
-                    || (document.getElementById('filtro-tipo-empresa')?.value || '')
-                    || normalizar(document.getElementById('filtro-planilla')?.value);
-            }
-
-            function aplicarFiltrosEmpresas() {
-                var nombre = normalizar(document.getElementById('filtro-nombre')?.value);
-                var nit = normalizar(document.getElementById('filtro-nit')?.value);
-                var estado = document.getElementById('filtro-estado')?.value || '';
-                var tipoEmpresa = document.getElementById('filtro-tipo-empresa')?.value || '';
-                var planilla = normalizar(document.getElementById('filtro-planilla')?.value);
-                var visibles = 0;
-                var total = 0;
-
-                document.querySelectorAll('tr.empresa-fila').forEach(function (fila) {
-                    total++;
-                    var coincide = true;
-
-                    if (nombre && fila.getAttribute('data-filtro-nombre').indexOf(nombre) === -1) {
-                        coincide = false;
-                    }
-                    if (nit && fila.getAttribute('data-filtro-nit').indexOf(nit) === -1) {
-                        coincide = false;
-                    }
-                    if (estado && fila.getAttribute('data-filtro-estado') !== estado) {
-                        coincide = false;
-                    }
-                    if (tipoEmpresa && fila.getAttribute('data-filtro-tipo-empresa') !== tipoEmpresa) {
-                        coincide = false;
-                    }
-                    if (planilla && fila.getAttribute('data-filtro-planilla') !== planilla) {
-                        coincide = false;
-                    }
-
-                    var id = fila.getAttribute('data-empresa-toggle');
-                    var detalle = document.querySelector('[data-empresa-panel="' + id + '"]');
-
-                    if (coincide) {
-                        fila.classList.remove('hidden');
-                        visibles++;
-                    } else {
-                        fila.classList.add('hidden');
-                        fila.classList.remove('bg-emerald-50');
-                        fila.setAttribute('aria-expanded', 'false');
-                        if (detalle) {
-                            detalle.classList.add('hidden');
-                            detalle.hidden = true;
-                        }
-                    }
-                });
-
-                var sinResultados = document.getElementById('filtro-empresas-sin-resultados');
-                var resumen = document.getElementById('filtro-empresas-resumen');
-                var btnLimpiar = document.getElementById('btn-limpiar-empresas');
-                var hayFiltros = hayFiltrosActivos();
-
-                if (sinResultados) {
-                    sinResultados.classList.toggle('hidden', visibles > 0 || !hayFiltros);
-                }
-
-                if (resumen) {
-                    if (hayFiltros) {
-                        resumen.textContent = 'Mostrando ' + visibles + ' de ' + total + ' empresa' + (total === 1 ? '' : 's') + ' en esta página.';
-                        resumen.classList.remove('hidden');
-                    } else {
-                        resumen.classList.add('hidden');
-                        resumen.textContent = '';
-                    }
-                }
-
-                if (btnLimpiar) {
-                    btnLimpiar.classList.toggle('hidden', !hayFiltros);
-                }
-            }
-
-            function limpiarFiltrosEmpresas() {
-                var nombre = document.getElementById('filtro-nombre');
-                var nit = document.getElementById('filtro-nit');
-                var estado = document.getElementById('filtro-estado');
-                var tipoEmpresa = document.getElementById('filtro-tipo-empresa');
-                var planilla = document.getElementById('filtro-planilla');
-
-                if (nombre) nombre.value = '';
-                if (nit) nit.value = '';
-                if (estado) estado.value = '';
-                if (tipoEmpresa) tipoEmpresa.value = '';
-                if (planilla) planilla.value = '';
-
-                aplicarFiltrosEmpresas();
-            }
-
-            var btnFiltrar = document.getElementById('btn-filtrar-empresas');
-            var btnLimpiar = document.getElementById('btn-limpiar-empresas');
-
-            if (btnFiltrar) {
-                btnFiltrar.addEventListener('click', aplicarFiltrosEmpresas);
-            }
-
-            if (btnLimpiar) {
-                btnLimpiar.addEventListener('click', limpiarFiltrosEmpresas);
-            }
-
-            ['filtro-nombre', 'filtro-nit'].forEach(function (id) {
+            ['filtro-estado', 'filtro-tipo-empresa', 'filtro-planilla'].forEach(function (id) {
                 var campo = document.getElementById(id);
-                if (!campo) return;
-                campo.addEventListener('keydown', function (event) {
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        aplicarFiltrosEmpresas();
-                    }
+                if (!campo || !formFiltros) return;
+                campo.addEventListener('change', function () {
+                    formFiltros.submit();
                 });
-            });
-
-            ['filtro-estado', 'filtro-planilla'].forEach(function (id) {
-                var campo = document.getElementById(id);
-                if (!campo) return;
-                campo.addEventListener('change', aplicarFiltrosEmpresas);
             });
 
             function togglePanel(panel, trigger, chevron, expanded) {
