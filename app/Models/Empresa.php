@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Support\EmpresaTipo;
 use App\Support\PeriodoPlanilla;
 use App\Support\PlanillaTipo;
+use App\Support\TerminoBusqueda;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -389,5 +390,55 @@ class Empresa extends Model
             }),
             default => null,
         };
+    }
+
+    /**
+     * Busca por nombre o NIT de la empresa y, además, por los contratistas
+     * (nombre y documento) y las placas de vehículos que tenga vinculados.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeBuscarTexto(Builder $query, string $termino): void
+    {
+        $termino = trim($termino);
+
+        if ($termino === '') {
+            return;
+        }
+
+        $patron = TerminoBusqueda::patron($termino);
+        $digitos = TerminoBusqueda::digitos($termino);
+
+        $query->where(function (Builder $q) use ($patron, $digitos): void {
+            $q->where('nombre', 'ilike', $patron)
+                ->orWhere('nit', 'ilike', $patron)
+                ->orWhereHas('contratistasExternos', function (Builder $c) use ($patron, $digitos): void {
+                    $this->buscarEnContratista($c, $patron, $digitos);
+                })
+                ->orWhereHas('contratistasInternos', function (Builder $c) use ($patron, $digitos): void {
+                    $this->buscarEnContratista($c, $patron, $digitos);
+                })
+                ->orWhereHas('vehiculos', function (Builder $v) use ($patron): void {
+                    $v->where('placa', 'ilike', $patron);
+                });
+
+            if ($digitos !== '') {
+                $q->orWhere('nit', 'ilike', '%'.$digitos.'%');
+            }
+        });
+    }
+
+    /**
+     * @param  Builder<ContratistaExterno|ContratistaInterno>  $query
+     */
+    private function buscarEnContratista(Builder $query, string $patron, string $digitos): void
+    {
+        $query->where(function (Builder $q) use ($patron, $digitos): void {
+            $q->where('nombres_apellidos', 'ilike', $patron);
+
+            if ($digitos !== '') {
+                $q->orWhere('numero_documento', 'ilike', '%'.$digitos.'%');
+            }
+        });
     }
 }

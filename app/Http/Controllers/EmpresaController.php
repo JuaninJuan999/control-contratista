@@ -11,6 +11,7 @@ use App\Models\Empresa;
 use App\Models\Vehiculo;
 use App\Services\VehiculoDocumentoStorage;
 use App\Support\EmpresaTipo;
+use App\Support\TerminoBusqueda;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,7 +23,9 @@ class EmpresaController extends Controller
 
     public function index(Request $request): View
     {
-        $nombre = trim((string) $request->query('nombre', ''));
+        // Se acepta "nombre" por compatibilidad: es como se llamaba el campo antes,
+        // y las pestañas o enlaces guardados lo siguen enviando.
+        $buscar = trim((string) ($request->query('buscar') ?? $request->query('nombre') ?? ''));
         $nit = trim((string) $request->query('nit', ''));
         $estadoSs = (string) $request->query('estado_ss', '');
         $tipoEmpresa = (string) $request->query('tipo_empresa', '');
@@ -45,8 +48,19 @@ class EmpresaController extends Controller
                 'planillaArchivos' => fn ($q) => $q->orderByDesc('vigencia_hasta')->orderByDesc('periodo_anio')->orderByDesc('periodo_mes'),
             ])
             ->withCount(['contratistasExternos', 'contratistasInternos', 'vehiculos', 'planillaArchivos'])
-            ->when($nombre !== '', fn ($q) => $q->where('nombre', 'ilike', '%'.$nombre.'%'))
-            ->when($nit !== '', fn ($q) => $q->where('nit', 'ilike', '%'.$nit.'%'))
+            ->when($buscar !== '', fn ($q) => $q->buscarTexto($buscar))
+            ->when($nit !== '', function ($q) use ($nit) {
+                $patron = TerminoBusqueda::patron($nit);
+                $digitos = TerminoBusqueda::digitos($nit);
+
+                $q->where(function ($sub) use ($patron, $digitos) {
+                    $sub->where('nit', 'ilike', $patron);
+
+                    if ($digitos !== '') {
+                        $sub->orWhere('nit', 'ilike', '%'.$digitos.'%');
+                    }
+                });
+            })
             ->when($tipoEmpresa === 'SIN_CLASIFICAR', fn ($q) => $q->whereNull('tipo_empresa'))
             ->when(in_array($tipoEmpresa, EmpresaTipo::valores(), true), fn ($q) => $q->where('tipo_empresa', $tipoEmpresa))
             ->when($planilla !== '', function ($q) use ($planilla) {
@@ -65,7 +79,7 @@ class EmpresaController extends Controller
             ->orderBy('planilla')
             ->pluck('planilla');
 
-        $hayFiltros = $nombre !== ''
+        $hayFiltros = $buscar !== ''
             || $nit !== ''
             || $estadoSs !== ''
             || $tipoEmpresa !== ''
@@ -74,7 +88,7 @@ class EmpresaController extends Controller
         return view('empresas.index', compact(
             'empresas',
             'planillas',
-            'nombre',
+            'buscar',
             'nit',
             'estadoSs',
             'tipoEmpresa',

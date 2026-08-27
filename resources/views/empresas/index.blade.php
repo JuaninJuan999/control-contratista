@@ -33,15 +33,16 @@
 
         <form method="get" action="{{ route('empresas.index') }}" id="filtros-empresas" class="mb-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
             <p class="mb-3 text-xs text-zinc-600">Busque en <strong>todas las empresas</strong> del sistema, aunque estén en otra página. Pulse <strong>Filtrar</strong> o <strong>Enter</strong>.</p>
+            <p class="mb-3 text-xs text-zinc-600">El campo <strong>Buscar</strong> también encuentra la empresa por el nombre o documento de un contratista, o por la placa de un vehículo.</p>
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
                 <div class="sm:col-span-2 lg:col-span-1 xl:col-span-2">
-                    <label for="filtro-nombre" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Nombre</label>
+                    <label for="filtro-buscar" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Buscar</label>
                     <input
                         type="text"
-                        name="nombre"
-                        id="filtro-nombre"
-                        value="{{ $nombre }}"
-                        placeholder="Ej. TRANSCARNES"
+                        name="buscar"
+                        id="filtro-buscar"
+                        value="{{ $buscar }}"
+                        placeholder="Empresa, contratista, documento o placa"
                         autocomplete="off"
                         class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
                     >
