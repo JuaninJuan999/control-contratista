@@ -9,7 +9,7 @@
 
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 class="font-display text-xl font-semibold text-zinc-950 md:text-2xl">Editar contratista externo</h1>
-        <a href="{{ route('contratistas-externos.index', ['abrir' => 'externo-'.$contratistaExterno->id]) }}" class="text-xs font-medium text-emerald-800 underline hover:text-emerald-950 md:text-sm">
+        <a href="{{ route('contratistas-externos.index', ['abrir' => 'externo-'.$contratistaExterno->id]) }}" class="btn-emerald-glow">
             Volver al listado
         </a>
     </div>

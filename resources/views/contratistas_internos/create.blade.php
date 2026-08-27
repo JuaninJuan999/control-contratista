@@ -10,7 +10,7 @@
     <div class="max-w-4xl rounded-lg border border-zinc-200 bg-white p-4 shadow-lg md:p-6">
         <div class="mb-4 flex flex-wrap items-center justify-between gap-4">
             <h1 class="font-display text-2xl font-semibold text-zinc-950 md:text-3xl">Nuevo contratista interno</h1>
-            <a href="{{ route('contratistas-internos.index') }}" class="text-xs font-medium text-emerald-800 underline hover:text-emerald-950 md:text-sm">
+            <a href="{{ route('contratistas-internos.index') }}" class="btn-emerald-glow">
                 Volver al listado
             </a>
         </div>

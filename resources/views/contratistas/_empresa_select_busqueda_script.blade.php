@@ -25,22 +25,81 @@
             }
 
             var indiceActivo = -1;
+            var permitirTodas = contenedor.getAttribute('data-permitir-todas') === '1';
+            var listaFlotante = contenedor.getAttribute('data-lista-flotante') === '1';
+            var listaAbierta = false;
 
             function emitirCambio() {
                 hidden.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+
+            function posicionarLista() {
+                if (!listaFlotante) {
+                    return;
+                }
+
+                var rect = input.getBoundingClientRect();
+                var minAncho = Math.max(rect.width, 256);
+                var maxAncho = Math.min(480, window.innerWidth - 16);
+                var ancho = Math.min(Math.max(minAncho, lista.scrollWidth || minAncho), maxAncho);
+                var left = rect.left;
+
+                if (left + ancho > window.innerWidth - 8) {
+                    left = Math.max(8, window.innerWidth - ancho - 8);
+                }
+
+                lista.style.top = (rect.bottom + 4) + 'px';
+                lista.style.left = left + 'px';
+                lista.style.width = ancho + 'px';
+            }
+
+            function anclarListaFlotante() {
+                if (!listaFlotante || lista.parentElement === document.body) {
+                    return;
+                }
+
+                document.body.appendChild(lista);
+            }
+
+            function restaurarLista() {
+                if (!listaFlotante || lista.parentElement === contenedor) {
+                    return;
+                }
+
+                contenedor.appendChild(lista);
+                lista.style.top = '';
+                lista.style.left = '';
+                lista.style.width = '';
             }
 
             function cerrarLista() {
                 lista.classList.add('hidden');
                 lista.innerHTML = '';
                 indiceActivo = -1;
+                listaAbierta = false;
                 input.setAttribute('aria-expanded', 'false');
+                restaurarLista();
+            }
+
+            function mostrarLista() {
+                if (listaFlotante) {
+                    anclarListaFlotante();
+                    posicionarLista();
+                    requestAnimationFrame(posicionarLista);
+                }
+
+                lista.classList.remove('hidden');
+                listaAbierta = true;
+                input.setAttribute('aria-expanded', 'true');
             }
 
             function seleccionar(opcion) {
-                if (!opcion) return;
-                hidden.value = String(opcion.id);
-                input.value = opcion.nombre;
+                if (! opcion && ! permitirTodas) {
+                    return;
+                }
+
+                hidden.value = opcion ? String(opcion.id) : '';
+                input.value = opcion ? opcion.nombre : '';
                 cerrarLista();
                 emitirCambio();
             }
@@ -53,6 +112,19 @@
 
                 lista.innerHTML = '';
                 indiceActivo = -1;
+
+                if (permitirTodas) {
+                    var itemTodas = document.createElement('li');
+                    itemTodas.className = 'cursor-pointer px-3 py-2 text-zinc-600 hover:bg-emerald-50';
+                    itemTodas.textContent = 'Todas';
+                    itemTodas.setAttribute('role', 'option');
+                    itemTodas.dataset.todas = '1';
+                    itemTodas.addEventListener('mousedown', function (event) {
+                        event.preventDefault();
+                        seleccionar(null);
+                    });
+                    lista.appendChild(itemTodas);
+                }
 
                 if (coincidencias.length === 0) {
                     var vacio = document.createElement('li');
@@ -74,8 +146,7 @@
                     });
                 }
 
-                lista.classList.remove('hidden');
-                input.setAttribute('aria-expanded', 'true');
+                mostrarLista();
             }
 
             function resaltarActivo() {
@@ -111,9 +182,13 @@
                 } else if (event.key === 'Enter') {
                     if (indiceActivo >= 0 && items[indiceActivo]) {
                         event.preventDefault();
-                        var nombre = items[indiceActivo].textContent;
-                        var op = opciones.find(function (o) { return o.nombre === nombre; });
-                        seleccionar(op);
+                        if (items[indiceActivo].dataset.todas === '1') {
+                            seleccionar(null);
+                        } else {
+                            var nombre = items[indiceActivo].textContent;
+                            var op = opciones.find(function (o) { return o.nombre === nombre; });
+                            seleccionar(op);
+                        }
                     }
                 } else if (event.key === 'Escape') {
                     cerrarLista();
@@ -121,10 +196,24 @@
             });
 
             document.addEventListener('click', function (event) {
-                if (!contenedor.contains(event.target)) {
-                    cerrarLista();
+                if (contenedor.contains(event.target) || lista.contains(event.target)) {
+                    return;
+                }
+
+                cerrarLista();
+            });
+
+            window.addEventListener('resize', function () {
+                if (listaAbierta) {
+                    posicionarLista();
                 }
             });
+
+            window.addEventListener('scroll', function () {
+                if (listaAbierta) {
+                    posicionarLista();
+                }
+            }, true);
 
             contenedor.dataset.empresaBusquedaInit = '1';
         };

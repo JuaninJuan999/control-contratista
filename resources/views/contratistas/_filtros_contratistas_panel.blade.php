@@ -3,10 +3,10 @@
     $filtrosModulo = $filtrosTipo.'s';
 @endphp
 
-<div id="filtros-{{ $filtrosModulo }}" class="mb-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+<div id="filtros-{{ $filtrosModulo }}" class="mb-4 overflow-visible rounded-lg border border-zinc-200 bg-zinc-50 p-4">
     <p class="mb-3 text-xs text-zinc-600">Filtre la tabla sin recargar la página. Pulse <strong>Filtrar</strong> o <strong>Enter</strong>.</p>
-    <div class="flex min-w-0 flex-nowrap items-end gap-2 overflow-x-auto pb-0.5">
-        <div class="min-w-[11rem] flex-[1.4]">
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 xl:items-end">
+        <div class="min-w-0 sm:col-span-2 xl:col-span-1">
             <label for="filtro-{{ $filtrosTipo }}-nombre" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Nombres y apellidos</label>
             <input
                 type="text"
@@ -16,7 +16,7 @@
                 class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
             >
         </div>
-        <div class="min-w-[7.5rem] w-[7.5rem] shrink-0">
+        <div class="min-w-0">
             <label for="filtro-{{ $filtrosTipo }}-tipo-documento" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Tipo de documento</label>
             <select
                 id="filtro-{{ $filtrosTipo }}-tipo-documento"
@@ -28,7 +28,7 @@
                 @endforeach
             </select>
         </div>
-        <div class="min-w-[7rem] w-[7rem] shrink-0">
+        <div class="min-w-0">
             <label for="filtro-{{ $filtrosTipo }}-documento" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Documento</label>
             <input
                 type="text"
@@ -38,19 +38,15 @@
                 class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
             >
         </div>
-        <div class="min-w-[10rem] flex-1">
-            <label for="filtro-{{ $filtrosTipo }}-empresa" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Empresa</label>
-            <select
-                id="filtro-{{ $filtrosTipo }}-empresa"
-                class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
-            >
-                <option value="">Todas</option>
-                @foreach ($empresasFiltro ?? [] as $empresa)
-                    <option value="{{ $empresa->id }}">{{ $empresa->nombre }}</option>
-                @endforeach
-            </select>
+        <div class="min-w-0">
+            @include('contratistas._empresa_select_busqueda', [
+                'modoFiltro' => true,
+                'filtrosTipo' => $filtrosTipo,
+                'empresas' => $empresasFiltro ?? collect(),
+                'inputClass' => 'w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600',
+            ])
         </div>
-        <div class="min-w-[6.5rem] w-[6.5rem] shrink-0">
+        <div class="min-w-0">
             <label for="filtro-{{ $filtrosTipo }}-arl" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">ARL</label>
             <input
                 type="text"
@@ -61,7 +57,7 @@
             >
         </div>
         @if ($filtrosTipo === 'externo')
-        <div class="min-w-[8rem] w-[8rem] shrink-0">
+        <div class="min-w-0">
             <label for="filtro-{{ $filtrosTipo }}-estado" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Estado I/R</label>
             <select
                 id="filtro-{{ $filtrosTipo }}-estado"
@@ -74,7 +70,7 @@
             </select>
         </div>
         @endif
-        <div class="flex shrink-0 items-end gap-2">
+        <div class="flex flex-wrap items-end gap-2 sm:col-span-2 xl:col-span-1">
             <button type="button" id="btn-filtrar-{{ $filtrosModulo }}" class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-800">
                 Filtrar
             </button>

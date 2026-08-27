@@ -110,6 +110,48 @@
     .dash-alert-card--inactiva {
         @apply border-zinc-200/70 bg-zinc-100/50 opacity-60;
     }
+
+    .btn-emerald-glow {
+        @apply inline-flex items-center rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white no-underline transition;
+        box-shadow:
+            0 0 0 1px rgb(16 185 129 / 0.5),
+            0 0 14px rgb(16 185 129 / 0.65),
+            0 0 28px rgb(16 185 129 / 0.4),
+            0 2px 4px rgb(4 120 87 / 0.3);
+        text-shadow:
+            0 0 6px rgb(167 243 208 / 0.9),
+            0 0 12px rgb(16 185 129 / 0.55);
+    }
+
+    .btn-emerald-glow:hover {
+        @apply bg-emerald-800;
+        box-shadow:
+            0 0 0 1px rgb(16 185 129 / 0.7),
+            0 0 18px rgb(16 185 129 / 0.85),
+            0 0 36px rgb(16 185 129 / 0.55),
+            0 2px 6px rgb(4 120 87 / 0.4);
+    }
+
+    .workcolbeef-link {
+        @apply inline-flex shrink-0 items-center rounded-lg border-2 border-transparent bg-white font-bold no-underline transition;
+        background:
+            linear-gradient(#fff, #fff) padding-box,
+            linear-gradient(to right, #059669 50%, #dc2626 50%) border-box;
+    }
+
+    .workcolbeef-link:hover {
+        background:
+            linear-gradient(#fff, #fff) padding-box,
+            linear-gradient(to right, #047857 50%, #b91c1c 50%) border-box;
+    }
+
+    .workcolbeef-link--nav {
+        @apply px-2 py-1.5 text-xs md:px-3 md:py-2 md:text-sm;
+    }
+
+    .workcolbeef-link--login {
+        @apply rounded-xl px-5 py-2.5 text-base;
+    }
 }
 
 @keyframes dash-fade-in-up {

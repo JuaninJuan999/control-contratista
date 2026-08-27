@@ -5,7 +5,7 @@
 @section('content')
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 class="font-display text-xl font-semibold text-zinc-950 md:text-2xl">Editar vehículo</h1>
-        <a href="{{ route('vehiculos.index') }}" class="text-xs font-medium text-emerald-800 underline hover:text-emerald-950 md:text-sm">
+        <a href="{{ route('vehiculos.index') }}" class="btn-emerald-glow">
             Volver al listado
         </a>
     </div>

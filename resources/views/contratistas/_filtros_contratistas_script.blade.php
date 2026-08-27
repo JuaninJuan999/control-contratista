@@ -136,12 +136,21 @@
                 }
             });
 
-            ['tipo-documento', 'estado', 'empresa'].forEach(function (campo) {
+            ['tipo-documento', 'estado'].forEach(function (campo) {
                 var select = document.getElementById(id(campo));
                 if (select) {
                     select.value = '';
                 }
             });
+
+            var empresaHidden = document.getElementById(id('empresa'));
+            var empresaBusqueda = document.getElementById(id('empresa-busqueda'));
+            if (empresaHidden) {
+                empresaHidden.value = '';
+            }
+            if (empresaBusqueda) {
+                empresaBusqueda.value = '';
+            }
 
             aplicarFiltros();
         }
@@ -170,12 +179,27 @@
             });
         });
 
-        ['tipo-documento', 'estado', 'empresa'].forEach(function (campo) {
+        ['tipo-documento', 'estado'].forEach(function (campo) {
             var select = document.getElementById(id(campo));
             if (!select) {
                 return;
             }
             select.addEventListener('change', aplicarFiltros);
         });
+
+        var empresaHidden = document.getElementById(id('empresa'));
+        if (empresaHidden) {
+            empresaHidden.addEventListener('change', aplicarFiltros);
+        }
+
+        var empresaBusqueda = document.getElementById(id('empresa-busqueda'));
+        if (empresaBusqueda) {
+            empresaBusqueda.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    aplicarFiltros();
+                }
+            });
+        }
     })();
 </script>
