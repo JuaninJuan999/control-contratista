@@ -177,7 +177,7 @@
     }
 
     .workcolbeef-link--nav {
-        @apply px-2 py-1.5 text-xs md:px-3 md:py-2 md:text-sm;
+        @apply px-1.5 py-1 text-[11px] xl:px-2 xl:py-1.5 xl:text-xs;
     }
 
     .workcolbeef-link--login {

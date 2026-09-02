@@ -13,19 +13,27 @@
     style="background-image: url('{{ asset('image/fond.jpg') }}');"
 >
     <header class="sticky top-0 z-50 border-b border-zinc-200 bg-white shadow-sm">
-        <div class="flex w-full items-center gap-2 px-3 py-2.5 sm:px-4 md:gap-3 md:px-6 md:py-3">
-            <div class="flex min-w-0 flex-1 items-center gap-2 md:gap-3">
-                <img src="{{ asset('image/colbeef.png') }}" alt="Logo institucional" class="h-8 w-auto shrink-0 sm:h-9 md:h-10">
-                <a href="{{ route('dashboard') }}" class="truncate text-sm font-semibold text-zinc-900 sm:text-base md:text-lg">{{ config('app.name') }}</a>
+        <div class="flex w-full items-center gap-1.5 px-3 py-2 sm:gap-2 sm:px-4 lg:gap-2 lg:px-5">
+            <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
+                <a href="{{ route('dashboard') }}" class="flex shrink-0 items-center gap-1.5 sm:gap-2">
+                    <img src="{{ asset('image/colbeef.png') }}" alt="Logo Colbeef" class="h-6 w-auto sm:h-7">
+                    <span class="hidden max-w-[7rem] truncate text-xs font-semibold text-zinc-900 sm:inline sm:max-w-none sm:text-sm xl:text-base">{{ config('app.name') }}</span>
+                </a>
             </div>
 
-            <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <nav class="hidden min-w-0 flex-1 items-center gap-0.5 overflow-x-auto whitespace-nowrap text-xs font-medium lg:flex [&::-webkit-scrollbar]:hidden" style="-ms-overflow-style: none; scrollbar-width: none;">
+                @include('layouts._nav_links', [
+                    'navLinkClass' => 'shrink-0 rounded-md px-2 py-1 text-xs font-medium transition xl:px-2.5 xl:py-1.5 xl:text-sm',
+                ])
+            </nav>
+
+            <div class="flex shrink-0 items-center gap-1 sm:gap-1.5">
                 @include('layouts._busqueda_global')
                 @include('layouts._menu_usuario')
                 <button
                     type="button"
                     id="nav-movil-btn"
-                    class="inline-flex items-center justify-center rounded-lg border border-zinc-300 bg-white p-2 text-zinc-700 shadow-sm transition hover:bg-zinc-50 lg:hidden"
+                    class="inline-flex items-center justify-center rounded-lg border border-zinc-300 bg-white p-1.5 text-zinc-700 shadow-sm transition hover:bg-zinc-50 lg:hidden"
                     aria-expanded="false"
                     aria-controls="nav-movil-panel"
                     aria-label="Abrir menú de navegación"
@@ -39,10 +47,6 @@
                 </button>
             </div>
         </div>
-
-        <nav class="hidden min-w-0 items-center gap-0.5 overflow-x-auto px-3 pb-2.5 text-xs font-medium md:gap-1 md:px-6 md:text-sm lg:flex [&::-webkit-scrollbar]:hidden" style="-ms-overflow-style: none; scrollbar-width: none;">
-            @include('layouts._nav_links')
-        </nav>
 
         <div
             id="nav-movil-panel"

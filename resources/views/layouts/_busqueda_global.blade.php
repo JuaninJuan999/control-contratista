@@ -1,5 +1,5 @@
 <div
-    class="relative w-[7.5rem] shrink-0 sm:w-36 md:w-44 lg:w-48"
+    class="relative w-[6.5rem] shrink-0 sm:w-28 lg:w-32 xl:w-36"
     id="busqueda-global"
 >
     <label for="busqueda-global-input" class="sr-only">Buscar en el sistema</label>
@@ -13,7 +13,7 @@
             autocomplete="off"
             spellcheck="false"
             placeholder="Buscar…"
-            class="w-full rounded-lg border border-zinc-300 bg-white py-1.5 pl-8 pr-3 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+            class="w-full rounded-lg border border-zinc-300 bg-white py-1 pl-7 pr-2 text-xs text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 sm:py-1.5 sm:pl-8 sm:pr-3 sm:text-sm"
         >
     </div>
 </div>
