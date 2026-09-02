@@ -67,6 +67,7 @@ class EmpresaController extends Controller
                 $q->where('planilla', $planilla);
             })
             ->when($estadoSs !== '', fn ($q) => $q->filtrarEstadoSsListado($estadoSs))
+            ->ordenarPorClasificacion()
             ->orderBy('nombre')
             ->paginate(15)
             ->withQueryString();

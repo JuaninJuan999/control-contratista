@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureCanAccessUsuariosModule;
 use App\Http\Middleware\EnsureSuperadmin;
+use App\Http\Middleware\FixNginxQueryString;
 use App\Http\Middleware\RestrictConsultaAccess;
 use App\Http\Middleware\TrackUserUsabilidad;
 use Illuminate\Foundation\Application;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'access.superadmin' => EnsureSuperadmin::class,
         ]);
 
+        $middleware->prependToGroup('web', FixNginxQueryString::class);
         $middleware->appendToGroup('web', TrackUserUsabilidad::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

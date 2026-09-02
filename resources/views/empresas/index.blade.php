@@ -32,7 +32,6 @@
         @endif
 
         <form method="get" action="{{ route('empresas.index') }}" id="filtros-empresas" class="mb-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
-            <p class="mb-3 text-xs text-zinc-600">Busque en <strong>todas las empresas</strong> del sistema, aunque estén en otra página. Pulse <strong>Filtrar</strong> o <strong>Enter</strong>.</p>
             <p class="mb-3 text-xs text-zinc-600">El campo <strong>Buscar</strong> también encuentra la empresa por el nombre o documento de un contratista, o por la placa de un vehículo.</p>
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
                 <div class="sm:col-span-2 lg:col-span-1 xl:col-span-2">
@@ -479,13 +478,43 @@
         (function () {
             var formFiltros = document.getElementById('filtros-empresas');
 
-            ['filtro-estado', 'filtro-tipo-empresa', 'filtro-planilla'].forEach(function (id) {
-                var campo = document.getElementById(id);
-                if (!campo || !formFiltros) return;
-                campo.addEventListener('change', function () {
-                    formFiltros.submit();
+            function enviarFiltros() {
+                if (!formFiltros) {
+                    return;
+                }
+
+                if (typeof formFiltros.requestSubmit === 'function') {
+                    formFiltros.requestSubmit();
+                    return;
+                }
+
+                formFiltros.submit();
+            }
+
+            if (formFiltros) {
+                ['filtro-buscar', 'filtro-nit'].forEach(function (id) {
+                    var campo = document.getElementById(id);
+                    if (!campo) {
+                        return;
+                    }
+
+                    campo.addEventListener('keydown', function (event) {
+                        if (event.key === 'Enter') {
+                            event.preventDefault();
+                            enviarFiltros();
+                        }
+                    });
                 });
-            });
+
+                ['filtro-estado', 'filtro-tipo-empresa', 'filtro-planilla'].forEach(function (id) {
+                    var campo = document.getElementById(id);
+                    if (!campo) {
+                        return;
+                    }
+
+                    campo.addEventListener('change', enviarFiltros);
+                });
+            }
 
             function togglePanel(panel, trigger, chevron, expanded) {
                 if (!panel || !trigger) return;

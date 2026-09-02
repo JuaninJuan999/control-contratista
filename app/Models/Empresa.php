@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 #[Fillable(['nombre', 'nit', 'telefono', 'correos', 'limite', 'planilla', 'tipo_empresa'])]
 class Empresa extends Model
@@ -186,7 +187,7 @@ class Empresa extends Model
      *     vencidas: int,
      *     sin_fecha: int,
      *     total: int,
-     *     items: list<array{nombre: string, tipo: string, limite: ?\Illuminate\Support\Carbon, estado: ?string, dias: ?int, tipo_planilla: ?string}>
+     *     items: list<array{nombre: string, tipo: string, limite: ?Carbon, estado: ?string, dias: ?int, tipo_planilla: ?string}>
      * }
      */
     public function resumenVigenciaSsContratistas(): array
@@ -298,6 +299,19 @@ class Empresa extends Model
         }
 
         return null;
+    }
+
+    /**
+     * Internas primero, externas después y sin clasificar al final.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeOrdenarPorClasificacion(Builder $query): void
+    {
+        $query->orderByRaw(
+            'CASE tipo_empresa WHEN ? THEN 0 WHEN ? THEN 1 ELSE 2 END',
+            [EmpresaTipo::INTERNA, EmpresaTipo::EXTERNA]
+        );
     }
 
     /**
