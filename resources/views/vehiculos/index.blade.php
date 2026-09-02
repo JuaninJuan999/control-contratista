@@ -3,7 +3,7 @@
 @section('title', 'Vehículos — '.config('app.name'))
 
 @section('content')
-    <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-lg md:p-6">
+    <div class="rounded-lg border border-zinc-200 bg-white p-3 shadow-lg sm:p-4 md:p-6">
         <div class="mb-4 flex flex-wrap items-center justify-between gap-4">
             <h1 class="font-display text-2xl font-semibold text-zinc-950 md:text-3xl">Vehículos</h1>
             @if (auth()->user()?->puedeEditar())

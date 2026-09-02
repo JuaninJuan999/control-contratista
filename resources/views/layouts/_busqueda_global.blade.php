@@ -1,5 +1,5 @@
 <div
-    class="relative w-36 shrink-0 sm:w-44 lg:w-48"
+    class="relative w-[7.5rem] shrink-0 sm:w-36 md:w-44 lg:w-48"
     id="busqueda-global"
 >
     <label for="busqueda-global-input" class="sr-only">Buscar en el sistema</label>

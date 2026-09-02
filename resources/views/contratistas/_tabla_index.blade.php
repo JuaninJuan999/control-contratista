@@ -10,8 +10,9 @@
     $totalColumnas = 5 + $columnasNit + $columnasIr + $columnasMeses + 1 + ($puedeEditar ? 1 : 0);
 @endphp
 
-<div class="rounded-lg border border-zinc-200">
-    <table class="w-full table-auto text-left text-sm">
+<div class="table-scroll-hint" aria-hidden="true">Deslice horizontalmente para ver todas las columnas.</div>
+<div class="table-responsive rounded-lg border border-zinc-200">
+    <table class="min-w-[72rem] w-full table-auto text-left text-sm">
         <thead>
             <tr class="bg-emerald-700 text-xs font-bold uppercase tracking-wide text-white">
                 <th class="min-w-[10rem] px-3 py-3">Nombres y apellidos</th>

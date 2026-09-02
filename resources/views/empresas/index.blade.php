@@ -9,7 +9,7 @@
         $anioActual = now()->year;
     @endphp
 
-    <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-lg md:p-6">
+    <div class="rounded-lg border border-zinc-200 bg-white p-3 shadow-lg sm:p-4 md:p-6">
         <div class="mb-4 flex flex-wrap items-center justify-between gap-4">
             <h1 class="font-display text-2xl font-semibold text-zinc-950 md:text-3xl">Empresas</h1>
             @if (auth()->user()?->puedeEditar())
@@ -122,8 +122,9 @@
 
         <p class="mb-4 text-xs text-zinc-600 md:text-sm">Haz clic en una empresa para ver <strong>Contratistas</strong> y <strong>Vehículos</strong>. Las empresas <strong>internas dependientes</strong> también muestran planilla SS de la empresa; las <strong>internas independientes</strong> la llevan cada empleado en Contratistas.</p>
 
-        <div class="rounded-lg border border-zinc-200">
-        <table class="w-full table-auto text-left text-sm">
+        <div class="table-scroll-hint" aria-hidden="true">Deslice horizontalmente para ver todas las columnas.</div>
+        <div class="table-responsive rounded-lg border border-zinc-200">
+        <table class="min-w-[56rem] w-full table-auto text-left text-sm">
             <thead>
                 <tr class="bg-emerald-700 text-xs font-bold uppercase tracking-wide text-white">
                     <th class="w-8 px-2 py-3"></th>
