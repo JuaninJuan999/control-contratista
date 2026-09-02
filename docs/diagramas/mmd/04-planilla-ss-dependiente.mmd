@@ -1,0 +1,22 @@
+flowchart LR
+    A([Empresa INTERNA<br/>DEPENDIENTE]) --> B[Admin define<br/>fecha límite SS]
+    B --> C{¿Estado de vigencia?}
+
+    C -->|VIGENTE| D[> 10 días al límite]
+    C -->|PRÓXIMA A VENCER| E[0–10 días al límite]
+    C -->|VENCIDA| F[Fecha límite pasada]
+
+    D --> G{¿Hay archivo adjunto<br/>para el periodo vigente?}
+    E --> G
+    F --> H[⚠ Requiere planilla urgente]
+
+    G -->|Sí| I[✅ Planilla al día]
+    G -->|No| J[⚠ Falta adjuntar planilla]
+
+    J --> K[Usuario sube archivo<br/>módulo Planillas]
+    K --> L[PlanillaEmpresaStorage<br/>guarda en storage/]
+    L --> M[Registro en<br/>empresa_planilla_archivos]
+    M --> I
+
+    E --> N[Alerta automática<br/>10 y 5 días antes]
+    F --> O[Alerta automática<br/>10 días después]

@@ -1,0 +1,22 @@
+flowchart TD
+    A([Listado de contratistas]) --> B[Usuario abre fila expandible]
+    B --> C[Grilla 12 meses<br/>Ene – Dic]
+
+    C --> D{Click en celda de mes}
+    D --> E[Toggle estado del mes]
+
+    E --> F{Estado actual}
+    F -->|vacío| G[ok ✓]
+    F -->|ok| H[rechazado ✗]
+    F -->|rechazado| I[vacío]
+
+    G --> J[PATCH /mes<br/>guarda JSON meses]
+    H --> J
+    I --> J
+
+    C --> K{¿Interno + mes vigente<br/>+ planilla independiente?}
+    K -->|Sí| L[Celda especial SS<br/>muestra estado planilla]
+    K -->|No| C
+
+    J --> M([Estado persistido en BD])
+    L --> M

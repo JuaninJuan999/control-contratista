@@ -1,0 +1,29 @@
+flowchart TD
+    A([Nueva empresa]) --> B[Formulario: datos básicos<br/>nombre, NIT, teléfono, correos]
+    B --> C{¿Tipo de empresa?}
+
+    C -->|EXTERNA| D[Empresa externa]
+    D --> D1[Registrar contratistas externos]
+    D --> D2[Registrar vehículos]
+    D --> D3[❌ Sin planilla SS<br/>❌ Sin fecha límite SS]
+
+    C -->|INTERNA| E[Empresa interna]
+    E --> F{¿Tipo de planilla SS?}
+
+    F -->|DEPENDIENTE| G[Planilla por empresa]
+    G --> G1[Definir fecha límite SS<br/>empresas.limite]
+    G --> G2[Registrar contratistas internos]
+    G --> G3[Adjuntar planilla SS<br/>módulo Planillas]
+    G --> G4[Control mensual I/R<br/>por contratista]
+
+    F -->|INDEPENDIENTE| H[Planilla por empleado]
+    H --> H1[❌ Sin planilla a nivel empresa]
+    H --> H2[Registrar contratistas internos]
+    H --> H3[Cada interno tiene<br/>su propia fecha límite SS]
+    H --> H4[Adjuntar planilla SS<br/>por contratista interno]
+    H --> H5[Control mensual I/R + SS<br/>por contratista]
+
+    D1 --> I([Empresa operativa])
+    D2 --> I
+    G4 --> I
+    H5 --> I

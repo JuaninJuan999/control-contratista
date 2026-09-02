@@ -1,0 +1,19 @@
+sequenceDiagram
+    actor U as Usuario
+    participant N as nginx
+    participant L as Laravel
+    participant M as Middleware
+    participant C as Controller
+    participant S as Service/Model
+    participant V as Vista Blade
+
+    U->>N: GET /empresas?buscar=ACME
+    N->>L: index.php?$query_string
+    L->>M: auth + restrict.consulta
+    M->>M: TrackUserUsabilidad
+    M->>C: EmpresaController@index
+    C->>S: Empresa::scopeBuscarTexto()
+    S->>S: Eloquent + filtros SS
+    S-->>C: Collection paginada
+    C->>V: empresas.index
+    V-->>U: HTML + Tailwind CSS

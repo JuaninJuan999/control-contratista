@@ -1,0 +1,30 @@
+flowchart TB
+    subgraph ENTRADA["Acceso al sistema"]
+        A([Usuario abre la URL]) --> B{¿Sesión activa?}
+        B -->|No| C[Pantalla de login]
+        C --> D{¿Credenciales válidas<br/>y usuario activo?}
+        D -->|No| C
+        D -->|Sí| E[Dashboard]
+        B -->|Sí| E
+    end
+
+    subgraph MODULOS["Módulos principales"]
+        E --> F[Dashboard<br/>alertas y vencimientos]
+        E --> G[Empresas]
+        E --> H[Planillas SS]
+        E --> I[Contratistas externos]
+        E --> J[Contratistas internos]
+        E --> K[Vehículos]
+        E --> L[Usuarios]
+        E --> M[Usabilidad]
+        E --> N[Búsqueda global]
+        E --> O[WorkColbeef<br/>enlace externo]
+    end
+
+    subgraph SALIDA["Cierre"]
+        E --> P[Logout]
+        P --> C
+    end
+
+    L -.->|solo admin / superadmin| L
+    M -.->|solo superadmin| M

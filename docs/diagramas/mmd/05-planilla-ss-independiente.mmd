@@ -1,0 +1,16 @@
+flowchart LR
+    A([Empresa INTERNA<br/>INDEPENDIENTE]) --> B[Alta contratista interno]
+    B --> C[Definir fecha límite SS<br/>por persona]
+    C --> D{¿Estado SS del interno?}
+
+    D -->|VIGENTE / PRÓXIMA / VENCIDA| E[Evaluar por contratista]
+    E --> F{¿Archivo SS adjunto?}
+    F -->|No| G[Subir planilla desde<br/>ficha del contratista interno]
+    F -->|Sí| H[✅ Al día]
+
+    G --> I[PlanillaContratistaInternoStorage]
+    I --> J[contratista_interno_planilla_archivos]
+
+    E --> K[Listado empresa muestra<br/>peor estado entre internos]
+
+    D --> L[Alertas por hito<br/>empresa + equipo SISO]

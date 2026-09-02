@@ -1,0 +1,30 @@
+flowchart TD
+    A([Inicio jornada]) --> B[Ingresar al sistema]
+    B --> C[Revisar Dashboard]
+
+    C --> D{¿Hay vencidas?}
+    D -->|Sí| E[Atender categorías rojas<br/>SS, I/R, licencias, vehículos]
+    D -->|No| F{¿Hay próximas a vencer?}
+
+    F -->|Sí| G[Planificar gestión<br/>próximos 10 días]
+    F -->|No| H[Revisar pendientes<br/>de inducción]
+
+    E --> I[Ir al módulo correspondiente]
+    G --> I
+    H --> I
+
+    I --> J{¿Acción requerida?}
+    J -->|Subir planilla SS| K[Módulo Planillas<br/>o ficha interno]
+    J -->|Actualizar I/R| L[Editar contratista<br/>fecha_ultima_ir]
+    J -->|Documento vehículo| M[Editar vehículo]
+    J -->|Nuevo registro| N[Crear empresa /<br/>contratista / vehículo]
+
+    K --> O[Archivo guardado<br/>estado actualizado]
+    L --> O
+    M --> O
+    N --> O
+
+    O --> P[Dashboard refleja<br/>nuevo estado]
+    P --> Q{¿Más pendientes?}
+    Q -->|Sí| C
+    Q -->|No| R([Fin jornada / logout])

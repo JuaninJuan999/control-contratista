@@ -1,0 +1,31 @@
+flowchart TD
+    A([Alta de contratista]) --> B{¿Tipo?}
+
+    B -->|Externo| C[Vincular a empresa EXTERNA]
+    B -->|Interno| D[Vincular a empresa INTERNA]
+
+    C --> E[Datos personales<br/>documento, ARL, licencia]
+    D --> E
+
+    E --> F[Adjuntar documentos<br/>cédula, licencia, manipulador]
+    F --> G{¿Tiene fecha<br/>última I/R?}
+
+    G -->|No| H[⚠ Pendiente de inducción<br/>aparece en Dashboard]
+    G -->|Sí| I[Calcular fecha_vencimiento<br/>fecha_ultima_ir + vigencia_dias]
+
+    I --> J{¿Estado I/R?}
+    J -->|VIGENTE| K[> 10 días]
+    J -->|PRÓXIMA A VENCER| L[0–10 días]
+    J -->|VENCIDA| M[< 0 días]
+
+    K --> N[Control mensual<br/>marcar meses ok/rechazado]
+    L --> N
+    M --> N
+
+    N --> O{¿Contratista interno<br/>planilla independiente?}
+    O -->|Sí| P[Gestionar SS individual]
+    O -->|No| Q[SS hereda de empresa<br/>si es dependiente]
+
+    N --> R{¿Activo?}
+    R -->|Toggle inactivo| S[Excluido de alertas<br/>y listados activos]
+    R -->|Activo| T([Contratista en operación])

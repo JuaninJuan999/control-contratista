@@ -1,0 +1,30 @@
+flowchart TD
+    A([Cron diario 07:00<br/>America/Bogota]) --> B{¿ALERTAS_PLANILLA<br/>HABILITADAS?}
+    B -->|No| Z([Fin])
+    B -->|Sí| C[alertas:planilla-proxima-vencer]
+
+    C --> D[AlertasPlanillaEmpresaService]
+    D --> E[Buscar empresas DEPENDIENTES<br/>con hito de hoy]
+    D --> F[Buscar internos INDEPENDIENTES<br/>con hito de hoy]
+
+    E --> G{¿Hito coincide?}
+    F --> G
+
+    G -->|proxima_10| H[10 días antes del vencimiento]
+    G -->|proxima_5| I[5 días antes]
+    G -->|vencida_10| J[10 días después del vencimiento]
+    G -->|Ninguno| Z
+
+    H --> K{¿Ya se envió<br/>este hito + vigencia?}
+    I --> K
+    J --> K
+
+    K -->|Sí| Z
+    K -->|No| L[Enviar correos]
+
+    L --> M[Correo a empresa<br/>empresas.correos]
+    L --> N[Correo interno SISO<br/>siso@colbeef.com, etc.]
+
+    M --> O[Registrar en<br/>*_alerta_planilla_envios]
+    N --> O
+    O --> Z

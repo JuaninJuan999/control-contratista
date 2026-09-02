@@ -1,0 +1,15 @@
+flowchart TD
+    A([Admin / Superadmin]) --> B[Empresa → Importar planilla]
+    B --> C[Descargar plantilla Excel<br/>opcional]
+    C --> D[Completar filas<br/>contratistas internos]
+    D --> E[Subir archivo]
+    E --> F[Vista previa<br/>POST preview]
+    F --> G{¿Filas válidas?}
+
+    G -->|Errores| H[Mostrar errores<br/>por fila]
+    H --> D
+
+    G -->|OK| I[Confirmar importación<br/>POST importar]
+    I --> J[ImportadorPlanillaContratistas]
+    J --> K[Crear/actualizar<br/>contratistas_internos]
+    K --> L([Listado actualizado])

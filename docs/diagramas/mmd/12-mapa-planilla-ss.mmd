@@ -1,0 +1,11 @@
+flowchart TD
+    A([¿Dónde adjunto planilla SS?]) --> B{¿Tipo empresa?}
+
+    B -->|EXTERNA| C[No aplica<br/>sin control SS]
+    B -->|INTERNA| D{¿Planilla?}
+
+    D -->|DEPENDIENTE| E[Módulo Planillas<br/>una planilla por empresa]
+    D -->|INDEPENDIENTE| F[Ficha de cada<br/>contratista interno]
+
+    E --> G[Usar empresas.limite<br/>como referencia de vigencia]
+    F --> H[Usar contratistas_internos.limite<br/>por persona]

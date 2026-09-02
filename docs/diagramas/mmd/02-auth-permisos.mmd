@@ -1,0 +1,25 @@
+flowchart TD
+    A([POST /login]) --> B[Validar username + password]
+    B --> C{¿Usuario activo?}
+    C -->|No| D[Error: acceso denegado]
+    C -->|Sí| E[Crear sesión en BD]
+    E --> F[Registrar sesión de usabilidad]
+    F --> G{¿Rol del usuario?}
+
+    G -->|Superadministrador| H[Acceso total<br/>+ Usabilidad<br/>+ Eliminar usuarios]
+    G -->|Administrador| I[Edición completa<br/>+ Usuarios<br/>+ Importar Excel]
+    G -->|Operativo| J[Edición operativa<br/>CRUD sin módulo usuarios]
+    G -->|Consulta| K[Solo lectura<br/>GET en listados]
+
+    H --> L([Navegar módulos])
+    I --> L
+    J --> L
+    K --> L
+
+    L --> M{¿Intenta POST/PATCH/DELETE<br/>o create/edit?}
+    M -->|Sí, rol consulta| N[403 Forbidden]
+    M -->|No o rol con edición| O[Operación permitida]
+
+    L --> P{¿Inactividad > 15 min?}
+    P -->|Sí| Q[Cierre automático de sesión]
+    Q --> A
